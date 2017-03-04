@@ -812,6 +812,7 @@ lib/python/Plugins/Extensions/MediaPortal/resources/Makefile
 lib/python/Plugins/Extensions/MediaPortal/resources/hosters/Makefile
 lib/python/Plugins/Extensions/MediaPortal/resources/tx/Makefile
 lib/python/Plugins/Extensions/MediaPortal/resources/sepg/Makefile
+lib/python/Plugins/Extensions/MediaPortal/resources/cfscrape/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/liquidblue/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/liquidblue/images/Makefile
