@@ -59,9 +59,9 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.genreName = genreName
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/dokuListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/dokuListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
 		print path
 		with open(path, "r") as f:
 			self.skin = f.read()
@@ -368,9 +368,9 @@ class DH_Streams(MPScreen):
 		self.dokuImg = dokuImg
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/dokuListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/dokuListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
 		print path
 		with open(path, "r") as f:
 			self.skin = f.read()
@@ -396,10 +396,6 @@ class DH_Streams(MPScreen):
 		self['F1'] = Label(_("Text-"))
 		self['F4'] = Label(_("Text+"))
 
-		self['VideoPrio'] = Label("VidPrio")
-
-		self.videoPrio = int(config.mediaportal.youtubeprio.value)
-		self.videoPrioS = ['L','M','H']
 		self.setVideoPrio()
 		self.streamListe = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -477,9 +473,7 @@ class DH_Streams(MPScreen):
 		self.ml.setList(map(self._defaultlistleft, self.streamListe))
 
 	def setVideoPrio(self):
-		print "setVideoPrio:"
 		self.videoPrio = int(config.mediaportal.youtubeprio.value)
-		self['vPrio'].setText(self.videoPrioS[self.videoPrio])
 
 	def keyOK(self):
 		print "keyOK:"

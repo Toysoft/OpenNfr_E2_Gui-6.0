@@ -12,7 +12,7 @@ from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPag
 
 glob_cookies = None
 glob_historyLRUCache = SimpleLRUCache(100, config.mediaportal.watchlistpath.value + 'mp_mfmp3_history')
-BASE_URL = "http://www.my-free-mp3.org"
+BASE_URL = "http://www.my-free-mp3.website"
 TIME_OUT = 10
 config.mediaportal.mfmp3_precheck_mp3ids = ConfigYesNo(default = True)
 config.mediaportal.mfmp3_discard_mp3_duplicates = ConfigYesNo(default = True)
@@ -516,7 +516,10 @@ class show_MFMP3_Genre(MenuHelper):
 
 		if self.genre_type[0] == 'albums':
 			self['handlung'].setText(self.bio_text)
-			CoverHelper(self['coverArt']).getCover(self.mh_genreUrl[self.mh_menuLevel][2])
+			try:
+				CoverHelper(self['coverArt']).getCover(self.mh_genreUrl[self.mh_menuLevel][2])
+			except:
+				pass
 
 	def getPagination(self, data):
 		href = page = None

@@ -103,9 +103,9 @@ class HeiseTvListScreen(MPScreen, ThumbsHelper):
 		self.rawGenre = raw_genre
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/dokuListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/dokuListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -137,7 +137,6 @@ class HeiseTvListScreen(MPScreen, ThumbsHelper):
 		self.reiter_ofs = 0
 		self.page = 0
 		self.pages = 0
-		self.videoPrioS = ['L','M','H']
 		self.setVideoPrio()
 		self.keyLocked = True
 		self.filmliste = []
@@ -276,9 +275,9 @@ class HeiseTvListScreen(MPScreen, ThumbsHelper):
 			self.reiter_ofs -= self.items_pp
 			self.keyLocked = True
 			self.getHtml()
+
 	def setVideoPrio(self):
 		self.videoPrio = int(config.mediaportal.videoquali_others.value)
-		self['vPrio'].setText(self.videoPrioS[self.videoPrio])
 
 	def keyYellow(self):
 		self.setVideoPrio()

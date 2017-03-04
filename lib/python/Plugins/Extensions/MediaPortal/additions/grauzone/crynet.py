@@ -134,11 +134,7 @@ class showevonicGenre(MPScreen):
 		self.genreListe.append(("HD-Collection", "http://crynet.to/forum/content.php?r=3501-hd-collection&page="))
 		self.genreListe.append(("Serien Charts", "http://crynet.to/forum/content.php?r=1997-serien-charts&page="))
 		self.genreListe.append(("HD-Serien", "http://crynet.to/forum/content.php?r=5993-hd-serien&page="))
-		#self.genreListe.append(("Century", "dump"))
-		#self.genreListe.append(("Imdb", "dump"))
-		#self.genreListe.append(("Imdb Top 1000", "dump"))
 		self.genreListe.append(("3D", "http://crynet.to/forum/content.php?r=4225-3d-filme&page="))
-		#self.genreListe.append(("Alle HD Premium Streams", "http://crynet.to/forum/content.php?r=1669-hd-filme&page="))
 		self.genreListe.append(("Abenteuer", "http://crynet.to/forum/list.php?r=category/65-HD-Abenteuer&page="))
 		self.genreListe.append(("Action", "http://crynet.to/forum/list.php?r=category/35-HD-Action&page="))
 		self.genreListe.append(("Biografie", "http://crynet.to/forum/list.php?r=category/70-HD-Biografie&page="))
@@ -304,12 +300,12 @@ class meSearchScreen(MPScreen):
 			self.session.open(meSerienScreen, self.streamName, url, pic)
 		else:
 			self.genreListe2 = []
-			findStream = re.findall('"(http://crynet.to/server/Premium.*?)" target="Videoframe"><b>(.*?)</b>', data)
+			findStream = re.findall('<a href="(/server/Filme.php\?mov=.*?)" target="Videoframe">.*?<img src="http://crynet.to/images/(.*?).png"', data, re.S)
 			if findStream:
 				print "Premium", findStream
 				for stream, name in findStream:
+					stream = 'http://crynet.to'+stream
 					name2 = "Premium"
-                                        name = re.sub('<.*?>', '', name2)
 					self.genreListe2.append((name, stream.replace('"','')))
 
 			findStream2 = re.findall('"http://crynet.to/server/Free-Member.php.mov=.*?"  target="Videoframe"><b>(.*?)</b>', data)
@@ -516,7 +512,7 @@ class meMovieScreen(MPScreen, ThumbsHelper):
 				self.showInfos()
 				self.keyLocked = False
 				if totalPages:
-                                        self.th_ThumbsQuery(self.genreListe, 0, 1, 2, None, None, self.page, totalPages[0])#self.page, totalPages.group(1))
+                                        self.th_ThumbsQuery(self.genreListe, 0, 1, 2, None, None, self.page, totalPages[0])
                                 else:
                                         self.th_ThumbsQuery(self.genreListe, 0, 1, 2, None, None, 1, 1)
 			else:
@@ -537,7 +533,7 @@ class meMovieScreen(MPScreen, ThumbsHelper):
 				self.showInfos()
 				self.keyLocked = False
 				if totalPages:
-                                        self.th_ThumbsQuery(self.genreListe, 0, 1, 2, None, None, self.page, totalPages[0])#self.page, totalPages.group(1))
+                                        self.th_ThumbsQuery(self.genreListe, 0, 1, 2, None, None, self.page, totalPages[0])
                                 else:
                                         self.th_ThumbsQuery(self.genreListe, 0, 1, 2, None, None, 1, 1)
 			else:
@@ -647,14 +643,12 @@ class meMovieScreen(MPScreen, ThumbsHelper):
 
 	def getStream(self, data):
 		self.genreListe2 = []
-		##testi##
 		findStream = re.findall('<a href="(/server/Filme.php\?mov=.*?)" target="Videoframe">.*?<img src="http://crynet.to/images/(.*?).png"', data, re.S)
 		if findStream:
 			print "Premium", findStream
 			for stream, name in findStream:
 				stream = 'http://crynet.to'+stream
 				name2 = "Premium"
-				#name = re.sub('<.*?>', '', name2)
 				self.genreListe2.append((name, stream.replace('"','')))
 
 		m = re.search('//www.youtube.*?com/(embed|v|p)/(.*?)(\?|" |&amp)', data)
@@ -1066,7 +1060,6 @@ class meCollectionScreen(MPScreen):
 	def loadPage(self):
 		CoverHelper(self['coverArt']).getCover(self.streamPic)
 		getPage(self.eLink, cookies=ck, agent=std_headers).addCallback(self.getEpisoden).addErrback(self.dataError)
-                #self.setHandlung()
 
 	def BAKsetHandlung(self):
 	        if fileExists('/tmp/.mpevoext'):

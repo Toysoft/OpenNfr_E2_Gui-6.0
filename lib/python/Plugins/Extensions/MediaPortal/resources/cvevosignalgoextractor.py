@@ -1,4 +1,4 @@
-﻿#	-*-	coding:	utf-8	-*-
+﻿# -*- coding: utf-8 -*-
 # This code is based on youtube-dl: https://github.com/rg3/youtube-dl
 
 from __future__ import unicode_literals
@@ -8,7 +8,7 @@ import operator
 import os
 import sys
 import re
-import urllib2
+import requests
 
 _NO_DEFAULT = object()
 compat_chr = unichr
@@ -40,6 +40,8 @@ _ASSIGN_OPERATORS = [(op + '=', opfunc) for op, opfunc in _OPERATORS]
 _ASSIGN_OPERATORS.append(('=', lambda cur, right: right))
 
 _NAME_RE = r'[a-zA-Z_$][a-zA-Z_$0-9]*'
+
+compiled_regex_type = type(re.compile(''))
 
 class JSInterpreter(object):
 	def __init__(self, code, objects=None):
@@ -282,8 +284,10 @@ class CVevoSignAlgoExtractor:
 
 	def _cleanTmpVariables(self):
 		self.playerData = ''
-		
+
 	def decryptSignature(self, s, playerUrl):
+		if not playerUrl.startswith('http'):
+			playerUrl = "https://www.youtube.com" + playerUrl
 		# clear local data
 		self._cleanTmpVariables()
 
@@ -300,11 +304,12 @@ class CVevoSignAlgoExtractor:
 		# use algoCache
 		slen = len(s)
 		player_id = (playerUrl, self._signature_cache_id(s))
-		#if playerUrl not in self.algoCache:
 		if player_id not in self._player_cache:
-			# get player HTML 5 sript
+			# get player HTML 5 script
 			try:
-				self.playerData = urllib2.urlopen(playerUrl).read()
+				opener = requests.session()
+				response = opener.get(playerUrl)
+				self.playerData = response.content
 				encoding = 'utf-8'
 				try:
 					self.playerData = self.playerData.decode(encoding, 'replace')
@@ -337,23 +342,36 @@ class CVevoSignAlgoExtractor:
 
 	def _parse_sig_js(self):
 		funcname = self._search_regex(
-			r'\.sig\|\|([a-zA-Z0-9$]+)\(', self.playerData)
+			(r'(["\'])signature\1\s*,\s*(?P<sig>[a-zA-Z0-9$]+)\(',
+			r'\.sig\|\|(?P<sig>[a-zA-Z0-9$]+)\('),
+			self.playerData, 'Initial JS player signature function name', group='sig')
 
 		jsi = JSInterpreter(self.playerData)
 		initial_function = jsi.extract_function(funcname)
 		return lambda s: initial_function([s])
 
-	def _search_regex(self, pattern, string):
+	def _search_regex(self, pattern, string, name, default=_NO_DEFAULT, fatal=True, flags=0, group=None):
 		"""
 		Perform a regex search on the given string, using a single or a list of
 		patterns returning the first matching group.
 		In case of failure return a default value or raise a WARNING or a
 		RegexNotFoundError, depending on fatal, specifying the field name.
 		"""
-		mobj = re.search(pattern, string, 0)
+		if isinstance(pattern, (str, compat_str, compiled_regex_type)):
+			mobj = re.search(pattern, string, flags)
+		else:
+			for p in pattern:
+				mobj = re.search(p, string, flags)
+				if mobj:
+					break
 		if mobj:
-			# return the first matching group
-			return next(g for g in mobj.groups() if g is not None)
+			if group is None:
+				# return the first matching group
+				return next(g for g in mobj.groups() if g is not None)
+			else:
+				return mobj.group(group)
+		elif default is not _NO_DEFAULT:
+			return default
 		else:
 			print '[CVevoSignAlgoExtractor] Unable to extract'
 			return None

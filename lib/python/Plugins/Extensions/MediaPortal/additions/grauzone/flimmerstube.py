@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###############################################################################################
 #
 #    MediaPortal for Dreambox OS
@@ -35,12 +35,13 @@
 #  For other uses, permission from the authors is necessary.
 #
 ###############################################################################################
-
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 
-class LiveLeakScreen(MPScreen):
+BASE_URL="http://flimmerstube.com"
+
+class flimmerstubeGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -51,16 +52,24 @@ class LiveLeakScreen(MPScreen):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
+
 		MPScreen.__init__(self, session)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"ok"    : self.keyOK,
+			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel": self.keyCancel
+			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("LiveLeak.com")
+		self['title'] = Label("FlimmerStube.com")
 		self['ContentTitle'] = Label("Genre:")
+
+		self.keyLocked = True
+		self.suchString = ''
 		self.genreliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
@@ -68,28 +77,31 @@ class LiveLeakScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
-		self.genreliste.append(("Featured Items", "https://www.liveleak.com/rss?featured=1&page="))
-		self.genreliste.append(("Recent Items (All)", "https://www.liveleak.com/rss?selection=all&page="))
-		self.genreliste.append(("Recent Items (Popular)", "https://www.liveleak.com/rss?selection=popular&page="))
-		self.genreliste.append(("Top (Today)", "https://www.liveleak.com/rss?rank_by=day&page="))
-		self.genreliste.append(("Top (Week)", "https://www.liveleak.com/rss?rank_by=week&page="))
-		self.genreliste.append(("Top (Month)", "https://www.liveleak.com/rss?rank_by=month&page="))
-		self.genreliste.append(("Top (All)", "https://www.liveleak.com/rss?rank_by=all_time&page="))
-		self.genreliste.append(("Must See", "https://www.liveleak.com/rss?channel_token=9ee_1303244161&page="))
-		self.genreliste.append(("Yoursay", "https://www.liveleak.com/rss?channel_token=1b3_1302956579&page="))
-		self.genreliste.append(("News", "https://www.liveleak.com/rss?channel_token=04c_1302956196&page="))
-		self.genreliste.append(("Entertainment", "https://www.liveleak.com/rss?channel_token=51a_1302956523&page="))
+		self.keyLocked = True
+		getPage(BASE_URL).addCallback(self.genreData).addErrback(self.dataError)
+
+	def genreData(self, data):
+		parse = re.search('<section class="sidebox">(.*)</section>',data, re.S)
+		cats = re.findall('<a class=\'.*?\' href="(.*?)" >(.*?)(?:</a>|\/)', parse.group(1), re.S)
+		for (url, title) in cats:
+			if title != "Horror Serien":
+				self.genreliste.append((title, url))
+		self.genreliste.sort()
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
 
 	def keyOK(self):
+		if self.keyLocked:
+			return
 		Name = self['liste'].getCurrent()[0][0]
-		streamGenreLink = self['liste'].getCurrent()[0][1]
-		self.session.open(LiveLeakClips, streamGenreLink, Name)
+		Link = self['liste'].getCurrent()[0][1]
+		self.session.open(flimmerstubeFilmScreen, Link, Name)
 
-class LiveLeakClips(MPScreen, ThumbsHelper):
+class flimmerstubeFilmScreen(MPScreen):
 
-	def __init__(self, session, streamGenreLink, Name):
-		self.streamGenreLink = streamGenreLink
+	def __init__(self, session, Link, Name):
+		self.Link = Link
 		self.Name = Name
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
@@ -99,30 +111,32 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
+
 		MPScreen.__init__(self, session)
-		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"ok"    : self.keyOK,
+			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel": self.keyCancel,
-			"5" : self.keyShowThumb,
-			"up"    : self.keyUp,
-			"down"  : self.keyDown,
-			"left"  : self.keyLeft,
+			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
 			"right" : self.keyRight,
+			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown
+			"prevBouquet" : self.keyPageDown,
+			"green" : self.keyPageNumber
 		}, -1)
 
-		self.keyLocked = True
-		self.page = 1
-		self.lastpage = 999
-		self['title'] = Label("LiveLeak.com")
-		self['ContentTitle'] = Label("Auswahl: %s" %self.Name)
+		self['title'] = Label("FlimmerStube.com")
+		self['ContentTitle'] = Label("Genre: %s" % self.Name)
+		self['F2'] = Label(_("Page"))
 
- 		self['Page'] = Label(_("Page:"))
-		self['page'] = Label("1")
+		self['Page'] = Label(_("Page:"))
+		self.keyLocked = True
+		self.lastKat = ''
+		self.page = 1
+
+		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
@@ -130,43 +144,52 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.keyLocked = True
-		url = "%s%s&safe_mode=off" % (self.streamGenreLink, str(self.page))
-		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
+		self['name'].setText(_('Please wait...'))
+		self.filmliste = []
+		url = "%s%s/*%s" % (BASE_URL, self.Link, str(self.page))
+		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
-	def loadPageData(self, data):
-		rssfeed = re.findall('<item>.*?<title>(.*?)</title>.*?<link>(http[s]?://www.liveleak.com/view.*?)</link>.*?<description>(.*?)</description>.*?<media:thumbnail\surl="(.*?)"', data, re.S)
-		if rssfeed:
-			self.feedliste = []
-			for (title,url,desc,image) in rssfeed:
-				if not re.match('LiveLeak.com Rss Feed', title, re.S|re.I):
-					self.feedliste.append((decodeHtml(title.replace('&amp;','&')),url,image,decodeHtml(desc.strip())))
-			self.ml.setList(map(self._defaultlistleft, self.feedliste))
-			self.ml.moveToIndex(0)
-			self.keyLocked = False
-			self.th_ThumbsQuery(self.feedliste, 0, 1, 2, None, None, self.page, 999, mode=1)
-			self.showInfos()
+	def loadData(self, data):
+		lastp = re.search('id="num_entries">(.*?)</span>', data, re.S)
+		if lastp:
+			lastp = lastp.group(1)
+			cat = self.Link
+			if float(float(lastp)/15).is_integer():
+				lastp = float(lastp) / 15
+			else:
+				lastp = round((float(lastp) / 15) + 0.5)
+			self.lastpage = int(lastp)
+		else:
+			self.lastpage = 1
+		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
+		vSearch = re.search('<section class="content">(.*?)<aside class="sidebar">',data,re.S)
+		titles = re.findall('<h4 class="ve-title">.*?<a href="(.*?)">.*?</a>.*?</h4>.*?<div class="ve-screen" title="(.*?\(\d+\)).*?style="background-image: url\((.*?)\);',vSearch.group(1), re.S)
+		if titles:
+			for (url, title, img) in titles:
+				self.filmliste.append((decodeHtml(title), url, img))
+		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.showInfos()
 
 	def showInfos(self):
 		Title = self['liste'].getCurrent()[0][0]
 		Image = self['liste'].getCurrent()[0][2]
-		desc = self['liste'].getCurrent()[0][3]
 		self['name'].setText(Title)
-		self['handlung'].setText(desc)
-		self['page'].setText(str(self.page))
 		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		url = self['liste'].getCurrent()[0][1]
-		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
+		Link = "%s%s" % (BASE_URL, self['liste'].getCurrent()[0][1])
+		self.keyLocked = True
+		getPage(Link).addCallback(self.getVideoData).addErrback(self.dataError)
 
-	def parseData(self, data):
-		title = self['liste'].getCurrent()[0][0]
-		Stream = re.findall('source\ssrc="(.*?)"', data, re.S)
-		if Stream:
-			self.session.open(SimplePlayer, [(title, Stream[0])], showPlaylist=False, ltype='liveleak')
+	def getVideoData(self, data):
+		ytUrl = re.findall('"http[s]?://www.youtube.com/(v|embed)/(.*?)\?.*?"', data, re.S)
+		if ytUrl:
+			Title = self['liste'].getCurrent()[0][0]
+			self.session.open(YoutubePlayer,[(Title, ytUrl[0][1], None)],playAll= False,showPlaylist=False,showCover=False)
 		else:
-			videoPage = re.findall('//www.youtube.com/(v|embed)/(.*?)\?.*?"', data, re.S)
-			if videoPage:
-				self.session.open(YoutubePlayer,[(title, videoPage[0][1], None)],playAll= False,showPlaylist=False,showCover=False)
+			self.session.open(MessageBoxExt, _('No supported streams found!'), MessageBoxExt.TYPE_INFO, timeout=5)
+		self.keyLocked = False

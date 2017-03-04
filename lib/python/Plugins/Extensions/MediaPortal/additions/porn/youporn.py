@@ -298,7 +298,7 @@ class youpornCountryScreen(MPScreen):
 		getPage(url, headers={'Cookie': 'age_verified=1'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('id="countryFlags">(.*?)heading4">Most\spopular\sChannels</h2>', data, re.S)
+		parse = re.search('id="countryFlags">(.*?)heading4">Network\sSites</h2>', data, re.S)
 		Cats = re.findall('<a\sclass="countryBox\sflag\sflag-.*?"\shref="(.*?)">.*?<span\sclass=\'countryTag\'>(.*?)</span', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
@@ -372,7 +372,7 @@ class youpornChannelScreen(MPScreen, ThumbsHelper):
 		Cats = re.findall('channel-box-image.*?<img\ssrc="(.*?)".*?channel-box-title">.*?href="(.*?)">(.*?)</', data, re.S)
 		if Cats:
 			for (Image, Url, Title) in Cats:
-				Url = "http://www.youporn.com" + Url + '?page='
+				Url = "http://www.youporn.com" + Url + 'time/?page='
 				self.genreliste.append((Title.strip(), Url, Image))
 			self.ml.setList(map(self._defaultlistleft, self.genreliste))
 			self.ml.moveToIndex(0)
@@ -444,7 +444,6 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		url = "%s%s" % (self.Link, str(self.page))
-		#self.tw_agent_hlp.getWebPage(url).addCallback(self.loadData).addErrback(self.dataError)
 		twAgentGetPage(url, agent=ypAgent, cookieJar=ck).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
@@ -453,9 +452,11 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 		if not parse:
 			parse = re.search('eight-column\sheading4\'>Videos from(.*?)class=\'ad-bottom-text', data, re.S)
 			if not parse:
-				parse = re.search('class=\'ad-bottom-text\'>(.*?)class=\'footer', data, re.S)
+				parse = re.search('class=\'container\'>(.*?)search-suggestions', data, re.S)
 				if not parse:
-					parse = re.search('class=\'container\'>(.*?)search-suggestions', data, re.S)
+					parse = re.search('eight-column\sheading4\'>Most Recent Videos</h2(.*?)class=\'ad-bottom-text', data, re.S)
+					if not parse:
+						parse = re.search('class=\'ad-bottom-text\'>(.*?)class=\'footer', data, re.S)
 		if parse:
 			Movies = re.findall('class=\'video-box.*?<a\shref="(.*?)".*?<img\ssrc=".*?"\salt=\'(.*?)\'.*?data-(?:thumbnail|echo)="(.*?)".*?class=\'video-box-percentage\sup\'>(.*?)</span>.*?class="video-box-duration">(.*?)</span>', parse.group(1), re.S)
 			if Movies:

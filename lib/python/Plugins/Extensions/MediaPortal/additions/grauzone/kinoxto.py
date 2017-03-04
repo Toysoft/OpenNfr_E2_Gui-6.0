@@ -317,7 +317,7 @@ class kxNeuesteOnline(MPScreen, ThumbsHelper):
 			return
 		stream_name = self['liste'].getCurrent()[0][0]
 		auswahl = self['liste'].getCurrent()[0][1]
-		self.session.open(kxStreams, auswahl, stream_name, 'no_cover')
+		self.session.open(kxStreams, auswahl, stream_name, None)
 
 class kxABC(MPScreen):
 
@@ -381,9 +381,9 @@ class kxABCpage(MPScreen, ThumbsHelper):
 		self.letter = letter
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -404,7 +404,7 @@ class kxABCpage(MPScreen, ThumbsHelper):
 		}, -1)
 
 		self['title'] = Label("Kinox.to")
-		self['ContentTitle'] = Label("Movies %s" % self.letter)
+		self['ContentTitle'] = Label("Filme %s" % self.letter)
 		self['F2'] = Label(_("Add to Watchlist"))
 
 		self['Page'] = Label(_("Page:"))
@@ -420,18 +420,17 @@ class kxABCpage(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.streamList = []
-		url = "http://kinox.to/aGET/List/Page="+str(self.page)+"&Per_Page=25&url=%2FaGET%2FList%2F&dir=desc&sort=title&per_page=25&ListMode=cover&additional=%7B%22fType%22%3A%22movie%22%2C%22fLetter%22%3A%22"+self.letter+"%22%7D&iDisplayStart=0&iDisplayLength=25"
+		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22movie%22%2C%22Length%22%3A30%2C%22fLetter%22%3A%22"+self.letter+"%22%7D"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		data = data.replace('\\/','/').replace('\\"','"')
-		print data
-		kxMovies = re.findall('title="(.*?)"\shref="(.*?)".*?<img.*?src="(.*?)".*?<div\sclass="Descriptor">(.*?)</div>.*?src=".*?lng.*?/(.*?).pn.*?"\salt="language">', data, re.S)
+		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>', data, re.S)
 		if kxMovies:
-			for (kxTitle,kxUrl,kxImage,kxHandlung,kxLang) in kxMovies:
+			for (kxLang,kxUrl,kxTitle) in kxMovies:
 				kxUrl = "http://kinox.to" + kxUrl
-				kxImage = "http://kinox.to"+ kxImage
-				kxTitle = kxTitle
+				kxImage = None
+				kxHandlung = ""
 				self.streamList.append((decodeHtml(kxTitle),kxUrl,kxImage,kxLang,kxHandlung))
 				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
 			self.keyLocked = False
@@ -444,10 +443,6 @@ class kxABCpage(MPScreen, ThumbsHelper):
 		filmName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(filmName)
 		self['page'].setText(str(self.page))
-		coverUrl = self['liste'].getCurrent()[0][2]
-		handlung = self['liste'].getCurrent()[0][4]
-		self['handlung'].setText(decodeHtml(handlung))
-		CoverHelper(self['coverArt']).getCover(coverUrl)
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -518,7 +513,7 @@ class kxNeuesteSerien(MPScreen, ThumbsHelper):
 		if self.Name == "Neueste Serien":
 			self.session.open(kxEpisoden, auswahl, stream_name)
 		elif self.Name == "Neueste Dokumentationen":
-			self.session.open(kxStreams, auswahl, stream_name, 'no_cover')
+			self.session.open(kxStreams, auswahl, stream_name, None)
 
 	def keyAdd(self):
 		exist = self['liste'].getCurrent()
@@ -542,9 +537,9 @@ class kxDokuABCpage(MPScreen, ThumbsHelper):
 		self.letter = letter
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -580,20 +575,19 @@ class kxDokuABCpage(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.streamList = []
-		self.filmtype = "documentation"
-		url = "http://kinox.to/aGET/List/Page="+str(self.page)+"&Per_Page=25&url=%2FaGET%2FList%2F&dir=desc&sort=title&per_page=25&ListMode=cover&additional=%7B%22fType%22%3A%22"+self.filmtype+"%22%2C%22fLetter%22%3A%22"+self.letter+"%22%7D&iDisplayStart=0&iDisplayLength=25"
+		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22documentation%22%2C%22Length%22%3A30%2C%22fLetter%22%3A%22"+self.letter+"%22%7D"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		data = data.replace('\\/','/').replace('\\"','"')
-		print data
-		kxMovies = re.findall('title="(.*?)"\shref="(.*?)".*?<img.*?src="(.*?)".*?<div\sclass="Descriptor">(.*?)</div>.*?src=".*?lng.*?/(.*?).pn.*?"\salt="language">', data, re.S)
+		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>', data, re.S)
 		if kxMovies:
-			for (kxTitle,kxUrl,kxImage,kxHandlung,kxLang) in kxMovies:
+			for (kxLang,kxUrl,kxTitle) in kxMovies:
 				kxUrl = "http://kinox.to" + kxUrl
-				kxImage = "http://kinox.to"+ kxImage
-				kxTitle = kxTitle
+				kxImage = None
+				kxHandlung = ""
 				self.streamList.append((decodeHtml(kxTitle),kxUrl,kxImage,kxLang,kxHandlung))
+				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
 				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
 			self.keyLocked = False
 			self.th_ThumbsQuery(self.streamList, 0, 1, 2, None, None, self.page)
@@ -605,10 +599,6 @@ class kxDokuABCpage(MPScreen, ThumbsHelper):
 		filmName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(filmName)
 		self['page'].setText(str(self.page))
-		coverUrl = self['liste'].getCurrent()[0][2]
-		handlung = self['liste'].getCurrent()[0][4]
-		self['handlung'].setText(decodeHtml(handlung))
-		CoverHelper(self['coverArt']).getCover(coverUrl)
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -625,9 +615,9 @@ class kxSerienABCpage(MPScreen, ThumbsHelper):
 		self.letter = letter
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -666,18 +656,17 @@ class kxSerienABCpage(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.streamList = []
-		url = "http://kinox.to/aGET/List/?ListMode=cover&Page="+str(self.page)+"&Per_Page=25&additional=%7B%22fType%22%3A%22series%22%2C%22fLetter%22%3A%22"+self.letter+"%22%7D&dir=desc&iDisplayLength=25&iDisplayStart=0&per_page=25&sort=title&url=%2FaGET%2FList%2F"
+		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22series%22%2C%22Length%22%3A30%2C%22fLetter%22%3A%22"+self.letter+"%22%7D"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		data = data.replace('\\/','/').replace('\\"','"')
-		print data
-		kxMovies = re.findall('title="(.*?)"\shref="(.*?)".*?<img.*?src="(.*?)".*?<div\sclass="Descriptor">(.*?)</div>.*?src=".*?lng.*?/(.*?).pn.*?"\salt="language">', data, re.S)
+		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>', data, re.S)
 		if kxMovies:
-			for (kxTitle,kxUrl,kxImage,kxHandlung,kxLang) in kxMovies:
+			for (kxLang,kxUrl,kxTitle) in kxMovies:
 				kxUrl = "http://kinox.to" + kxUrl
-				kxImage = "http://kinox.to"+ kxImage
-				kxTitle = kxTitle
+				kxImage = None
+				kxHandlung = ""
 				self.streamList.append((decodeHtml(kxTitle),kxUrl,kxImage,kxLang,kxHandlung))
 				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
 			self.keyLocked = False
@@ -690,10 +679,6 @@ class kxSerienABCpage(MPScreen, ThumbsHelper):
 		filmName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(filmName)
 		self['page'].setText(str(self.page))
-		coverUrl = self['liste'].getCurrent()[0][2]
-		handlung = self['liste'].getCurrent()[0][4]
-		self['handlung'].setText(decodeHtml(handlung))
-		CoverHelper(self['coverArt']).getCover(coverUrl)
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -833,7 +818,7 @@ class kxEpisoden(MPScreen):
 		episode = self['liste'].getCurrent()[0][0]
 		auswahl = self['liste'].getCurrent()[0][1]
 		streamname = "%s" % episode
-		self.session.open(kxStreams, auswahl, streamname, 'no_cover')
+		self.session.open(kxStreams, auswahl, streamname, None)
 
 class kxWatchlist(MPScreen):
 
@@ -914,7 +899,7 @@ class kxWatchlist(MPScreen):
 
 class kxStreams(MPScreen):
 
-	def __init__(self, session, kxGotLink, stream_name, cover='no_cover'):
+	def __init__(self, session, kxGotLink, stream_name, cover=None):
 		self.kxGotLink = kxGotLink
 		self.stream_name = stream_name
 		self.cover = cover
@@ -1005,6 +990,7 @@ class kxStreams(MPScreen):
 		getPage(url).addCallback(self.parseStream, url).addErrback(self.dataError)
 
 	def parseStream(self, data, url):
+		data = data.replace('\/','/').replace('\\"','"')
 		if re.match('.*?Part', data, re.S):
 			print "more parts.."
 			urls = []
@@ -1014,9 +1000,9 @@ class kxStreams(MPScreen):
 		else:
 			print "one parts only.."
 			stream = None
-			extern_stream_url = re.findall('<a href=.".*?(http.*?)"', data)
+			extern_stream_url = re.findall('(?:href|src)="(http.*?)"', data)
 			if extern_stream_url:
-				stream = extern_stream_url[0].replace('\\','')
+				stream = extern_stream_url[0]
 				if stream:
 					get_stream_link(self.session).check_link(stream, self.playfile)
 			if not stream:
@@ -1051,11 +1037,7 @@ class kxStreams(MPScreen):
 				updates_read3.write('"%s"\n' % (self.stream_name))
 				updates_read3.close()
 
-			if re.search('no_cover', self.cover):
-				cover = None
-			else:
-				cover = self.cover
-			self.session.open(SimplePlayer, [(self.stream_name, stream_url, cover)], showPlaylist=False, ltype='kinox.to', cover=True)
+			self.session.open(SimplePlayer, [(self.stream_name, stream_url, self.cover)], showPlaylist=False, ltype='kinox.to', cover=True)
 
 class kxParts(MPScreen):
 
@@ -1104,10 +1086,11 @@ class kxParts(MPScreen):
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		extern_stream_url = re.findall('<a href=."(.*?)"', data, re.S)
+		data = data.replace('\/','/').replace('\\"','"')
+		extern_stream_url = re.findall('(?:href|src)="(http.*?)"', data, re.S)
 		stream = None
 		if extern_stream_url:
-			stream = extern_stream_url[0].replace('\\','')
+			stream = extern_stream_url[0]
 			if stream:
 				get_stream_link(self.session).check_link(stream, self.playfile)
 		if not stream:
@@ -1201,7 +1184,7 @@ class kxSucheAlleFilmeListeScreen(MPScreen, ThumbsHelper):
 		if art == 'Series':
 			self.session.open(kxEpisoden, auswahl, stream_name)
 		else:
-			self.session.open(kxStreams, auswahl, stream_name, 'no_cover')
+			self.session.open(kxStreams, auswahl, stream_name, None)
 
 	def keyAdd(self):
 		exist = self['liste'].getCurrent()

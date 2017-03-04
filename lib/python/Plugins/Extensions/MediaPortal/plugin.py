@@ -47,7 +47,7 @@ from resources.imports import *
 from resources.update import *
 from resources.simplelist import *
 from resources.simpleplayer import SimplePlaylistIO
-from resources.twagenthelper import twAgentGetPage
+from resources.twagenthelper import twAgentGetPage, twDownloadPage
 from resources.configlistext import ConfigListScreenExt
 from resources.pininputext import PinInputExt
 from resources.decrypt import *
@@ -135,6 +135,26 @@ def calcDefaultStarttime():
 		offset = 7680
 	return (5 * 60 * 60) + offset
 
+def downloadPage(url, path):
+	agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.82 Safari/537.36"
+	return twDownloadPage(url, path, timeout=30, agent=agent)
+
+def grabpage(pageurl, method='GET', postdata={}):
+	agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.82 Safari/537.36"
+	if requestsModule:
+		try:
+			import urlparse
+			s = requests.session()
+			url = urlparse.urlparse(pageurl)
+			if method == 'GET':
+				headers = {'User-Agent': agent}
+				page = s.get(url.geturl(), headers=headers)
+			return page.content
+		except:
+			return None
+	else:
+		return None
+
 from Components.config import ConfigEnableDisable, ConfigClock
 
 config.mediaportal = ConfigSubsection()
@@ -153,8 +173,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="777"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="7.7.7"))
+config.mediaportal.version = NoSave(ConfigText(default="804"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.4"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -202,6 +222,7 @@ config.mediaportal.hls_proxy_ip = ConfigIP(default = [127,0,0,1], auto_jump = Tr
 config.mediaportal.hls_proxy_port = ConfigInteger(default = 0, limits = (0,65535))
 config.mediaportal.hls_buffersize = ConfigInteger(default = 32, limits = (1,64))
 config.mediaportal.storagepath = ConfigText(default="/tmp/mediaportal/tmp/", fixed_size=False)
+config.mediaportal.iconcachepath = ConfigText(default="/media/hdd/mediaportal/", fixed_size=False)
 config.mediaportal.autoplayThreshold = ConfigInteger(default = 50, limits = (1,100))
 config.mediaportal.filter = ConfigSelection(default = "ALL", choices = ["ALL", "Mediathek", "Grauzone", "Fun", "Sport", "Music", "Porn"])
 config.mediaportal.youtubeprio = ConfigSelection(default = "1", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
@@ -332,6 +353,28 @@ class CheckPathes:
 		if not res:
 			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
 
+		if mp_globals.pluginPath in config.mediaportal.iconcachepath.value:
+			config.mediaportal.iconcachepath.value = "/media/hdd/mediaportal/"
+			config.mediaportal.iconcachepath.save()
+			configfile.save()
+
+		if "/tmp/" in config.mediaportal.iconcachepath.value:
+			config.mediaportal.iconcachepath.value = "/media/hdd/mediaportal/"
+			config.mediaportal.iconcachepath.save()
+			configfile.save()
+
+		res, msg = SimplePlaylistIO.checkPath(config.mediaportal.iconcachepath.value + "icons/", '', True)
+		if not res:
+			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
+
+		res, msg = SimplePlaylistIO.checkPath(config.mediaportal.iconcachepath.value + "icons_bw/", '', True)
+		if not res:
+			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
+
+		res, msg = SimplePlaylistIO.checkPath(config.mediaportal.iconcachepath.value + "icons_zoom/", '', True)
+		if not res:
+			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
+
 	def _callback(self, answer):
 		if self.cb:
 			self.cb()
@@ -414,7 +457,8 @@ class CheckPremiumize:
 				self.session.open(MessageBoxExt, _("premiumize: YT ProxyHost not found!"), MessageBoxExt.TYPE_ERROR)
 
 	def dataError(self, error):
-		print error
+		from debuglog import printlog as printl
+		printl(error,self,"E")
 
 class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 
@@ -541,6 +585,7 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 			self.configlist.append(getConfigListEntry(_("HLSP-Proxy username:"), config.mediaportal.hlsp_proxy_username, False))
 			self.configlist.append(getConfigListEntry(_("HLSP-Proxy password:"), config.mediaportal.hlsp_proxy_password, False))
 		self.configlist.append(getConfigListEntry(_("Temporary Cachepath:"), config.mediaportal.storagepath, False))
+		self.configlist.append(getConfigListEntry(_("Icon Cachepath:"), config.mediaportal.iconcachepath, False))
 		self.configlist.append(getConfigListEntry(_("Max. count results/page (YouTube):"), config.mediaportal.youtube_max_items_pp, False))
 		self.configlist.append(getConfigListEntry(_('Use YouTube Proxy:'), config.mediaportal.sp_use_yt_with_proxy, True))
 		if config.mediaportal.sp_use_yt_with_proxy.value == "proxy":
@@ -678,12 +723,20 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 	def keyOK(self):
 		if self["config"].current:
 			self["config"].current[1].onDeselect(self.session)
+		if config.mediaportal.watchlistpath.value[0] != '/':
+			config.mediaportal.watchlistpath.value = '/' + config.mediaportal.watchlistpath.value
 		if config.mediaportal.watchlistpath.value[-1] != '/':
 			config.mediaportal.watchlistpath.value = config.mediaportal.watchlistpath.value + '/'
+		if config.mediaportal.storagepath.value[0] != '/':
+			config.mediaportal.storagepath.value = '/' + config.mediaportal.storagepath.value
 		if config.mediaportal.storagepath.value[-1] != '/':
 			config.mediaportal.storagepath.value = config.mediaportal.storagepath.value + '/'
 		if config.mediaportal.storagepath.value[-4:] != 'tmp/':
 			config.mediaportal.storagepath.value = config.mediaportal.storagepath.value + 'tmp/'
+		if config.mediaportal.iconcachepath.value[0] != '/':
+			config.mediaportal.iconcachepath.value = '/' + config.mediaportal.iconcachepath.value
+		if config.mediaportal.iconcachepath.value[-1] != '/':
+			config.mediaportal.iconcachepath.value = config.mediaportal.iconcachepath.value + '/'
 		if (config.mediaportal.showporn.value == False and config.mediaportal.filter.value == 'Porn'):
 			config.mediaportal.filter.value = 'ALL'
 		if (config.mediaportal.showgrauzone.value == False and config.mediaportal.filter.value == 'Grauzone'):
@@ -783,8 +836,8 @@ class MPList(Screen, HelpableScreen):
 			"red"   : (self.keySimpleList, _("Open SimpleList")),
 			"ok"    : (self.keyOK, _("Open selected Plugin")),
 			"cancel": (self.keyCancel, _("Exit MediaPortal")),
-			"nextBouquet" :	(self.keyPageDown, _("Next page")),
-			"prevBouquet" :	(self.keyPageUp, _("Previous page")),
+			"prevBouquet" :	(self.keyPageDown, _("Next page")),
+			"nextBouquet" :	(self.keyPageUp, _("Previous page")),
 			"menu" : (self.keySetup, _("MediaPortal Setup")),
 			config.mediaportal.simplelist_key.value: (self.keySimpleList, _("Open SimpleList"))
 		}, -1)
@@ -846,6 +899,14 @@ class MPList(Screen, HelpableScreen):
 
 	def layoutFinished(self):
 		_hosters()
+
+		self.icon_url = getIconUrl()
+		icons_hashes = grabpage(self.icon_url+"icons/hashes")
+		if icons_hashes:
+			self.icons_data = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes)
+		else:
+			self.icons_data = None
+
 		if not mp_globals.start:
 			self.close(self.session, True, self.lastservice)
 		if config.mediaportal.autoupdate.value:
@@ -952,18 +1013,32 @@ class MPList(Screen, HelpableScreen):
 
 	def hauptListEntry(self, name, icon, modfile=None):
 		res = [(name, icon, modfile)]
-		icon = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons/%s.png" % icon
-		if not fileExists(icon):
-			icon = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons/no_icon.png"
+		poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", icon)
+		url = self.icon_url+"icons/" + icon + ".png"
+		remote_hash = ""
+		if not fileExists(poster_path):
+			if self.icons_data:
+				for x,y in self.icons_data:
+					if y == icon+'.png':
+						downloadPage(url, poster_path)
+			poster_path = "%s/images/comingsoon.png" % self.plugin_path
+		else:
+			local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
+			if self.icons_data:
+				for x,y in self.icons_data:
+					if y == icon+'.png': remote_hash = x
+				if remote_hash != local_hash:
+					downloadPage(url, poster_path)
+					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 		scale = AVSwitch().getFramebufferScale()
 		if mp_globals.videomode == 2:
 			self.picload.setPara((105, 56, scale[0], scale[1], False, 1, "#FF000000"))
 		else:
 			self.picload.setPara((75, 40, scale[0], scale[1], False, 1, "#FF000000"))
 		if mp_globals.isDreamOS:
-			self.picload.startDecode(icon, False)
+			self.picload.startDecode(poster_path, False)
 		else:
-			self.picload.startDecode(icon, 0, 0, False)
+			self.picload.startDecode(poster_path, 0, 0, False)
 		pngthumb = self.picload.getData()
 		if mp_globals.videomode == 2:
 			res.append(MultiContentEntryPixmapAlphaBlend(pos=(0, 0), size=(105, 60), png=pngthumb))
@@ -1776,7 +1851,7 @@ class MPWall(Screen, HelpableScreen):
 			"nextBouquet" :	(self.page_next, _("Next page")),
 			"prevBouquet" :	(self.page_back, _("Previous page")),
 			"menu" : (self.keySetup, _("MediaPortal Setup")),
-			"leavePlayer": (self.openGlWatchlist, _("Global Watchlist")),
+			#"leavePlayer": (self.openGlWatchlist, _("Global Watchlist")),
 			config.mediaportal.simplelist_key.value: (self.keySimpleList, _("Open SimpleList"))
 		}, -1)
 
@@ -1954,7 +2029,7 @@ class MPWall(Screen, HelpableScreen):
 		elif config.mediaportal.sortplugins.value == "user":
 			self.plugin_liste.sort(key=lambda x: int(x[4]))
 
-		poster_path = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons/Selektor_%s.png" % config.mediaportal.selektor.value
+		poster_path = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/images/Selektor_%s.png" % config.mediaportal.selektor.value
 
 		scale = AVSwitch().getFramebufferScale()
 		if mp_globals.videomode == 2:
@@ -1971,15 +2046,59 @@ class MPWall(Screen, HelpableScreen):
 		if pic != None:
 			self["frame"].instance.setPixmap(pic)
 
+		icon_url = getIconUrl()
+		if self.wallbw:
+			icons_hashes = grabpage(icon_url+"icons_bw/hashes")
+		else:
+			icons_hashes = grabpage(icon_url+"icons/hashes")
+		if icons_hashes:
+			icons_data = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes)
+		else:
+			icons_data = None
+
+		icons_data_zoom = None
+		if self.wallzoom:
+			icons_hashes_zoom = grabpage(icon_url+"icons_zoom/hashes")
+			if icons_hashes_zoom:
+				icons_data_zoom = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes_zoom)
+
 		for x in range(1,len(self.plugin_liste)+1):
 			postername = self.plugin_liste[int(x)-1][1]
+			remote_hash = ""
 			if self.wallbw:
-				poster_path = "%s/%s.png" % ("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons_bw", postername)
+				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons_bw", postername)
+				url = icon_url+"icons_bw/" + postername + ".png"
+				if not fileExists(poster_path):
+					if icons_data:
+						for a,b in icons_data:
+							if b == postername+'.png':
+								downloadPage(url, poster_path)
+					poster_path = "%s/images/comingsoon.png" % self.plugin_path
+				else:
+					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
+					if icons_data:
+						for a,b in icons_data:
+							if b == postername+'.png': remote_hash = a
+						if remote_hash != local_hash:
+							downloadPage(url, poster_path)
+							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 			else:
-				poster_path = "%s/%s.png" % ("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons", postername)
-
-			if not fileExists(poster_path):
-				poster_path = "%s/icons/no_icon.png" % self.plugin_path
+				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", postername)
+				url = icon_url+"icons/" + postername + ".png"
+				if not fileExists(poster_path):
+					if icons_data:
+						for a,b in icons_data:
+							if b == postername+'.png':
+								downloadPage(url, poster_path)
+					poster_path = "%s/images/comingsoon.png" % self.plugin_path
+				else:
+					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
+					if icons_data:
+						for a,b in icons_data:
+							if b == postername+'.png': remote_hash = a
+						if remote_hash != local_hash:
+							downloadPage(url, poster_path)
+							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 
 			scale = AVSwitch().getFramebufferScale()
 			if mp_globals.videomode == 2:
@@ -2000,10 +2119,22 @@ class MPWall(Screen, HelpableScreen):
 					self["zeile"+str(x)].show()
 
 			if self.wallzoom:
-				poster_path = "%s/%s.png" % ("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons_zoom", postername)
+				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons_zoom", postername)
+				url = icon_url+"icons_zoom/" + postername + ".png"
 				if not fileExists(poster_path):
-					poster_path = "%s/icons_zoom/no_icon.png" % self.plugin_path
-
+					if icons_data_zoom:
+						for a,b in icons_data_zoom:
+							if b == postername+'.png':
+								downloadPage(url, poster_path)
+					poster_path = "%s/images/comingsoon_zoom.png" % self.plugin_path
+				else:
+					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
+					if icons_data_zoom:
+						for a,b in icons_data_zoom:
+							if b == postername+'.png': remote_hash = a
+						if remote_hash != local_hash:
+							downloadPage(url, poster_path)
+							poster_path = "%s/images/comingsoon_zoom.png" % self.plugin_path
 				scale = AVSwitch().getFramebufferScale()
 				if mp_globals.videomode == 2:
 					self.picload.setPara((308, 190, scale[0], scale[1], True, 1, "#FF000000"))
@@ -2021,11 +2152,10 @@ class MPWall(Screen, HelpableScreen):
 					self["zeile_bw"+str(x)].instance.setPixmap(pic)
 					if x <= 40:
 						self["zeile_bw"+str(x)].hide()
-
 			elif self.wallbw:
-				poster_path = "%s/%s.png" % ("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons", postername)
+				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", postername)
 				if not fileExists(poster_path):
-					poster_path = "%s/icons/no_icon.png" % self.plugin_path
+					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 
 				scale = AVSwitch().getFramebufferScale()
 				if mp_globals.videomode == 2:
@@ -2206,7 +2336,7 @@ class MPWall(Screen, HelpableScreen):
 			self["zeile_bw"+str(test)].show()
 			self["zeile"+str(test)].hide()
 
-	def	keyLeft(self):
+	def keyLeft(self):
 		if self.check_empty_list():
 			return
 		if self.selektor_index > 1:
@@ -2217,7 +2347,7 @@ class MPWall(Screen, HelpableScreen):
 		else:
 			self.page_back()
 
-	def	keyRight(self):
+	def keyRight(self):
 		if self.check_empty_list():
 			return
 		if self.selektor_index < 40 and self.selektor_index != len(self.mainlist[int(self.select_list)]):
@@ -2836,17 +2966,53 @@ class MPWall2(Screen, HelpableScreen):
 
 		itemList = []
 		posterlist = []
+		icon_url = getIconUrl()
+		if self.wallbw:
+			icons_hashes = grabpage(icon_url+"icons_bw/hashes")
+		else:
+			icons_hashes = grabpage(icon_url+"icons/hashes")
+		if icons_hashes:
+			icons_data = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes)
+		else:
+			icons_data = None
 		for p_name, p_picname, p_genre, p_hits, p_sort in self.plugin_liste:
+			remote_hash = ""
 			row = []
 			itemList.append(((row),))
 			if self.wallbw:
-				poster_path = "%s/%s.png" % ("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons_bw", p_picname)
+				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons_bw", p_picname)
+				url = icon_url+"icons_bw/" + p_picname + ".png"
 				if not fileExists(poster_path):
-					poster_path = "%s/icons/no_icon.png" % self.plugin_path
+					if icons_data:
+						for x,y in icons_data:
+							if y == p_picname+'.png':
+								downloadPage(url, poster_path)
+					poster_path = "%s/images/comingsoon.png" % self.plugin_path
+				else:
+					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
+					if icons_data:
+						for x,y in icons_data:
+							if y == p_picname+'.png': remote_hash = x
+						if remote_hash != local_hash:
+							downloadPage(url, poster_path)
+							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 			else:
-				poster_path = "%s/%s.png" % ("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons", p_picname)
+				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", p_picname)
+				url = icon_url+"icons/" + p_picname + ".png"
 				if not fileExists(poster_path):
-					poster_path = "%s/icons/no_icon.png" % self.plugin_path
+					if icons_data:
+						for x,y in icons_data:
+							if y == p_picname+'.png':
+								downloadPage(url, poster_path)
+					poster_path = "%s/images/comingsoon.png" % self.plugin_path
+				else:
+					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
+					if icons_data:
+						for x,y in icons_data:
+							if y == p_picname+'.png': remote_hash = x
+						if remote_hash != local_hash:
+							downloadPage(url, poster_path)
+							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 			row.append((p_name, p_picname, poster_path, p_genre, p_hits, p_sort))
 			posterlist.append(poster_path)
 		self["covercollection"].setList(itemList,posterlist)

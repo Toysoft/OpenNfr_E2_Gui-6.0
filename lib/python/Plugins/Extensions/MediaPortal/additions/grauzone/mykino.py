@@ -187,7 +187,7 @@ class myKinoParsing(MPScreen, ThumbsHelper):
 		if self.genre == "Serien":
 			self.session.open(mykinoSaffeln, stream_name, movie_url, cover)
 		else:
-			self.addGlobalWatchtlist([stream_name, cover, "mykinoStreams", stream_name, movie_url, cover])
+			#self.addGlobalWatchtlist([stream_name, cover, "mykinoStreams", stream_name, movie_url, cover])
 			self.session.open(mykinoStreams, stream_name, movie_url, cover)
 
 class myKinoLastSerienParsing(MPScreen, ThumbsHelper):
@@ -368,7 +368,7 @@ class mykinoEpisoden(MPScreen):
 		episode = self['liste'].getCurrent()[0][0]
 		episodenID = self['liste'].getCurrent()[0][1]
 		apiUrl = "http://mykino.to/engine/ajax/a.sseries.php?news_id=%s&series=%s" % (self.newsid, episodenID)
-		self.addGlobalWatchtlist([self.stream_name+" "+episode, self.cover, "mykinoStreams", self.stream_name+" "+episode, apiUrl, self.cover])
+		#self.addGlobalWatchtlist([self.stream_name+" "+episode, self.cover, "mykinoStreams", self.stream_name+" "+episode, apiUrl, self.cover])
 		self.session.open(mykinoStreams, self.stream_name+" "+episode, apiUrl, self.cover)
 
 class mykinoStreams(MPScreen):

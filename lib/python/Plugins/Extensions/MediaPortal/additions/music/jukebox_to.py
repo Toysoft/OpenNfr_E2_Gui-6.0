@@ -162,9 +162,9 @@ class JBTO_ListScreen(MPScreen, ThumbsHelper):
 		self.genreImg = data[3] if data else None
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/dokuListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/dokuListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()

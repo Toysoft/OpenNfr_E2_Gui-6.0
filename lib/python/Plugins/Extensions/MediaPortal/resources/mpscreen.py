@@ -91,8 +91,6 @@ class MPScreen(Screen):
 		self['Page'] = Label("")
 		self['page'] = Label("")
 		self['handlung'] = ScrollLabel("")
-		self['VideoPrio'] = Label("")
-		self['vPrio'] = Label("")
 
 		self.langoffset = 0
 

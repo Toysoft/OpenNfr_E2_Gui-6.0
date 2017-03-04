@@ -20,9 +20,11 @@ import os
 import argparse
 import urllib
 
-from twisted.web import server, resource
+from twisted.web import server, resource, version
 from twisted.web.server import NOT_DONE_YET
 from twisted.internet import reactor, defer
+from socket import has_ipv6
+from Tools.Directories import fileExists
 
 from fetcher import HLSFetcher
 from m3u8 import M3U8
@@ -181,6 +183,9 @@ server_port = None
 def start_hls_proxy():
 	global server_port
 	if server_port == None:
-		server_port = reactor.listenTCP(config.mediaportal.hls_proxy_port.value, site)
+		if has_ipv6 and fileExists('/proc/net/if_inet6') and version.major >= 12:
+			server_port = reactor.listenTCP(config.mediaportal.hls_proxy_port.value, site, interface='::')
+		else:
+			server_port = reactor.listenTCP(config.mediaportal.hls_proxy_port.value, site)
 		mp_globals.hls_proxy_port = server_port.getHost().port
 		print 'Started HLS-Proxy on port '+str(mp_globals.hls_proxy_port)

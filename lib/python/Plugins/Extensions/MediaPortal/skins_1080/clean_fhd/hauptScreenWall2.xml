@@ -31,5 +31,5 @@
   <eLabel name="button pvr bg" position="1659,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
   <eLabel name="button help bg" position="1739,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
   <eLabel name="button exit bg" position="1819,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
-  <widget name="covercollection" position="0,210" size="1920,781" transparent="1" zPosition="1" backgroundColor="#20000000" coverSize="225,120" selectedCoverScale="1.25" unselectedCoverDimm="0.85" coverBeginPosition="156,78" coverDistance="5,5" style="0" noCoverAvailablePic="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/icons/no_icon.png" />
+  <widget name="covercollection" position="0,210" size="1920,781" transparent="1" zPosition="1" backgroundColor="#20000000" coverSize="225,120" selectedCoverScale="1.25" unselectedCoverDimm="0.85" coverBeginPosition="156,78" coverDistance="5,5" style="0" noCoverAvailablePic="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/images/comingsoon.png" />
 </screen>

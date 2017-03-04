@@ -204,6 +204,7 @@ class m4kGenreScreen(MPScreen):
 		g_url = "%s/movies-genre-" % self.domain
 		self['title'].setText(m4k)
 		self['F4'].setText(self.domain)
+		self.layoutFinished()
 
 	def keyLocale(self):
 		if self.showM4kPorn != "porn":

@@ -682,7 +682,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 				url = self['liste'].getCurrent()[0][1]
 				getPage(url).addCallback(self.getTivi).addErrback(self.dataError)
 			else:
-				getPage(streamLink, headers={'Api-Auth': 'Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32'}).addCallback(self.getTemplateJson).addErrback(self.dataError)
+				getPage(streamLink, headers={'Api-Auth':'Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32', 'Accept':'application/vnd.de.zdf.v1.0+json'}).addCallback(self.getTemplateJson).addErrback(self.dataError)
 
 	def getTemplateJson(self,data):
 		a = json.loads(data)
@@ -690,7 +690,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		if b:
 			b = b.replace('{playerId}','ngplayer_2_3')
 			b = "https://api.zdf.de"+b
-			getPage(str(b)).addCallback(self.getContentJson).addErrback(self.dataError)
+			getPage(str(b), headers={'Api-Auth':'Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32', 'Accept':'application/vnd.de.zdf.v1.0+json'}).addCallback(self.getContentJson).addErrback(self.dataError)
 		else:
 			return
 

@@ -160,6 +160,8 @@ class eroprofileFilmScreen(MPScreen, ThumbsHelper):
 		Movies = re.findall('class="video">.*?img\ssrc="(.*?)".*?class="title"><a\shref="(.*?)">(.*?)</a.*?class="duration">(.*?)</div>', data, re.S)
 		if Movies:
 			for (Image, Url, Title, Runtime) in Movies:
+				if Image.startswith('//'):
+					Image = "http:" + Image
 				self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
 			if self.page == 1:
 				self.filmliste.insert(0, ("--- Search ---", None, None, None))

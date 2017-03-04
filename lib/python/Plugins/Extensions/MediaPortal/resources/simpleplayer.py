@@ -52,6 +52,14 @@ if not VideoSetupPresent:
 		is_avSetupScreen = True
 
 try:
+	from Plugins.SystemPlugins.AdvancedAudioSettings.plugin import AudioSetup
+except:
+	AudioSetupPresent = False
+else:
+	AudioSetupPresent = True
+
+
+try:
 	from Plugins.Extensions.MediaInfo.plugin import MediaInfo
 	MediaInfoPresent = True
 except:
@@ -780,7 +788,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		Screen.__init__(self, session)
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		self.wallicon_path = mp_globals.pluginPath + "/icons/"
+		self.wallicon_path = config.mediaportal.iconcachepath.value + "icons/"
 		path = "%s/%s/simpleplayer/SimplePlayer.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayer.xml"
@@ -1020,7 +1028,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		reactor.callLater(2, self.playNextStream, config.mediaportal.sp_on_movie_eof.value)
 
 	def playStream(self, title, url, **kwargs):
-		if (self.ltype == 'youtube' or self.ltype == 'chaturbate') and ".m3u8" in url and mp_globals.isDreamOS:
+		if self.ltype == 'youtube' and ".m3u8" in url and mp_globals.isDreamOS:
 			self.youtubelive = True
 		if not url:
 			self.dataError('[SP]: no URL given!')
@@ -1509,7 +1517,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 						self.playList2 = []
 					self.openPlaylist()
 
-			elif data[0] == 6:
+			elif data[0] == 7:
 				self.mainMenu()
 
 	def addToPlaylist(self):
@@ -1556,7 +1564,12 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 	def showIcon(self):
 		self['dwnld_progressbar'].setValue(0)
 		mp_globals.yt_download_progress_widget = self.progrObj
-		pm_file = self.wallicon_path + mp_globals.activeIcon + ".png"
+		if mp_globals.activeIcon == "simplelist":
+			pm_file = mp_globals.pluginPath + "/images/simplelist.png"
+		else:
+			pm_file = self.wallicon_path + mp_globals.activeIcon + ".png"
+		if not fileExists(pm_file):
+			pm_file = mp_globals.pluginPath + "/images/comingsoon.png"
 		self._Icon.showCoverFile(pm_file, showNoCoverart=False)
 
 	def _animation(self):
@@ -1723,7 +1736,9 @@ class SimplePlayerMenu(Screen):
 			self.liste.append((_('Open local playlist'), 4))
 		if VideoSetupPresent:
 			self.liste.append((_('A/V Settings'), 5))
-		self.liste.append((_('Mainmenu'), 6))
+		if AudioSetupPresent:
+			self.liste.append((_('Advanced Audio Settings'), 6))
+		self.liste.append((_('Mainmenu'), 7))
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self.ml.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize))
 		self.ml.l.setItemHeight(mp_globals.fontsize + 2 * mp_globals.sizefactor)
@@ -1753,6 +1768,11 @@ class SimplePlayerMenu(Screen):
 				self.session.open(VideoSetup, video_hw)
 		self.close([5, ''])
 
+	def openAudioSetup(self):
+		if AudioSetupPresent:
+			self.session.open(AudioSetup)
+		self.close([6, ''])
+
 	def openMainmenu(self, id, name):
 		self.close([id, name])
 
@@ -1769,7 +1789,9 @@ class SimplePlayerMenu(Screen):
 		elif choice == 5:
 			self.openSetup()
 		elif choice == 6:
-			self.openMainmenu(6, '')
+			self.openAudioSetup()
+		elif choice == 7:
+			self.openMainmenu(7, '')
 
 	def keyCancel(self):
 		self.close([])
@@ -1784,7 +1806,8 @@ class SimplePlaylistIO:
 		_("The path is OK, the file name was not specified:\n%s"),
 		_("The directory path and file name is OK:\n%s"),
 		_("The directory path is not specified!"),
-		_("Symbolic link with the same name in the directory path:\n%s available!")]
+		_("Symbolic link with the same name in the directory path:\n%s available!"),
+		_("The directory path does not begin with '/':\n%s")]
 
 	@staticmethod
 	def checkPath(path, pl_name, createPath=False):
@@ -1792,6 +1815,8 @@ class SimplePlaylistIO:
 			return (0, SimplePlaylistIO.Msgs[7])
 		if path[-1] != '/':
 			return (0, SimplePlaylistIO.Msgs[0] % path)
+		if path[0] != '/':
+			return (0, SimplePlaylistIO.Msgs[9] % path)
 		if not os.path.isdir(path):
 			if os.path.isfile(path[:-1]):
 				return (0, SimplePlaylistIO.Msgs[1] % path)

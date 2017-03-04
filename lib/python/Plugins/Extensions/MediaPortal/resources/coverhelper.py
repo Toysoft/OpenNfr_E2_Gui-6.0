@@ -130,14 +130,17 @@ class CoverHelper:
 
 	def showCoverFile(self, picPath, showNoCoverart=True):
 		if fileExists(picPath):
-			self._cover.instance.setPixmap(gPixmapPtr())
-			scale = AVSwitch().getFramebufferScale()
-			size = self._cover.instance.size()
-			if mp_globals.fakeScale:
-				self.picload.setPara((size.width(), size.height(), scale[0], scale[1], False, 1, "#00000000"))
-			else:
-				self.picload.setPara((size.width(), size.height(), scale[0], scale[1], False, 1, "#FF000000"))
-			self.updateCover(picPath)
+			try:
+				self._cover.instance.setPixmap(gPixmapPtr())
+				scale = AVSwitch().getFramebufferScale()
+				size = self._cover.instance.size()
+				if mp_globals.fakeScale:
+					self.picload.setPara((size.width(), size.height(), scale[0], scale[1], False, 1, "#00000000"))
+				else:
+					self.picload.setPara((size.width(), size.height(), scale[0], scale[1], False, 1, "#FF000000"))
+				self.updateCover(picPath)
+			except AttributeError:
+				pass
 		else:
 			printl("Coverfile not found: %s" % picPath, self, "E")
 			if showNoCoverart and picPath != self._no_picPath:

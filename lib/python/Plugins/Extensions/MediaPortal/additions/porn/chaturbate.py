@@ -242,7 +242,10 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.play_stream).addErrback(self.dataError)
 
 	def play_stream(self, data):
-		url = re.findall('(http[s]?://.*?.stream.highwebmedia.com.*?m3u8)', data)[0]
-		title = self['liste'].getCurrent()[0][0]
-		self['name'].setText(title)
-		self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='chaturbate', forceGST=True)
+		url = re.findall('hlsSourceSlow = \'(http[s]?://edge.*?.stream.highwebmedia.com.*?m3u8)', data)
+		if url:
+			title = self['liste'].getCurrent()[0][0]
+			self['name'].setText(title)
+			self.session.open(SimplePlayer, [(title, url[0])], showPlaylist=False, ltype='chaturbate', forceGST=True)
+		else:
+			self.session.open(MessageBoxExt, _("Cam is currently offline."), MessageBoxExt.TYPE_INFO)

@@ -254,7 +254,7 @@ class hdfilmeParsing(MPScreen, ThumbsHelper):
 		title = self['liste'].getCurrent()[0][0]
 		url = self['liste'].getCurrent()[0][1]
 		cover = self['liste'].getCurrent()[0][2]
-		self.addGlobalWatchtlist([title, cover, "hdfilmeStreams", title, url, cover])
+		#self.addGlobalWatchtlist([title, cover, "hdfilmeStreams", title, url, cover])
 		self.session.open(hdfilmeStreams, title, url, cover)
 
 class hdfilmeStreams(MPScreen):
@@ -286,22 +286,22 @@ class hdfilmeStreams(MPScreen):
 		)
 	new_video_formats = (
 			{
-				'1080P' : 4, #MP4 1080p
-				'720P' : 3, #MP4 720p
-				'540P' : 2, #MP4 540p
-				'360P' : 1, #MP4 360p
+				'1080' : 4, #MP4 1080p
+				'720' : 3, #MP4 720p
+				'540' : 2, #MP4 540p
+				'360' : 1, #MP4 360p
 			},
 			{
-				'1080P' : 4, #MP4 1080p
-				'720P' : 3, #MP4 720p
-				'540P' : 1, #MP4 540p
-				'360P' : 2, #MP4 360p
+				'1080' : 4, #MP4 1080p
+				'720' : 3, #MP4 720p
+				'540' : 1, #MP4 540p
+				'360' : 2, #MP4 360p
 			},
 			{
-				'1080P' : 1, #MP4 1080p
-				'720P' : 2, #MP4 720p
-				'540P' : 3, #MP4 540p
-				'360P' : 4, #MP4 360p
+				'1080' : 1, #MP4 1080p
+				'720' : 2, #MP4 720p
+				'540' : 3, #MP4 540p
+				'360' : 4, #MP4 360p
 			}
 		)
 
@@ -467,7 +467,7 @@ class hdfilmeStreams(MPScreen):
 			links = {}
 			try:
 				for stream in d['streams']:
-					key = stream.get('label').upper()
+					key = str(stream.get('label'))
 					if key:
 						if self.new_video_formats[videoPrio].has_key(key):
 							links[self.new_video_formats[videoPrio][key]] = stream.get('file')

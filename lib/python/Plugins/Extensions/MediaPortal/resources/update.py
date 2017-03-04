@@ -145,15 +145,14 @@ class MPUpdateScreen(Screen):
 			configfile.save()
 			self.session.openWithCallback(self.restartGUI, MessageBoxExt, _("MediaPortal successfully updated!\nDo you want to restart the Enigma2 GUI now?"), MessageBoxExt.TYPE_YESNO)
 		elif retval == 2:
-			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("MediaPortal update failed! Please check free space on your root filesystem, at least 16MB are required for installation.\nCheck the update log carefully!"), MessageBoxExt.TYPE_ERROR)
+			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("MediaPortal update failed! Please check free space on your root filesystem, at least 12MB are required for installation.\nCheck the update log carefully!"), MessageBoxExt.TYPE_ERROR)
 		else:
 			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("MediaPortal update failed! Check the update log carefully!"), MessageBoxExt.TYPE_ERROR)
 
 	def restartGUI(self, answer):
 		if answer is True:
 			self.session.open(TryQuitMainloop, 3)
-		else:
-			self.close()
+		self.close()
 
 	def returnGUI(self, answer):
 		self.close()

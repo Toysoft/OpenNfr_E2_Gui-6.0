@@ -12,7 +12,7 @@ http://bcoveliveios-i.akamaihd.net/hls/live/207141/268012959001/WFTV_EVENTLIVE1/
 #EXTINF:-1,Global TV Halifax
 https://glblvhalifax-lh.akamaihd.net/i/glblvHalifax_1@119843/master.m3u8
 #EXTINF:-1,CPAC
-http://bcliveuniv-lh.akamaihd.net/i/cpac1eng2014_01@119330/master.m3u8
+http://bcoveliveios-i.akamaihd.net/hls/live/248519/1242843915001_1/master.m3u8
 #EXTINF:-1,C-SPAN
 http://cspan1-lh.akamaihd.net/i/cspan1_1@304727/master.m3u8
 #EXTINF:-1,C-SPAN 2
@@ -96,7 +96,7 @@ http://presstv-ch03.level3.hls.live.cdn.overon.es/livehigh/playlist.m3u8
 #EXTINF:-1,TRT HABER HD
 http://trtcanlitv-lh.akamaihd.net/i/TRTHABERHD_1@181942/master.m3u8
 #EXTINF:-1,WeatherNation
-http://cdnapi.kaltura.com/p/931702/sp/93170200/playManifest/entryId/1_oorxcge2/format/applehttp/protocol/http/uiConfId/28428751/a.m3u8
+http://klive-a.akamaihd.net/dc-1/m/ny-live-publish3/live/legacy/p/931702/e/1_oorxcge2/sd/10000/t/UIIriVy8O6NbZg_SEhV4oA/master.m3u8
 #EXTINF:-1,Canal 10 News
 http://nana10live-lh.akamaihd.net/i/ch10news_0@93049/master.m3u8
 #EXTINF:-1,Arirang HD

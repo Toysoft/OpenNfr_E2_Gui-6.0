@@ -88,7 +88,7 @@ class YourPornSexyGenreScreen(MPScreen):
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('<span>Popular HashTags</span>(.*?)bottom', data, re.S)
+		parse = re.search('<span>Popular HashTags</span>(.*?)<div class=\'all_albums_div\'>', data, re.S)
 		Cats = re.findall('<a\shref=[\'|"](/blog/.*?)[\'|"].*?<span>#(.*?)</span>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
@@ -288,7 +288,7 @@ class YourPornSexyFilmScreen(MPScreen, ThumbsHelper):
 		Movies = re.findall("vid_container.*?<img.*?\ssrc='(.*?full.jpg)'.*?a\shref='(.*?\.html.*?)'\sclass='tdn'.*?title='(.*?)'(.*?\sviews)", prep, re.S)
 		if Movies:
 			for (Image, Url, Title, RuntimeAddedViews) in Movies:
-				if ("mini_post_player_img transition" or "maxi_post_player_img transition") in RuntimeAddedViews:
+				if ("mini_post_player_img" in RuntimeAddedViews) or ("maxi_post_player_img" in RuntimeAddedViews):
 					av = re.findall("class='duration_small'>(.*?)</span.*?>([\d|Hour].*?ago|Yesterday|Last month|Last year)\s<strong>.{0,3}</strong>\s(\d+)\sviews", RuntimeAddedViews, re.S)
 					if av:
 						Runtime = av[0][0]
@@ -299,6 +299,8 @@ class YourPornSexyFilmScreen(MPScreen, ThumbsHelper):
 						Added = "-"
 						Views = "-"
 					Url = "http://yourporn.sexy" + Url
+					if Image.startswith('//'):
+						Image = "http:" + Image
 					self.filmliste.append((decodeHtml(Title), Url, Image, Views, Runtime, Added))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None, '', '', ''))
@@ -332,4 +334,7 @@ class YourPornSexyFilmScreen(MPScreen, ThumbsHelper):
 		if videoUrl:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, videoUrl[-1])], showPlaylist=False, ltype='yourpornsexy')
+			url = videoUrl[-1]
+			if url.startswith('//'):
+				url = "http:" + url
+			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='yourpornsexy')

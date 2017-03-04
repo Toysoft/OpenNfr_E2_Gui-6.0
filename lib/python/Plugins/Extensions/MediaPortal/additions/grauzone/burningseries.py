@@ -39,8 +39,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-SERIES_BASE_URL = "https://bs.to"
-COVER_BASE_URL = "http://s.bs.to"
+BASE_URL = "https://bs.to"
 
 class bsMain(MPScreen):
 
@@ -143,7 +142,7 @@ class bsSerien(MPScreen, SearchHelper):
 		self.showSearchkey(num)
 
 	def loadPage(self):
-		url = SERIES_BASE_URL + "/api/series/"
+		url = BASE_URL + "/api/series/"
 		bstoken = bstkn(url)
 		getPage(url, headers={'User-Agent':'bs.android', 'BS-Token':bstoken}).addCallback(self.parseData).addErrback(self.dataError)
 
@@ -152,7 +151,7 @@ class bsSerien(MPScreen, SearchHelper):
 		if serien:
 			for (Title, ID) in serien:
 				serie = ID
-				cover = COVER_BASE_URL + "/img/cover/" + ID + ".jpg"
+				cover = BASE_URL + "/public/img/cover/" + ID + ".jpg"
 				self.streamList.append((decodeHtml(Title.replace('\/','/')),serie, cover, ID))
 			self.ml.setList(map(self._defaultlistleft, self.streamList))
 			self.keyLocked = False
@@ -245,7 +244,7 @@ class bsWatchlist(MPScreen):
 			pass
 
 		if change == 1:
-			url = SERIES_BASE_URL + "/api/series/"
+			url = BASE_URL + "/api/series/"
 			bstoken = bstkn(url)
 			getPage(url, headers={'User-Agent':'bs.android', 'BS-Token':bstoken}).addCallback(self.convertPlaylist, rawData).addErrback(self.dataError)
 		else:
@@ -289,7 +288,7 @@ class bsWatchlist(MPScreen):
 			return
 		title = self['liste'].getCurrent()[0][0]
 		id = self['liste'].getCurrent()[0][1]
-		self.coverUrl = COVER_BASE_URL + "/img/cover/%s.jpg" % id
+		self.coverUrl = BASE_URL + "/public/img/cover/%s.jpg" % id
 		CoverHelper(self['coverArt']).getCover(self.coverUrl)
 		self['name'].setText(title)
 
@@ -325,7 +324,7 @@ class bsWatchlist(MPScreen):
 class bsStaffeln(MPScreen):
 
 	def __init__(self, session, Title, Url):
-		self.Url = SERIES_BASE_URL + "/api/series/" + Url
+		self.Url = BASE_URL + "/api/series/" + Url
 		self.Title = Title
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
@@ -370,7 +369,7 @@ class bsStaffeln(MPScreen):
 		else:
 			self['handlung'].setText(_("No information found."))
 		ID = re.search('"id":"(.*?)"', data, re.S)
-		cover = COVER_BASE_URL + "/img/cover/" + ID.group(1) + ".jpg"
+		cover = BASE_URL + "/public/img/cover/" + ID.group(1) + ".jpg"
 		movies = re.search('movies":"(.*?)"', data, re.S)
 		if movies:
 			movies = int(movies.group(1))
@@ -530,7 +529,7 @@ class bsEpisoden(MPScreen):
 		finalcall = url + epiID
 		Cover = self.Cover
 		Staffel = self.Staffel
-		self.addGlobalWatchtlist([self.Title+" "+episode, Cover, "bsStreams", finalcall, Cover, self.Title, episode, Staffel])
+		#self.addGlobalWatchtlist([self.Title+" "+episode, Cover, "bsStreams", finalcall, Cover, self.Title, episode, Staffel])
 		self.session.openWithCallback(self.reloadList, bsStreams, finalcall, Cover, self.Title, episode, Staffel)
 
 	def reloadList(self):
@@ -589,7 +588,7 @@ class bsStreams(MPScreen):
 		streams =  re.findall('"hoster":"(.*?)","id":"(.*?)"', data, re.S)
 		if streams:
 			for (Hoster,ID) in streams:
-				Url = SERIES_BASE_URL + "/api/watch/"
+				Url = BASE_URL + "/api/watch/"
 				if isSupportedHoster(Hoster, True):
 					self.streamList.append((Hoster, ID, Url))
 		if len(self.streamList) == 0:

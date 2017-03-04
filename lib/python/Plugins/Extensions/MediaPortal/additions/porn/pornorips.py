@@ -79,12 +79,7 @@ class pornoRipsGenreScreen(MPScreen):
 		self.genreliste.append(("HD", "http://pornorips.com/category/hd-porn/"))
 		self.genreliste.append(("Clips", None))
 		self.genreliste.append(("Movies", None))
-		self.genreliste.append(("Video Collections", "http://pornorips.com/category/video-collections/"))
-		self.genreliste.append(("Girls Collections", "http://pornorips.com/category/clips/russian-porn/girls-collections/"))
-		#self.genreliste.append(("Pornstars", "http://pornorips.com/category/siterips/favorites-pornstars/"))
 		self.genreliste.append(("Classic/Vintage", "http://pornorips.com/category/classic-porn/"))
-		self.genreliste.append(("Fetish/BDSM", "http://pornorips.com/category/fetish-movies/"))
-		self.genreliste.append(("Webcams", "http://pornorips.com/category/recorded-webcams/"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
 
@@ -148,15 +143,14 @@ class pornoRipsSubGenreScreen(MPScreen):
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		preparse = re.findall('class="list-cat">.*class="list-cat">', data, re.S|re.I)
+		preparse = re.findall('id="catlist">.*class="catlist">', data, re.S|re.I)
 		parse = re.findall('>'+self.Name+'.*'+self.Name+'\/.*?</ul>', preparse[0], re.S|re.I)
 		raw = re.findall('<li\sclass="cat-item.*?a\shref="(.*?)".*?>(.*?)</a>', parse[0], re.S)
 		if raw:
 			self.genreliste = []
 			for (Url, Title) in raw:
-				Title = Title.replace('-Real','Real').replace(' Porn','').replace(' Movies','')
-				if Title != "Girls Collections":
-					self.genreliste.append((decodeHtml(Title), Url))
+				Title = Title.replace(' Porn','').replace(' Movies','')
+				self.genreliste.append((decodeHtml(Title), Url))
 			self.genreliste.sort()
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
@@ -227,27 +221,37 @@ class pornoRipsFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		if re.match(".*?Collections", self.Name):
-			self.getLastPage(data, 'class=\'wp-pagenavi\'>(.*?)</div>')
-		elif not re.match(".*?Search", self.Name):
+		self['name'].setText(_("Please wait..."))
+		if not re.match(".*?Search", self.Name):
 			self.getLastPage(data, 'class=\'wp-pagenavi\'>(.*?)</div>', '.*/page/(\d+)/')
 		else:
 			self.getLastPage(data, '', 'class=\'pages\'>Page.*?of\s(.*?)</span>')
-		MoviesL = re.findall('class="entry"(.*?)/span>', data, re.S)
+		MoviesL = re.findall('class="freepostbox"(.*?)/span>', data, re.S)
+		if not MoviesL:
+			MoviesL = re.findall('class="post"(.*?</div.*?</div.*?</div)', data, re.S)
 		if MoviesL:
 			for item in MoviesL:
 				Movies = re.findall('<a\shref="(.*?)".*?title=\s{0,1}"Download\s(.*?)">.*?<img\s+src="(.*?)".*?">.*?">(.*?)<', item, re.S)
-				Tag = re.search('class="post-cat">(.*?)</div>', item, re.S)
 				if Movies:
+					Tag = re.search('class="displaycat">(.*?)</div>', item, re.S)
 					for (Url, Title, Image, Date) in Movies:
 						Category = ''
 						if Tag:
-							Category = Tag.group(1).replace('-Real','Real').strip().strip(",")
-						Handlung = "Date added: %s\nCategory: %s" % (Date, Category)
+							Category = "\nCategory: " + Tag.group(1).strip().strip(",")
+						Handlung = "Added: %s%s" % (Date, Category)
 						if re.match('.*?siterip',Title, re.I) or re.match('.*?site rip',Title, re.I) or re.match('.*?megapack',Title, re.I):
 							pass
 						else:
 							self.filmliste.append((decodeHtml(Title), Url, Image, Handlung))
+				else:
+					Movies = re.findall('<a\shref="(.*?)".*?title=".*?">(.*?)</a>.*?displaytimesearch">.*?">(.*?)</div>.*?<img\s+src="(.*?)"', item, re.S)
+					if Movies:
+						for (Url, Title, Date, Image) in Movies:
+							Handlung = "Added: %s" % Date
+							if re.match('.*?siterip',Title, re.I) or re.match('.*?site rip',Title, re.I) or re.match('.*?megapack',Title, re.I):
+								pass
+							else:
+								self.filmliste.append((decodeHtml(Title), Url, Image, Handlung))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No movies found!'), '', None, ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -318,8 +322,8 @@ class pornoRipsStreamListeScreen(MPScreen):
 
 	def loadPageData(self, data):
 		self.getLastPage(data, 'class="link-pages">(.*?)</div>', '.*>\s{0,1}(\d+)<')
-		parse = re.search('class="post-content">(.*?)class="post-calendar2', data, re.S)
-		streams = re.findall('onclick="window.open.*?href="(http.{0,1}://(?!www.pixhost.org)(?!k2s.cc)(.*?)\/.*?)"', parse.group(1), re.S)
+		parse = re.search('class="videosection">(.*?)class="post-calendar2', data, re.S)
+		streams = re.findall('onclick="window.open.*?href="(http[s]?://(?!www.pixhost.org)(?!k2s.cc)(.*?)\/.*?)"', parse.group(1), re.S)
 		if streams:
 			for (stream, hostername) in streams:
 				if isSupportedHoster(stream, True):

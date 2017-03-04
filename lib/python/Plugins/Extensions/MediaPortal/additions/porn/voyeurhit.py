@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###############################################################################################
 #
 #    MediaPortal for Dreambox OS
@@ -38,29 +38,37 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
-from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 
-class LiveLeakScreen(MPScreen):
+class voyeurhitGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
+
 		MPScreen.__init__(self, session)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"ok"    : self.keyOK,
+			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel": self.keyCancel
+			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("LiveLeak.com")
+		self['title'] = Label("VoyeurHit.com")
 		self['ContentTitle'] = Label("Genre:")
+
+		self.keyLocked = True
+		self.suchString = ''
+
 		self.genreliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
@@ -68,28 +76,40 @@ class LiveLeakScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
-		self.genreliste.append(("Featured Items", "https://www.liveleak.com/rss?featured=1&page="))
-		self.genreliste.append(("Recent Items (All)", "https://www.liveleak.com/rss?selection=all&page="))
-		self.genreliste.append(("Recent Items (Popular)", "https://www.liveleak.com/rss?selection=popular&page="))
-		self.genreliste.append(("Top (Today)", "https://www.liveleak.com/rss?rank_by=day&page="))
-		self.genreliste.append(("Top (Week)", "https://www.liveleak.com/rss?rank_by=week&page="))
-		self.genreliste.append(("Top (Month)", "https://www.liveleak.com/rss?rank_by=month&page="))
-		self.genreliste.append(("Top (All)", "https://www.liveleak.com/rss?rank_by=all_time&page="))
-		self.genreliste.append(("Must See", "https://www.liveleak.com/rss?channel_token=9ee_1303244161&page="))
-		self.genreliste.append(("Yoursay", "https://www.liveleak.com/rss?channel_token=1b3_1302956579&page="))
-		self.genreliste.append(("News", "https://www.liveleak.com/rss?channel_token=04c_1302956196&page="))
-		self.genreliste.append(("Entertainment", "https://www.liveleak.com/rss?channel_token=51a_1302956523&page="))
+		self.keyLocked = True
+		url = 'http://voyeurhit.com/categories/'
+		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+
+	def genreData(self, data):
+		kats = re.findall('<a class="tooltip".*?href="(.*?)".*?id="(.*?)">.*?<strong>(.*?)</strong>.*?<span>.*?<img src="(.*?)".*?height=".*?".*?width=".*?">',data, re.S)
+		if kats:
+			for (url, id, title, img) in kats:
+				Title = title.replace(' ','').replace('\n','')
+				self.genreliste.append((Title, url, img))
+		self.genreliste.sort()
+		self.genreliste.insert(0, ("Most Popular", "http://www.voyeurhit.com/most-popular/", None))
+		self.genreliste.insert(0, ("Top Rated", "http://voyeurhit.com/top-rated/", None))
+		self.genreliste.insert(0, ("Most Recent", "http://voyeurhit.com/latest-updates/", None))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		Image = self['liste'].getCurrent()[0][2]
+		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
+		if self.keyLocked:
+			return
 		Name = self['liste'].getCurrent()[0][0]
-		streamGenreLink = self['liste'].getCurrent()[0][1]
-		self.session.open(LiveLeakClips, streamGenreLink, Name)
+		Link = self['liste'].getCurrent()[0][1]
+		self.session.open(voyeurhitFilmScreen, Link, Name)
 
-class LiveLeakClips(MPScreen, ThumbsHelper):
+class voyeurhitFilmScreen(MPScreen, ThumbsHelper):
 
-	def __init__(self, session, streamGenreLink, Name):
-		self.streamGenreLink = streamGenreLink
+	def __init__(self, session, Link, Name):
+		self.Link = Link
 		self.Name = Name
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
@@ -99,30 +119,34 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
+
 		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"ok"    : self.keyOK,
+			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel": self.keyCancel,
+			"cancel" : self.keyCancel,
 			"5" : self.keyShowThumb,
-			"up"    : self.keyUp,
-			"down"  : self.keyDown,
-			"left"  : self.keyLeft,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
 			"right" : self.keyRight,
+			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown
+			"prevBouquet" : self.keyPageDown,
+			"green" : self.keyPageNumber
 		}, -1)
 
+		self['title'] = Label("VoyeurHit.com")
+		self['ContentTitle'] = Label("Genre: %s" % self.Name)
+		self['F2'] = Label(_("Page"))
+
+		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
-		self.lastpage = 999
-		self['title'] = Label("LiveLeak.com")
-		self['ContentTitle'] = Label("Auswahl: %s" %self.Name)
+		self.lastpage = 1
 
- 		self['Page'] = Label(_("Page:"))
-		self['page'] = Label("1")
+		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
@@ -130,43 +154,44 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.keyLocked = True
-		url = "%s%s&safe_mode=off" % (self.streamGenreLink, str(self.page))
-		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
+		self['name'].setText(_('Please wait...'))
+		self.filmliste = []
+		cat = self.Link
+		url = "%s%s/" % (self.Link, str(self.page))
+		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
-	def loadPageData(self, data):
-		rssfeed = re.findall('<item>.*?<title>(.*?)</title>.*?<link>(http[s]?://www.liveleak.com/view.*?)</link>.*?<description>(.*?)</description>.*?<media:thumbnail\surl="(.*?)"', data, re.S)
-		if rssfeed:
-			self.feedliste = []
-			for (title,url,desc,image) in rssfeed:
-				if not re.match('LiveLeak.com Rss Feed', title, re.S|re.I):
-					self.feedliste.append((decodeHtml(title.replace('&amp;','&')),url,image,decodeHtml(desc.strip())))
-			self.ml.setList(map(self._defaultlistleft, self.feedliste))
-			self.ml.moveToIndex(0)
-			self.keyLocked = False
-			self.th_ThumbsQuery(self.feedliste, 0, 1, 2, None, None, self.page, 999, mode=1)
-			self.showInfos()
+	def loadData(self, data):
+		self.getLastPage(data, 'lass="pagination">(.*?)</ul>')
+		parse = re.search('<div class="block-thumb">(.*?)<div class="pagination">', data, re.S)
+		videos = re.findall('<a href="(.*?)" class="thumb">.*?<span class="image"><img src="(.*?)" alt="(.*?)" onmouseover=".*?" onmouseout=".*?">.*?<span class="dur_ovimg">(.*?)</span>', parse.group(0), re.S)
+		for (url,img,desc,dur) in videos:
+			self.filmliste.append((decodeHtml(desc), url, img))
+		if len(self.filmliste) == 0:
+			self.filmliste.append((_('No movies found!'), None, None))
+		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
+		self.showInfos()
 
 	def showInfos(self):
 		Title = self['liste'].getCurrent()[0][0]
 		Image = self['liste'].getCurrent()[0][2]
-		desc = self['liste'].getCurrent()[0][3]
 		self['name'].setText(Title)
-		self['handlung'].setText(desc)
-		self['page'].setText(str(self.page))
 		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		url = self['liste'].getCurrent()[0][1]
-		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
+		Link = self['liste'].getCurrent()[0][1]
+		if Link == None:
+			return
+		self.keyLocked = True
+		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
 
-	def parseData(self, data):
-		title = self['liste'].getCurrent()[0][0]
-		Stream = re.findall('source\ssrc="(.*?)"', data, re.S)
-		if Stream:
-			self.session.open(SimplePlayer, [(title, Stream[0])], showPlaylist=False, ltype='liveleak')
-		else:
-			videoPage = re.findall('//www.youtube.com/(v|embed)/(.*?)\?.*?"', data, re.S)
-			if videoPage:
-				self.session.open(YoutubePlayer,[(title, videoPage[0][1], None)],playAll= False,showPlaylist=False,showCover=False)
+	def getVideoPage(self, data):
+		videoPage = re.findall("video_url:\s'(.*?)'", data, re.S)
+		if videoPage:
+			self.keyLocked = False
+			Title = self['liste'].getCurrent()[0][0]
+			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='voyeurhit')

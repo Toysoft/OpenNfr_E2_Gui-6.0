@@ -23,7 +23,7 @@ class tubewolfGenreScreen(MPScreen):
 			"cancel": self.keyCancel
 		}, -1)
 
-		self['title'] = Label("Tubewolf.com")
+		self['title'] = Label("TubeWolf.com")
 		self['ContentTitle'] = Label("Genre:")
 
 		self.keyLocked = True
@@ -104,7 +104,7 @@ class tubewolfListScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("Tubewolf.com")
+		self['title'] = Label("TubeWolf.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
 		self['F2'] = Label(_("Page"))

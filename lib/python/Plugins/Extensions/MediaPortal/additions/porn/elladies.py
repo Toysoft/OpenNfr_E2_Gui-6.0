@@ -144,9 +144,10 @@ class elladiesFilmScreen(MPScreen, ThumbsHelper):
 		Movies = re.findall('<a\shref="http://just.eroprofile.com/play/(.*?)".*?<img\ssrc="(.*?)".*?<div>(.*?)</div>', data, re.S)
 		if Movies:
 			for (ID, Image, Cat) in Movies:
-				Title = decodeHtml(Cat) + ' - ' + ID
-				Image = Image.replace('&amp;','&')
-				self.filmliste.append((Title, ID, Image))
+				if not re.match('(Bizarre|Gay|Men|Piss|Scat)', Cat):
+					Title = decodeHtml(Cat) + ' - ' + ID
+					Image = Image.replace('&amp;','&')
+					self.filmliste.append((Title, ID, Image))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

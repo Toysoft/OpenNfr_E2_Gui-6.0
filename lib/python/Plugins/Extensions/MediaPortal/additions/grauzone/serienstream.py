@@ -57,7 +57,7 @@ else:
 import urlparse
 import thread
 
-BASE_URL = "http://serienstream.to"
+BASE_URL = "https://serienstream.to"
 ss_cookies = CookieJar()
 ss_ck = {}
 ss_agent = ''
@@ -244,7 +244,7 @@ class ssSerien(MPScreen, SearchHelper):
 	def setCoverUrl(self, data):
 		cover = re.findall('<div class=".*?picture">.*?<img src="(http[s]?://serienstream.to/public/img/cover/.*?)"', data, re.S)
 		if cover:
-			self.cover = cover[0].replace('https://','http://')
+			self.cover = cover[0]
 			CoverHelper(self['coverArt']).getCover(self.cover, agent=ss_agent, cookieJar=ss_cookies, req=True)
 
 	def keyOK(self):
@@ -316,7 +316,8 @@ class ssNeueEpisoden(MPScreen):
 			self.parseData(data)
 
 	def parseData(self, data):
-		neue = re.findall('<div class="col-md-11">.*?<a href="(.*?)">.*?<span class="listTag bigListTag blue2">(.*?)</span>.*?<span class="listTag bigListTag blue1">St.(.*?)</span>.*?<span class="listTag bigListTag grey">Ep.(.*?)</span>', data, re.S)
+		parse = re.search('neusten Episoden</h2>(.*?)class="cf">', data, re.S)
+		neue = re.findall('<div class="col-md-12">.*?<a href="(.*?)">.*?<span class="listTag bigListTag blue2">(.*?)</span>.*?<span class="listTag bigListTag blue1">St.(.*?)</span>.*?<span class="listTag bigListTag grey">Ep.(.*?)</span>', parse.group(1), re.S)
 		if neue:
 			for url, title, staffel, episode in neue:
 				if int(staffel) < 10:
@@ -364,7 +365,7 @@ class ssNeueEpisoden(MPScreen):
 	def setCoverUrl(self, data):
 		cover = re.findall('<div class=".*?picture">.*?<img src="(http[s]?://serienstream.to/public/img/cover/.*?)"', data, re.S)
 		if cover:
-			self.cover = cover[0].replace('https://','http://')
+			self.cover = cover[0]
 			CoverHelper(self['coverArt']).getCover(self.cover, agent=ss_agent, cookieJar=ss_cookies, req=True)
 
 	def reloadList(self):
@@ -449,7 +450,7 @@ class ssWatchlist(MPScreen):
 	def setCoverUrl(self, data):
 		cover = re.findall('<div class=".*?picture">.*?<img src="(http[s]?://serienstream.to/public/img/cover/.*?)"', data, re.S)
 		if cover:
-			self.cover = cover[0].replace('https://','http://')
+			self.cover = cover[0]
 			CoverHelper(self['coverArt']).getCover(self.cover, agent=ss_agent, cookieJar=ss_cookies, req=True)
 
 	def keyOK(self):
@@ -652,7 +653,7 @@ class ssEpisoden(MPScreen):
 			return
 		episodenName = self['liste'].getCurrent()[0][0]
 		url = self['liste'].getCurrent()[0][1]
-		self.addGlobalWatchtlist([self.Title+' '+episodenName, self.cover, "ssStreams", self.Title, episodenName, url, self.cover])
+		#self.addGlobalWatchtlist([self.Title+' '+episodenName, self.cover, "ssStreams", self.Title, episodenName, url, self.cover])
 		self.session.openWithCallback(self.reloadList, ssStreams, self.Title, episodenName, url, self.cover)
 
 	def reloadList(self):
@@ -712,7 +713,7 @@ class ssStreams(MPScreen):
 						Flag = "EN"
 					else:
 						Flag = "DEUS"
-					self.streamList.append((hoster, url.replace('https://','http://'), False, Flag))
+					self.streamList.append((hoster, url, False, Flag))
 		if len(self.streamList) == 0:
 			self.streamList.append((_('No supported streams found!'), None, False, ""))
 		else:
@@ -734,7 +735,7 @@ class ssStreams(MPScreen):
 
 	def getStream(self, url):
 		get_stream_link(self.session).check_link(url, self.playfile)
-				
+
 	def playfile(self, stream_url):
 		if not re.search('\S[0-9][0-9]E[0-9][0-9]', self.Title, re.I):
 			self.streamname = self.Title + " - " + self.episode

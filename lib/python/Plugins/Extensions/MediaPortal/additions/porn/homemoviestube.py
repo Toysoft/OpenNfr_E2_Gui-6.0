@@ -39,8 +39,9 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
+from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
 
-agent='Mozilla/5.0 (Windows NT 6.1; rv:44.0) Gecko/20100101 Firefox/44.0'
+hmtAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 json_headers = {
 	'Accept':'application/json',
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
@@ -48,19 +49,18 @@ json_headers = {
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
 
-class redtubeGenreScreen(MPScreen):
+class homemoviestubeGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -72,9 +72,8 @@ class redtubeGenreScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("RedTube.com")
+		self['title'] = Label("HomeMoviesTube.com")
 		self['ContentTitle'] = Label("Genre:")
-
 		self.keyLocked = True
 		self.suchString = ''
 
@@ -86,31 +85,27 @@ class redtubeGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.redtube.com/categories"
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		url = "http://www.homemoviestube.com/"
+		getPage(url, agent=hmtAgent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('class="video">.*?<a\shref="(.*?)"\stitle="(.*?)">.*?data-src="(.*?\.jpg).*?"', data, re.S)
-		if Cats:
-			for (Url, Title, Image) in Cats:
-				Url = "http://www.redtube.com" + Url + '?page='
-				if Image.startswith('//'):
-					Image = 'http:' + Image
-				self.genreliste.append((Title, Url, Image))
-			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Favored", "http://www.redtube.com/mostfavored?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Most Viewed", "http://www.redtube.com/mostviewed?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.redtube.com/top?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/?page=", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-			self.ml.moveToIndex(0)
-			self.keyLocked = False
-			self.showInfos()
-
-	def showInfos(self):
-		Image = self['liste'].getCurrent()[0][2]
-		CoverHelper(self['coverArt']).getCover(Image)
+		parse = re.search('<h4>Channels</h4>(.*?)<h4>Top Categories', data, re.S)
+		if parse:
+			Cats = re.findall('<a\shref=[\'|"](http://www.homemoviestube.com/channels/.*?)[\'|"]>(.*?)<', parse.group(1), re.S)
+			if Cats:
+				for (Url, Title) in Cats:
+					Title = Title.strip(' ')
+					self.genreliste.append((Title, Url))
+				self.genreliste.sort()
+		self.genreliste.insert(0, ("Longest", 'http://www.homemoviestube.com/longest/'))
+		self.genreliste.insert(0, ("Most Viewed", 'http://www.homemoviestube.com/most-viewed/'))
+		self.genreliste.insert(0, ("Most Favorited", 'http://www.homemoviestube.com/most-favored/'))
+		self.genreliste.insert(0, ("Top Rated", 'http://www.homemoviestube.com/top-rated/'))
+		self.genreliste.insert(0, ("Most Recent", 'http://www.homemoviestube.com/most-recent/'))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
+		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -120,19 +115,18 @@ class redtubeGenreScreen(MPScreen):
 			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(redtubeFilmScreen, Link, Name)
+			self.session.open(homemoviestubeFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
 			Name = "--- Search ---"
 			self.suchString = callback
-			Link = 'http://www.redtube.com/?search=%s&page=' % self.suchString.replace(' ', '+')
-			self.session.open(redtubeFilmScreen, Link, Name)
+			Link = '%s' % self.suchString.replace(' ', '-')
+			self.session.open(homemoviestubeFilmScreen, Link, Name)
 
 	def getSuggestions(self, text, max_res):
-		url = "http://www.redtube.com/searchsuggest?class=0&limit=10"
-		postdata = {'term': text}
-		d = twAgentGetPage(url, method='POST', postdata=urlencode(postdata), agent=agent, headers=json_headers, timeout=5)
+		url = "http://www.homemoviestube.com/autocomplete.php?term=%s" % urllib.quote_plus(text)
+		d = twAgentGetPage(url, agent=hmtAgent, headers=json_headers, timeout=5)
 		d.addCallback(self.gotSuggestions, max_res)
 		d.addErrback(self.gotSuggestions, max_res, err=True)
 		return d
@@ -141,8 +135,8 @@ class redtubeGenreScreen(MPScreen):
 		list = []
 		if not err and type(suggestions) in (str, buffer):
 			suggestions = json.loads(suggestions)
-			for item in suggestions['data']['suggestions']:
-				li = item['label']
+			for item in suggestions:
+				li = item
 				list.append(str(li))
 				max_res -= 1
 				if not max_res: break
@@ -150,7 +144,7 @@ class redtubeGenreScreen(MPScreen):
 			printl(str(suggestions),self,'E')
 		return list
 
-class redtubeFilmScreen(MPScreen, ThumbsHelper):
+class homemoviestubeFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -163,8 +157,7 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -178,18 +171,24 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"green" : self.keyPageNumber
+			"green" : self.keyPageNumber,
+			"blue" : self.keySort
 		}, -1)
 
-		self['title'] = Label("RedTube.com")
+		self['title'] = Label("HomeMoviesTube.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
+		if re.match('.*?\/channels\/', self.Link):
+			self['F4'] = Label(_("Sort"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
+		self.lastpage = 1
 
-		self.filmliste = []
+		self.sortfilter = 'newest/'
+		self.sort = 'Latest'
+		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
@@ -198,59 +197,73 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 	def loadPage(self):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
-		self.filmliste = []
-		url = "%s%s" % (self.Link, str(self.page))
-		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
-
-	def loadData(self, data):
-		lastp = re.search('<h1>.*?\s\((.*?)\)</h1>', data, re.S)
-		if lastp:
-			lastp = lastp.group(1).replace(',','')
-			cat = self.Link
-			lastp = round((float(lastp) / 24) + 0.5)
-			self.lastpage = int(lastp)
+		self.streamList = []
+		if re.match(".*?Search", self.Name):
+			url = "http://www.homemoviestube.com/search/%s/page%s.html" % (self.Link, str(self.page))
+		elif re.match('.*?\/channels\/', self.Link):
+			url = self.Link + self.sortfilter + "page%s.html" % str(self.page)
 		else:
-			self.lastpage = 1230
-		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-		Movies = re.findall('<a\shref="(\/\d+)"\stitle="(.*?)"\sclass="video-thumb.*?"\s{0,1}>\n\t{0,5}<span\sclass="video-duration.*?>(.*?)<.*?data-src="(.*?)".*?views">(.*?)</span>', data, re.S)
-		if Movies:
-			for (Url, Title, Runtime, Image, Views) in Movies:
-				if Image.startswith('//'):
-					Image = 'http:' + Image
-				Views = Views.replace(',','').replace(' views','')
-				Runtime = Runtime.strip()
-				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views))
-		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No videos found!'), '', None, '', ''))
-		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+			url = self.Link + "page%s.html" % str(self.page)
+		getPage(url, agent=hmtAgent).addCallback(self.pageData).addErrback(self.dataError)
+
+	def pageData(self, data):
+		self.getLastPage(data, 'pagination-items">(.*?)</div>')
+		if re.search('id="featured-videos"', data, re.S):
+			parse = re.search('<!-- featured-end --(.*?</html>', data, re.S)
+		else:
+			parse = re.search('<head>(.*)</html>', data, re.S)
+		Liste = re.findall('class="film-item.*?<a\shref="(.*?)"\stitle="(.*?)".*?class="film-thumb.*?img\ssrc="(.*?)".*?class="film-time">(.*?)</span.*?stat-added">(.*?)</span>.*?stat-views">(.*?)</span.*?stat-rated">(.*?)</span', parse.group(1), re.S)
+		if Liste:
+			for (Link, Name, Image, Runtime, Added, Views, Rated) in Liste:
+				self.streamList.append((decodeHtml(Name), Image, Link, Runtime, Added, Views, Rated))
+		if len(self.streamList) == 0:
+			self.streamList.append((_('No videos found!'), None, '', ''))
+		self.ml.setList(map(self._defaultlistleft, self.streamList))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
-		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
+		self.th_ThumbsQuery(self.streamList, 0, 2, 1, 3, None, self.page, self.lastpage, mode=1)
 		self.showInfos()
 
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]
-		pic = self['liste'].getCurrent()[0][2]
+		pic = self['liste'].getCurrent()[0][1].replace(' ','%20')
 		runtime = self['liste'].getCurrent()[0][3]
-		views = self['liste'].getCurrent()[0][4]
+		added = self['liste'].getCurrent()[0][4]
+		views = self['liste'].getCurrent()[0][5]
+		rated = self['liste'].getCurrent()[0][6]
 		self['name'].setText(title)
-		self['handlung'].setText("Runtime: %s\nViews: %s" % (runtime, views))
+		if re.match(".*?Search", self.Name):
+			self['handlung'].setText("Runtime: %s\nViews: %s\nAdded: %s\nRating: %s" % (runtime, views, added, rated))
+		else:
+			self['handlung'].setText("Runtime: %s\nViews: %s\nAdded: %s\nRating: %s\nSort: %s" % (runtime, views, added, rated, self.sort))
 		CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		Link = 'http://www.redtube.com' + self['liste'].getCurrent()[0][1]
+		Link = self['liste'].getCurrent()[0][2]
 		self.keyLocked = True
-		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
+		getPage(Link, agent=hmtAgent).addCallback(self.getplayerconfig).addErrback(self.dataError)
 
-	def getVideoPage(self, data):
-		videoPage = re.findall('<source\ssrc="(.*?)"\stype="video/mp4">', data, re.S)
-		if videoPage:
-			url = videoPage[-1]
-			url = url.replace('\/','/').replace('&amp;','&')
-			if url.startswith('//'):
-				url = 'http:' + url
+	def keySort(self):
+		if self.keyLocked or not re.match('.*?\/channels\/', self.Link):
+			return
+		rangelist = [['Latest', 'newest/'], ['Rating', 'rating/'], ['Views','views/'], ['Length','longest/'], ['Favored','most-favored/']]
+		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+
+	def keySortAction(self, result):
+		if result:
+			self.sortfilter = result[1]
+			self.sort = result[0]
+			self.loadPage()
+
+	def getplayerconfig(self, data):
+		confurl = re.findall('(http://www.homemoviestube.com/playerConfig.php\?.*?)["|\|]', data, re.S)
+		getPage(confurl[-1], agent=hmtAgent).addCallback(self.gotvideo).addErrback(self.dataError)
+
+	def gotvideo(self, data):
+		Title = self['liste'].getCurrent()[0][0]
+		File = re.findall("flvMask:(.*?);", data)
+		if File:
 			self.keyLocked = False
-			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='redtube')
+			self.session.open(SimplePlayer, [(Title, File[0])], showPlaylist=False, ltype='homemoviestube')

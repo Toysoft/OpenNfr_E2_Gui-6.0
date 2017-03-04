@@ -78,8 +78,6 @@ class adultbayGenreScreen(MPScreen):
 		self.filmliste.append(("Clips", None))
 		self.filmliste.append(("Movies", None))
 		self.filmliste.append(("HDTV", None))
-		self.filmliste.append(("DVD-R", "http://adultbay.org/category/dvd-r/"))
-		self.filmliste.append(("Hentai", "http://adultbay.org/category/hentai/"))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 		self.keyLocked = False
 
@@ -238,10 +236,12 @@ class adultbayListScreen(MPScreen, ThumbsHelper):
 					self.lastpage = 1
 			self['page'].setText("%s / %s" % (str(self.page), str(self.lastpage)))
 
-			raw = re.findall('class="post".*?<a\shref="(.*?)".*?img\ssrc="(.*?)".*?(<strong>|<p>)(.*?)(</strong>|<br\s/>|</p>).*?<p>(.*?)(Read\smore|\(more...\))', data, re.S)
+			raw = re.findall('class="post".*?<a\shref="(.*?)"\stitle="(.*?)".*?img\ssrc="(.*?)".*?(?:<strong>|<p>)(.*?)(?:</strong>|<br\s/>|</p>).*?<p>(.*?)(?:Read\smore|\(more...\))', data, re.S)
 			if raw:
-				for (link, image, trash, title, trash, desc, trash) in raw:
+				for (link, fallbacktitle, image, title, desc) in raw:
 					title = stripAllTags(title).strip()
+					if title == "":
+						title = fallbacktitle
 					desc = stripAllTags(desc).strip()
 					self.filmliste.append((decodeHtml(title), link, image, desc))
 				self.ml.setList(map(self._defaultlistleft, self.filmliste))

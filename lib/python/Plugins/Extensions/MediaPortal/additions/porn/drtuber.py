@@ -221,7 +221,7 @@ class drtuberFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.getData, callback).addErrback(self.dataError, callback)
 
 	def getData(self, data, callback):
-		url = re.findall('video_file>.*?(http.*?\.flv.*?)\]{0,2}>{0,1}<\/video_file', data, re.S)
+		url = re.findall('video_file>.*?(http.*?\.(?:mp4|flv).*?)\]{0,2}>{0,1}<\/video_file', data, re.S)
 		if url:
 			url = str(url[0])
 			url = url.replace("&amp;","&")

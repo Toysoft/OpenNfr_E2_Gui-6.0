@@ -3,14 +3,7 @@
 from messageboxext import MessageBoxExt
 import mp_globals
 from twagenthelper import TwAgentHelper, twAgentGetPage
-
-try:
-	from cvevosignalgoextractor import decryptor
-except:
-	isVEVODecryptor = False
-else:
-	isVEVODecryptor = True
-
+from cvevosignalgoextractor import decryptor
 from imports import *
 
 headers = {'Accept-Language': 'en-us,en;q=0.5',
@@ -160,10 +153,7 @@ class youtubeUrl(object):
 			elif url_desc_map.has_key(u"s"):
 				sig = url_desc_map[u"s"][0]
 				flashvars = self.extractFlashVars(videoinfo, 1)
-				if isVEVODecryptor:
-					signature = decryptor.decryptSignature(sig, flashvars[u"js"])
-				else:
-					signature = None
+				signature = decryptor.decryptSignature(sig, flashvars[u"js"])
 				if not signature:
 					self.error = "[YoutubeURL] Error: cannot decrypt url"
 					self.errReturn(None)

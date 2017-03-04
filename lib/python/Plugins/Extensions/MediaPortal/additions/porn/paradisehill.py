@@ -87,6 +87,10 @@ class paradisehillGenreScreen(MPScreen):
 				Url = Url + "?page="
 				self.genreliste.append((Title, Url, Count))
 			self.genreliste.sort()
+			self.genreliste.insert(0, ("Popular (All Time)", "/popular/?page=", None))
+			self.genreliste.insert(0, ("Popular (Monthly)", "/popular/?filter=month&page=", None))
+			self.genreliste.insert(0, ("Popular (Weekly)", "/popular/?filter=week&page=", None))
+			self.genreliste.insert(0, ("Popular (Daily)", "/popular/?filter=day&page=", None))
 			self.genreliste.insert(0, ("Newest", "/porn/?page=", None))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))

@@ -40,15 +40,7 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
-agent='Mozilla/5.0 (Windows NT 6.1; rv:44.0) Gecko/20100101 Firefox/44.0'
-json_headers = {
-	'Accept':'application/json',
-	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
-	'X-Requested-With':'XMLHttpRequest',
-	'Content-Type':'application/x-www-form-urlencoded',
-	}
-
-class redtubeGenreScreen(MPScreen):
+class tubepornclassicGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -59,8 +51,7 @@ class redtubeGenreScreen(MPScreen):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -72,7 +63,7 @@ class redtubeGenreScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("RedTube.com")
+		self['title'] = Label("TubePornClassic.com")
 		self['ContentTitle'] = Label("Genre:")
 
 		self.keyLocked = True
@@ -86,27 +77,22 @@ class redtubeGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.redtube.com/categories"
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		url = "http://www.tubepornclassic.com/categories/"
+		getPage(url, headers={'Cookie': 'language=en'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('class="video">.*?<a\shref="(.*?)"\stitle="(.*?)">.*?data-src="(.*?\.jpg).*?"', data, re.S)
+		parse = re.search('class="list-categories(.*?)</html>', data, re.S)
+		Cats = re.findall('<a\sclass="item"\shref="(http://www.tubepornclassic.com/categories/.*?)"\stitle="(.*?)">.*?<img\sclass="thumb.*?data-original="(.*?)"', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title, Image) in Cats:
-				Url = "http://www.redtube.com" + Url + '?page='
-				if Image.startswith('//'):
-					Image = 'http:' + Image
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Favored", "http://www.redtube.com/mostfavored?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Most Viewed", "http://www.redtube.com/mostviewed?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.redtube.com/top?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/?page=", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Most Popular", "http://www.tubepornclassic.com/most-popular/", None))
+			self.genreliste.insert(0, ("Top Rated", "http://www.tubepornclassic.com/top-rated/", None))
+			self.genreliste.insert(0, ("Most Recent", "http://www.tubepornclassic.com/latest-updates/", None))
+			self.genreliste.insert(0, ("--- Search ---", "", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-			self.ml.moveToIndex(0)
 			self.keyLocked = False
-			self.showInfos()
 
 	def showInfos(self):
 		Image = self['liste'].getCurrent()[0][2]
@@ -116,41 +102,20 @@ class redtubeGenreScreen(MPScreen):
 		if self.keyLocked:
 			return
 		Name = self['liste'].getCurrent()[0][0]
-		if Name == "--- Search ---":
-			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
+		Link = self['liste'].getCurrent()[0][1]
+		if re.search('--- Search', Name):
+			self.suchen()
 		else:
-			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(redtubeFilmScreen, Link, Name)
+			self.session.open(tubepornclassicFilmScreen, Link, Name)
 
-	def SuchenCallback(self, callback = None, entry = None):
+	def SuchenCallback(self, callback):
 		if callback is not None and len(callback):
 			Name = "--- Search ---"
 			self.suchString = callback
-			Link = 'http://www.redtube.com/?search=%s&page=' % self.suchString.replace(' ', '+')
-			self.session.open(redtubeFilmScreen, Link, Name)
+			Link = callback.replace(' ', '%20')
+			self.session.open(tubepornclassicFilmScreen, Link, Name)
 
-	def getSuggestions(self, text, max_res):
-		url = "http://www.redtube.com/searchsuggest?class=0&limit=10"
-		postdata = {'term': text}
-		d = twAgentGetPage(url, method='POST', postdata=urlencode(postdata), agent=agent, headers=json_headers, timeout=5)
-		d.addCallback(self.gotSuggestions, max_res)
-		d.addErrback(self.gotSuggestions, max_res, err=True)
-		return d
-
-	def gotSuggestions(self, suggestions, max_res, err=False):
-		list = []
-		if not err and type(suggestions) in (str, buffer):
-			suggestions = json.loads(suggestions)
-			for item in suggestions['data']['suggestions']:
-				li = item['label']
-				list.append(str(li))
-				max_res -= 1
-				if not max_res: break
-		elif err:
-			printl(str(suggestions),self,'E')
-		return list
-
-class redtubeFilmScreen(MPScreen, ThumbsHelper):
+class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -163,8 +128,7 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -181,13 +145,14 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("RedTube.com")
+		self['title'] = Label("TubePornClassic.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
+		self.lastpage = 1
 
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -199,29 +164,20 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		url = "%s%s" % (self.Link, str(self.page))
-		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
+		if not re.search('Search', self.Name):
+			url = "%s%s/" % (self.Link, str(self.page))
+		else:
+			url = "http://www.tubepornclassic.com/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (self.Link, self.page)
+		getPage(url, headers={'Cookie': 'language=en'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		lastp = re.search('<h1>.*?\s\((.*?)\)</h1>', data, re.S)
-		if lastp:
-			lastp = lastp.group(1).replace(',','')
-			cat = self.Link
-			lastp = round((float(lastp) / 24) + 0.5)
-			self.lastpage = int(lastp)
-		else:
-			self.lastpage = 1230
-		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-		Movies = re.findall('<a\shref="(\/\d+)"\stitle="(.*?)"\sclass="video-thumb.*?"\s{0,1}>\n\t{0,5}<span\sclass="video-duration.*?>(.*?)<.*?data-src="(.*?)".*?views">(.*?)</span>', data, re.S)
+		self.getLastPage(data, 'class="pagination"(.*?)</div>', '.*>\s{0,80}(\d+)\s{0,80}<')
+		Movies = re.findall('class="item.*?<a\shref="(http://www.tubepornclassic.com/videos/.*?)"\stitle="(.*?)".*?class="thumb.*?data-original="(.*?)".*?class="duration">(.*?)</div.*?class="added">(.*?)</div.*?class="views ico ico-eye">(.*?)</div', data, re.S)
 		if Movies:
-			for (Url, Title, Runtime, Image, Views) in Movies:
-				if Image.startswith('//'):
-					Image = 'http:' + Image
-				Views = Views.replace(',','').replace(' views','')
-				Runtime = Runtime.strip()
-				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views))
+			for (Url, Title, Image, Runtime, Added, Views) in Movies:
+				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views.replace(' ',''), stripAllTags(Added)))
 		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No videos found!'), '', None, '', ''))
+			self.filmliste.append((_('No movies found!'), None, None, None, None, None))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
@@ -229,28 +185,30 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 		self.showInfos()
 
 	def showInfos(self):
+		Url = self['liste'].getCurrent()[0][1]
+		if Url == None:
+			return
 		title = self['liste'].getCurrent()[0][0]
 		pic = self['liste'].getCurrent()[0][2]
 		runtime = self['liste'].getCurrent()[0][3]
 		views = self['liste'].getCurrent()[0][4]
+		added = self['liste'].getCurrent()[0][5]
 		self['name'].setText(title)
-		self['handlung'].setText("Runtime: %s\nViews: %s" % (runtime, views))
+		self['handlung'].setText("Runtime: %s\nViews: %s\nAdded: %s" % (runtime, views, added))
 		CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		Link = 'http://www.redtube.com' + self['liste'].getCurrent()[0][1]
+		Link = self['liste'].getCurrent()[0][1]
+		if Link == None:
+			return
 		self.keyLocked = True
-		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
+		getPage(Link, headers={'Cookie': 'language=en'}).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall('<source\ssrc="(.*?)"\stype="video/mp4">', data, re.S)
+		videoPage = re.findall("video_url:\s'(.*?)'", data, re.S)
 		if videoPage:
-			url = videoPage[-1]
-			url = url.replace('\/','/').replace('&amp;','&')
-			if url.startswith('//'):
-				url = 'http:' + url
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='redtube')
+			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='tubepornclassics')

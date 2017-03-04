@@ -5,12 +5,11 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
-from Plugins.Extensions.MediaPortal.resources.yt_url import isVEVODecryptor
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
-YT_Version = "Youtube Search v3.65"
+YT_Version = "YouTube"
 
 YT_siteEncoding = 'utf-8'
 
@@ -193,9 +192,8 @@ class youtubeGenreScreen(MenuHelper):
 			('KinoCheck', 'https://www.youtube.com/user/KinoCheck'),
 			('#Live', 'https://www.youtube.com/channel/UC4R8DWoMoI7CAwX8_LjQHig')
 			]
-		if useProxy() and isVEVODecryptor:
-			self.mainGenres.append(('Youtube Music', ''))
-			self.mainGenres.append(('VEVO Music', 'https://www.youtube.com/user/VEVO'))
+		self.mainGenres.append(('Youtube Music', ''))
+		self.mainGenres.append(('VEVO Music', 'https://www.youtube.com/user/VEVO'))
 
 		MenuHelper.__init__(self, session, 2, None, "", "", self._defaultlistcenter, "ytSearchScreen.xml")
 
@@ -563,9 +561,9 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path =  mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/dokuListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/dokuListScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -642,8 +640,6 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		self.baseUrl = "https://www.youtube.com"
 		self.lastUrl = None
 
-		self.videoPrio = int(config.mediaportal.youtubeprio.value)
-		self.videoPrioS = ['L','M','H']
 		self.setVideoPrio()
 
 		self.favo_path = config.mediaportal.watchlistpath.value + "mp_yt_favorites.xml"
@@ -1092,7 +1088,6 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 
 	def setVideoPrio(self):
 		self.videoPrio = int(config.mediaportal.youtubeprio.value)
-		self['vPrio'].setText(self.videoPrioS[self.videoPrio])
 
 	def delFavo(self):
 

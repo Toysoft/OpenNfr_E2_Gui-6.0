@@ -76,7 +76,7 @@ class hqpornerGenreScreen(MPScreen):
 		self.filmliste.append(("Newest", "http://hqporner.com/hdporn"))
 		self.filmliste.append(("Genres", "categories"))
 		self.filmliste.append(("Studios", "studios"))
-		self.filmliste.append(("Actress", "actress"))
+		self.filmliste.append(("Girls", "girls"))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 		self.keyLocked = False
 
@@ -137,7 +137,7 @@ class hqpornerSubGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		url = "http://hqporner.com/porn-" + self.Link + ".php"
+		url = "http://hqporner.com/" + self.Link
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
@@ -258,6 +258,8 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 			getPage(Link[0][0]).addCallback(self.getVideoLink).addErrback(self.dataError)
 		elif Link and re.match('http://bemywife\.cc', Link[0][0]):
 			getPage(Link[0][0]).addCallback(self.bemywife).addErrback(self.dataError)
+		elif Link and re.match('http://mydaddy\.cc', Link[0][0]):
+			getPage(Link[0][0]).addCallback(self.mydaddy).addErrback(self.dataError)
 		elif Link and re.match('http://5\.79\.64\.169', Link[0][0]):
 			getPage(Link[0][0]).addCallback(self.leaseweb).addErrback(self.dataError)
 		elif Link and isSupportedHoster(Link[0][1].replace('www.',''), True):
@@ -273,6 +275,18 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 				link = stream_url[-1][0]
 			else:
 				link = "http://bemywife.cc" + stream_url[-1][0]
+			self.got_link(link)
+		else:
+			message = self.session.open(MessageBoxExt, _("No supported streams found!"), MessageBoxExt.TYPE_INFO, timeout=3)
+
+	def mydaddy(self, data):
+		stream_url = re.findall('file:\s"(.*?(\d+).mp4)"', data)
+		if stream_url:
+			stream_url.sort(key=lambda t : t[1], reverse=False)
+			if 'http://' in stream_url[-1][0]:
+				link = stream_url[-1][0]
+			else:
+				link = "http://mydaddy.cc" + stream_url[-1][0]
 			self.got_link(link)
 		else:
 			message = self.session.open(MessageBoxExt, _("No supported streams found!"), MessageBoxExt.TYPE_INFO, timeout=3)

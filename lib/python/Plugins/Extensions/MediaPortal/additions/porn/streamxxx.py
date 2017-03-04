@@ -81,14 +81,14 @@ class streamxxxGenreScreen(MPScreen):
 	def genreData(self):
 		self.genreliste.append(("--- Search ---", None))
 		self.genreliste.append(("New Movies and Clips", "%s/" % BASE_URL))
-		self.genreliste.append(("Movies", "%s/category/movies-xxx/" % BASE_URL))
-		self.genreliste.append(("International Movies", "%s/category/movies/international-movies/" % BASE_URL))
-		self.genreliste.append(("International Movies - German", "%s/category/international-movies/?s=german" % BASE_URL))
-		self.genreliste.append(("International Movies - French", "%s/category/international-movies/?s=french" % BASE_URL))
-		self.genreliste.append(("Film Porno Italiani", "%s/category/movies/film-porno-italian/" % BASE_URL))
-		self.genreliste.append(("Cento-X-Cento", "%s/tag/cento-x-cento/" % BASE_URL))
 		self.genreliste.append(("Clips", "Clips"))
 		self.genreliste.append(("Category", "Category"))
+		self.genreliste.append(("Movies", "%s/category/movies-xxx/" % BASE_URL))
+		self.genreliste.append(("International Movies", "%s/category/movies/international-movies/" % BASE_URL))
+		self.genreliste.append(("German Movies", "%s/category/international-movies/?s=german" % BASE_URL))
+		self.genreliste.append(("French Movies", "%s/category/international-movies/?s=french" % BASE_URL))
+		self.genreliste.append(("Italian Movies", "%s/category/movies/film-porno-italian/" % BASE_URL))
+		self.genreliste.append(("Cento-X-Cento", "%s/tag/cento-x-cento/" % BASE_URL))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
 
@@ -204,17 +204,13 @@ class streamxxxFilmScreen(MPScreen, ThumbsHelper):
 			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"red" : self.keyTxtPageUp,
-			"green" : self.keyPageNumber,
-			"blue" : self.keyTxtPageDown
+			"green" : self.keyPageNumber
 		}, -1)
 
 		self['title'] = Label("StreamXXX")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
-		self['F1'] = Label(_("Text-"))
 		self['F2'] = Label(_("Page"))
-		self['F4'] = Label(_("Text+"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True

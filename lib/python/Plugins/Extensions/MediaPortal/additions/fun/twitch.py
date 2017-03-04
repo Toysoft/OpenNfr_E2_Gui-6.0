@@ -1,9 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from enigma import eLabel, eSize
 
-headers = {'Accept': 'application/vnd.twitchtv.v2+json', 'Client-ID': '6r2dhbo9ek6mm1gab2snj0navo4sgqy'}
-limit = 10
+headers = {'Accept': 'application/vnd.twitchtv.v5+json', 'Client-ID': '6r2dhbo9ek6mm1gab2snj0navo4sgqy'}
+limit = 15
 
 class twitchGames(MPScreen):
 
@@ -128,18 +129,31 @@ class twitchChannels(MPScreen):
 
 	def loadPage(self):
 		self.channelList = []
-		url = "https://api.twitch.tv/kraken/search/streams?q=" + self.gameName.replace(" ", "%20") + "&limit=" + str(limit) + "&offset=" + str(self.page * limit)
+		url = "https://api.twitch.tv/kraken/search/streams?query=" + self.gameName.replace(" ", "%20") + "&limit=" + str(limit) + "&offset=" + str(self.page * limit) + "&hls=true"
 		getPage(url, headers=headers).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
+		self.textRenderer = eLabel(self.instance)
+		self.textRenderer.hide()
 		self['page'].setText(str(self.page+1))
 		topChannelsJson = json.loads(data)
 		for node in topChannelsJson["streams"]:
-			self.channelList.append((str(node["channel"]["display_name"]), str(node["channel"]["name"]), str(node["channel"]["banner"])))
+			length = self._calcTextWidth(str(node["channel"]["display_name"]))
+			if length != -1:
+				title = str(node["channel"]["display_name"])
+			else:
+				title = str(node["channel"]["name"])
+			self.channelList.append((title, str(node["channel"]["name"]), str(node["preview"]["large"])))
 		self.ml.moveToIndex(0)
 		self.ml.setList(map(self._defaultlistleft, self.channelList))
 		self.keyLocked = False
 		self.showInfos()
+
+	def _calcTextWidth(self, text, font=None, size=None):
+		height = self['liste'].l.getItemSize().height()
+		self.textRenderer.setFont(gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
+		self.textRenderer.setText(text)
+		return self.textRenderer.calculateSize().width()
 
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]

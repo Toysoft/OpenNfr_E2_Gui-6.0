@@ -61,16 +61,6 @@ from time import time, localtime, strftime, mktime
 
 # MediaPortal Imports
 from debuglog import printlog as printl
-FuturesSession = None
-print '[MP imports] Try to import "FuturesSession"'
-if sys.version_info[:3] >= (2,7,9):
-	try:
-		from .requests_futures.sessions import FuturesSession
-		print '[MP imports] "FuturesSession" successfull imported'
-	except:
-		print '[MP imports] Error: cannot import "FuturesSession"'
-else:
-	print '[MP imports] Wrong python version to import "FuturesSession": %s' % sys.version
 
 class InsensitiveKey(object):
 	def __init__(self, key):
@@ -91,35 +81,9 @@ class InsensitiveDict(dict):
 		return super(InsensitiveDict, self).__getitem__(key)
 
 def r_getPage(url, *args, **kwargs):
-	if FuturesSession != None:
-		session = FuturesSession()
-		method = kwargs.pop('method', 'GET')
-		user_agent = kwargs.pop('agent', None)
-		if user_agent:
-			headers = kwargs.pop('headers', {})
-			headers['User-Agent'] = user_agent
-			kwargs['headers'] = headers
-		def cb_err_ret(err):
-			return err
-
-		d = Deferred()
-		d.addErrback(cb_err_ret)
-		try:
-			def bg_cb(sess, resp):
-				c = resp.content
-				d.callback(c)
-
-			if method == 'GET':
-				session.get(url, background_callback=bg_cb, *args, **kwargs)
-			elif method == 'POST':
-				kwargs['data'] = kwargs.pop('postdata')
-				session.post(url, background_callback=bg_cb, *args, **kwargs)
-			return d
-		except Exception, err:
-			printl('Error: '+str(err),None,'E')
-			d.errback(failure.Failure())
-	else:
+	def retry(err):
 		return getPage(url.replace('https:','http:'), *args, **kwargs)
+	return twAgentGetPage(url, *args, **kwargs).addErrback(retry)
 
 import mp_globals
 from mp_globals import std_headers
@@ -131,33 +95,42 @@ from showAsThumb import ThumbsHelper
 from messageboxext import MessageBoxExt
 
 def registerFont(file, name, scale, replacement):
-		try:
-				addFont(file, name, scale, replacement)
-		except Exception, ex: #probably just openpli
-				addFont(file, name, scale, replacement, 0)
+	try:
+		addFont(file, name, scale, replacement)
+	except Exception, ex: #probably just openpli
+		addFont(file, name, scale, replacement, 0)
 
 def getUserAgent():
 	userAgents = [
 		"Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
 		"Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; de) Presto/2.9.168 Version/11.52",
 		"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20120101 Firefox/35.0",
-	    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:29.0) Gecko/20120101 Firefox/29.0",
-	    "Mozilla/5.0 (X11; Linux x86_64; rv:28.0) Gecko/20100101 Firefox/28.0",
-	    "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
-	    "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 7.1; Trident/5.0)",
-	    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
-	    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36",
-	    "Mozilla/5.0 (compatible; Konqueror/4.5; FreeBSD) KHTML/4.5.4 (like Gecko)",
-	    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0",
+		"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:29.0) Gecko/20120101 Firefox/29.0",
+		"Mozilla/5.0 (X11; Linux x86_64; rv:28.0) Gecko/20100101 Firefox/28.0",
+		"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
+		"Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 7.1; Trident/5.0)",
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
+		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36",
+		"Mozilla/5.0 (compatible; Konqueror/4.5; FreeBSD) KHTML/4.5.4 (like Gecko)",
+		"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0",
 	]
 	return random.choice(userAgents)
 
 def getUpdateUrl():
 	updateurls = [
 		'http://master.dl.sourceforge.net/project/e2-mediaportal/version.txt',
-		'http://dhwz.github.io/e2-mediaportal/version.txt'
+		'http://dhwz.github.io/e2-mediaportal/version.txt',
+		'http://dhwz.gitlab.io/pages/version.txt'
 	]
 	return random.choice(updateurls)
+
+def getIconUrl():
+	iconurls = [
+		'http://dhwz.gitlab.io/pages/',
+		'http://dhwz.github.io/e2-mediaportal/',
+		'http://dhwz.gitlab.io/pages/'
+	]
+	return random.choice(iconurls)
 
 def bstkn(url):
 	urlpart = re.search('https://bs.to/api/(.*?)$', url)
