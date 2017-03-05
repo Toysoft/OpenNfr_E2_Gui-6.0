@@ -257,9 +257,6 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 
 		if config.mediaportal.showgrauzone.value:
 			dpath = config.mediaportal.watchlistpath.value
-			#self.genreliste.append(('5', _("Download {0}").format("HasBahCa TV PL's"), ('https://raw.githubusercontent.com', '/Nobody28/IPTV-List-Updater/master/src/list/de.txt', dpath, 'HasBahCa TV Listen')))
-			#self.genreliste.append(('6', _("Download {0}").format("HasBahCa Movie PL's"), ('https://raw.githubusercontent.com', '/Nobody28/IPTV-List-Updater/master/src/list/de.txt', dpath, 'HasBahCa Movie Listen')))
-			#self.genreliste.append(('7', _("Download {0}").format("HasBahCa Radio PL's"), ('https://raw.githubusercontent.com', '/Nobody28/IPTV-List-Updater/master/src/list/de.txt', dpath, 'HasBahCa Radio Listen')))
 
 		self.ml.setList(map(self.simplelistListEntry, self.genreliste))
 		self.keyLocked = False

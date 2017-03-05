@@ -606,7 +606,7 @@ class bsStreams(MPScreen):
 		url = self['liste'].getCurrent()[0][2]
 		auswahl = url + ID
 		bstoken = bstkn(auswahl)
-		getPage(auswahl, agent=None, headers={'User-Agent':'bs.android', 'BS-Token':bstoken}).addCallback(self.findStream).addErrback(self.dataError)
+		getPage(auswahl, headers={'User-Agent':'bs.android', 'BS-Token':bstoken}).addCallback(self.findStream).addErrback(self.dataError)
 
 	def playfile(self, link):
 		if not re.search('\S[0-9][0-9]E[0-9][0-9]', self.Title, re.I):
@@ -651,18 +651,21 @@ class bsStreams(MPScreen):
 		self.session.open(SimplePlayer, [(self.streamname, link, self.Cover)], showPlaylist=False, ltype='burningseries', cover=True)
 
 	def findStream(self, data):
-		parse = re.findall('"hoster":"(.*?)","url":"(.*?)".*?"fullurl":"(.*?)"', data, re.S)
-		if parse:
-			if parse[0][2][:4] == "http":
-				url = parse[0][2].replace('\\/','/')
-			else:
-				if parse[0][0] == "OpenLoad" or parse[0][0] == "OpenLoadHD":
-					url = "https://openload.co/embed/" + parse[0][1].replace('\\/','/')
-				else:
-					message = self.session.open(MessageBoxExt, _("Received broken 'fullurl', please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
-			get_stream_link(self.session).check_link(url, self.got_link)
+		if "<html" in data:
+			message = self.session.open(MessageBoxExt, _("Unknown API error, please try again in a few minutes."), MessageBoxExt.TYPE_INFO, timeout=3)
 		else:
-			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
+			parse = re.findall('"hoster":"(.*?)","url":"(.*?)".*?"fullurl":"(.*?)"', data, re.S)
+			if parse:
+				if parse[0][2][:4] == "http":
+					url = parse[0][2].replace('\\/','/')
+				else:
+					if parse[0][0] == "OpenLoad" or parse[0][0] == "OpenLoadHD":
+						url = "https://openload.co/embed/" + parse[0][1].replace('\\/','/')
+					else:
+						message = self.session.open(MessageBoxExt, _("Received broken 'fullurl', please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
+				get_stream_link(self.session).check_link(url, self.got_link)
+			else:
+				message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def got_link(self, stream_url):
 		self.playfile(stream_url)

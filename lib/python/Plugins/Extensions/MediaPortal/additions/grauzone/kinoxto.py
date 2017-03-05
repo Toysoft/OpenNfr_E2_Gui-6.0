@@ -1,4 +1,41 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
@@ -37,21 +74,22 @@ class kxMain(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
-		lt = localtime()
-		self.currentdatum = strftime("%d.%m.%Y", lt)
-		self.neueste_kino = "Frisches aus dem Kino vom %s" % self.currentdatum
-		self.neueste_online = "Neue Filme online vom %s" % self.currentdatum
+		self.currentdatum = strftime("%d.%m.%Y", localtime())
 		self.keyLocked = True
 		date = datetime.datetime.now().strftime('%Y-%m-%d')
-		self.streamList.append((self.neueste_kino, "http://kinox.nu"))
-		self.streamList.append((self.neueste_online, "http://kinox.nu"))
+		self.streamList.append(("Frisches aus dem Kino vom %s" % self.currentdatum, "http://kinox.to"))
+		self.streamList.append(("Neue Filme online vom %s" % self.currentdatum, "http://kinox.to"))
 		self.streamList.append(("Kinofilme", "http://kinox.to/Cine-Films.html"))
 		self.streamList.append(("Suche", "dump"))
 		self.streamList.append(("Filme A-Z", "dump"))
+		self.streamList.append(("Neueste Filme", "http://kinox.to/Latest-Movies.html"))
+		self.streamList.append(("Beliebte Filme", "http://kinox.to/Popular-Movies.html"))
 		self.streamList.append(("Serien A-Z","dump"))
 		self.streamList.append(("Neueste Serien", "http://kinox.to/Latest-Series.html"))
+		self.streamList.append(("Beliebte Serien", "http://kinox.to/Popular-TVSeries.html"))
 		self.streamList.append(("Dokumentationen A-Z","dump"))
 		self.streamList.append(("Neueste Dokumentationen", "http://kinox.to/Latest-Documentations.html"))
+		self.streamList.append(("Beliebte Dokumentationen", "http://kinox.to/Popular-Documentations.html"))
 		self.streamList.append(("Watchlist","dump"))
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
 		self.keyLocked = False
@@ -65,22 +103,18 @@ class kxMain(MPScreen):
 		url = self['liste'].getCurrent()[0][1]
 		if auswahl == "Kinofilme":
 			self.session.open(kxKino, url)
-		elif auswahl == self.neueste_kino:
+		elif "Neue Filme online vom" in auswahl:
 			self.session.open(kxNeuesteKino, url)
-		elif auswahl == self.neueste_online:
+		elif "Frisches aus dem Kino vom" in auswahl:
 			self.session.open(kxNeuesteOnline, url)
+		elif "Neueste" in auswahl:
+			self.session.open(kxNeueste, url, auswahl)
+		elif "Beliebte" in auswahl:
+			self.session.open(kxNeueste, url, auswahl)
+		elif "A-Z" in auswahl:
+			self.session.open(kxABC, url, auswahl)
 		elif auswahl == "Suche":
 			self.session.openWithCallback(self.searchCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = "", is_dialog=True, auto_text_init=True)
-		elif auswahl == "Filme A-Z":
-			self.session.open(kxABC, url, auswahl)
-		elif auswahl == "Serien A-Z":
-			self.session.open(kxABC, url, auswahl)
-		elif auswahl == "Neueste Serien":
-			self.session.open(kxNeuesteSerien, url, auswahl)
-		elif auswahl == "Dokumentationen A-Z":
-			self.session.open(kxABC, url, auswahl)
-		elif auswahl == "Neueste Dokumentationen":
-			self.session.open(kxNeuesteSerien, url, auswahl)
 		elif auswahl == "Watchlist":
 			self.session.open(kxWatchlist)
 
@@ -118,7 +152,7 @@ class kxKino(MPScreen, ThumbsHelper):
 		}, -1)
 
 		self['title'] = Label("Kinox.to")
-		self['ContentTitle'] = Label("KinoFilme")
+		self['ContentTitle'] = Label("Kinofilme")
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -356,7 +390,7 @@ class kxABC(MPScreen):
 
 	def loadPage(self):
 		self.streamList = []
-		abc = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9"]
+		abc = ["#","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 		for letter in abc:
 			self.streamList.append((letter, ''))
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
@@ -368,17 +402,13 @@ class kxABC(MPScreen):
 		if self.keyLocked or exist == None:
 			return
 		auswahl = self['liste'].getCurrent()[0][0]
-		if self.Name == "Serien A-Z":
-			self.session.open(kxSerienABCpage, auswahl)
-		elif self.Name == "Dokumentationen A-Z":
-			self.session.open(kxDokuABCpage, auswahl)
-		else:
-			self.session.open(kxABCpage, auswahl)
+		self.session.open(kxABCpage, auswahl, self.Name.replace('A-Z',''))
 
 class kxABCpage(MPScreen, ThumbsHelper):
 
-	def __init__(self, session, letter):
+	def __init__(self, session, letter, name):
 		self.letter = letter
+		self.Name = name
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
@@ -387,7 +417,8 @@ class kxABCpage(MPScreen, ThumbsHelper):
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
-		MPScreen.__init__(self, session)
+
+		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -403,11 +434,18 @@ class kxABCpage(MPScreen, ThumbsHelper):
 			"prevBouquet" : self.keyPageDown
 		}, -1)
 
+		if "Serien" in self.Name:
+			self["actions2"] = ActionMap(["MP_Actions"], {
+				"green" : self.keyAdd
+			}, -1)
+
 		self['title'] = Label("Kinox.to")
-		self['ContentTitle'] = Label("Filme %s" % self.letter)
-		self['F2'] = Label(_("Add to Watchlist"))
+		self['ContentTitle'] = Label(self.Name + self.letter)
+		if "Serien" in self.Name:
+			self['F2'] = Label(_("Add to Watchlist"))
 
 		self['Page'] = Label(_("Page:"))
+		self['page'] = Label("1")
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -419,18 +457,29 @@ class kxABCpage(MPScreen, ThumbsHelper):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		if "Serien" in self.Name:
+			type = "series"
+		elif "Filme" in self.Name:
+			type = "movie"
+		else:
+			type = "documentation"
 		self.streamList = []
-		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22movie%22%2C%22Length%22%3A30%2C%22fLetter%22%3A%22"+self.letter+"%22%7D"
+		if self.letter == "#":
+			letter = "1"
+		else:
+			letter = "%22"+self.letter+"%22"
+		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22"+type+"%22%2C%22Length%22%3A30%2C%22fLetter%22%3A"+letter+"%7D"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		data = data.replace('\\/','/').replace('\\"','"')
-		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>', data, re.S)
+		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>.*?class="Year">(.*?)</span>', data, re.S)
 		if kxMovies:
-			for (kxLang,kxUrl,kxTitle) in kxMovies:
+			for (kxLang,kxUrl,kxTitle,Year) in kxMovies:
 				kxUrl = "http://kinox.to" + kxUrl
 				kxImage = None
 				kxHandlung = ""
+				kxTitle = kxTitle + " (" + Year + ")"
 				self.streamList.append((decodeHtml(kxTitle),kxUrl,kxImage,kxLang,kxHandlung))
 				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
 			self.keyLocked = False
@@ -450,10 +499,27 @@ class kxABCpage(MPScreen, ThumbsHelper):
 			return
 		stream_name = self['liste'].getCurrent()[0][0]
 		auswahl = self['liste'].getCurrent()[0][1]
-		cover = self['liste'].getCurrent()[0][2]
-		self.session.open(kxStreams, auswahl, stream_name, cover)
+		if "Serien" in self.Name:
+			self.session.open(kxEpisoden, auswahl, stream_name)
+		else:
+			self.session.open(kxStreams, auswahl, stream_name, None)
 
-class kxNeuesteSerien(MPScreen, ThumbsHelper):
+	def keyAdd(self):
+		exist = self['liste'].getCurrent()
+		if self.keyLocked or exist == None:
+			return
+		muTitle = self['liste'].getCurrent()[0][0]
+		muID = self['liste'].getCurrent()[0][1]
+		muLang = self['liste'].getCurrent()[0][3]
+		if not fileExists(config.mediaportal.watchlistpath.value+"mp_kx_watchlist"):
+			open(config.mediaportal.watchlistpath.value+"mp_kx_watchlist","w").close()
+		if fileExists(config.mediaportal.watchlistpath.value+"mp_kx_watchlist"):
+			writePlaylist = open(config.mediaportal.watchlistpath.value+"mp_kx_watchlist","a")
+			writePlaylist.write('"%s" "%s" "%s" "0"\n' % (muTitle, muID, muLang))
+			writePlaylist.close()
+			message = self.session.open(MessageBoxExt, _("Selection was added to the watchlist."), MessageBoxExt.TYPE_INFO, timeout=3)
+
+class kxNeueste(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, kxGotLink, name):
 		self.kxGotLink = kxGotLink
@@ -473,14 +539,19 @@ class kxNeuesteSerien(MPScreen, ThumbsHelper):
 			"0": self.closeAll,
 			"5" : self.keyShowThumb,
 			"ok" : self.keyOK,
-			"cancel": self.keyCancel,
-			"green" : self.keyAdd
+			"cancel": self.keyCancel
 		}, -1)
+
+		if "Serien" in self.Name:
+			self["actions2"] = ActionMap(["MP_Actions"], {
+				"green" : self.keyAdd
+			}, -1)
 
 		self['title'] = Label("Kinox.to")
 		self['ContentTitle'] = Label(self.Name)
 		self['name'] = Label(_("Selection:"))
-		self['F2'] = Label(_("Add to Watchlist"))
+		if "Serien" in self.Name:
+			self['F2'] = Label(_("Add to Watchlist"))
 
 		self.keckse = {}
 		self.streamList = []
@@ -510,9 +581,9 @@ class kxNeuesteSerien(MPScreen, ThumbsHelper):
 			return
 		stream_name = self['liste'].getCurrent()[0][0]
 		auswahl = self['liste'].getCurrent()[0][1]
-		if self.Name == "Neueste Serien":
+		if "Serien" in self.Name:
 			self.session.open(kxEpisoden, auswahl, stream_name)
-		elif self.Name == "Neueste Dokumentationen":
+		else:
 			self.session.open(kxStreams, auswahl, stream_name, None)
 
 	def keyAdd(self):
@@ -523,178 +594,6 @@ class kxNeuesteSerien(MPScreen, ThumbsHelper):
 		muID = self['liste'].getCurrent()[0][1]
 		muLang = self['liste'].getCurrent()[0][3]
 
-		if not fileExists(config.mediaportal.watchlistpath.value+"mp_kx_watchlist"):
-			open(config.mediaportal.watchlistpath.value+"mp_kx_watchlist","w").close()
-		if fileExists(config.mediaportal.watchlistpath.value+"mp_kx_watchlist"):
-			writePlaylist = open(config.mediaportal.watchlistpath.value+"mp_kx_watchlist","a")
-			writePlaylist.write('"%s" "%s" "%s" "0"\n' % (muTitle, muID, muLang))
-			writePlaylist.close()
-			message = self.session.open(MessageBoxExt, _("Selection was added to the watchlist."), MessageBoxExt.TYPE_INFO, timeout=3)
-
-class kxDokuABCpage(MPScreen, ThumbsHelper):
-
-	def __init__(self, session, letter):
-		self.letter = letter
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
-		ThumbsHelper.__init__(self)
-
-		self["actions"] = ActionMap(["MP_Actions"], {
-			"0": self.closeAll,
-			"5" : self.keyShowThumb,
-			"ok" : self.keyOK,
-			"cancel": self.keyCancel,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown
-		}, -1)
-
-		self['title'] = Label("Kinox.to")
-		self['ContentTitle'] = Label("Dokumetation %s" % self.letter)
-
-		self['Page'] = Label(_("Page:"))
-
-		self.streamList = []
-		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self['liste'] = self.ml
-
-		self.keyLocked = True
-		self.page = 1
-		self.lastpage = 999
-		self.onLayoutFinish.append(self.loadPage)
-
-	def loadPage(self):
-		self.streamList = []
-		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22documentation%22%2C%22Length%22%3A30%2C%22fLetter%22%3A%22"+self.letter+"%22%7D"
-		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
-
-	def parseData(self, data):
-		data = data.replace('\\/','/').replace('\\"','"')
-		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>', data, re.S)
-		if kxMovies:
-			for (kxLang,kxUrl,kxTitle) in kxMovies:
-				kxUrl = "http://kinox.to" + kxUrl
-				kxImage = None
-				kxHandlung = ""
-				self.streamList.append((decodeHtml(kxTitle),kxUrl,kxImage,kxLang,kxHandlung))
-				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
-				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
-			self.keyLocked = False
-			self.th_ThumbsQuery(self.streamList, 0, 1, 2, None, None, self.page)
-			self.showInfos()
-		else:
-			self['page'].setText("END")
-
-	def showInfos(self):
-		filmName = self['liste'].getCurrent()[0][0]
-		self['name'].setText(filmName)
-		self['page'].setText(str(self.page))
-
-	def keyOK(self):
-		exist = self['liste'].getCurrent()
-		if self.keyLocked or exist == None:
-			return
-		stream_name = self['liste'].getCurrent()[0][0]
-		auswahl = self['liste'].getCurrent()[0][1]
-		cover = self['liste'].getCurrent()[0][2]
-		self.session.open(kxStreams, auswahl, stream_name, cover)
-
-class kxSerienABCpage(MPScreen, ThumbsHelper):
-
-	def __init__(self, session, letter):
-		self.letter = letter
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
-		ThumbsHelper.__init__(self)
-
-		self["actions"] = ActionMap(["MP_Actions"], {
-			"0": self.closeAll,
-			"5" : self.keyShowThumb,
-			"ok" : self.keyOK,
-			"cancel": self.keyCancel,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown,
-			"green" : self.keyAdd
-		}, -1)
-
-		self['title'] = Label("Kinox.to")
-		self['ContentTitle'] = Label("Serien %s" % self.letter)
-		self['F2'] = Label(_("Add to Watchlist"))
-
-		self['Page'] = Label(_("Page:"))
-		self['page'] = Label("1")
-
-		self.streamList = []
-		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self['liste'] = self.ml
-
-		self.keyLocked = True
-		self.page = 1
-		self.lastpage = 999
-		self.onLayoutFinish.append(self.loadPage)
-
-	def loadPage(self):
-		self.streamList = []
-		url = "http://kinox.to/aGET/List/?sEcho=1&iColumns=7&sColumns=&iDisplayStart="+str((self.page-1)*25)+"&iDisplayLength=25&iSortingCols=1&iSortCol_0=2&sSortDir_0=asc&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&bSortable_4=false&bSortable_5=false&bSortable_6=true&additional=%7B%22fType%22%3A%22series%22%2C%22Length%22%3A30%2C%22fLetter%22%3A%22"+self.letter+"%22%7D"
-		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
-
-	def parseData(self, data):
-		data = data.replace('\\/','/').replace('\\"','"')
-		kxMovies = re.findall('\["(\d+)".*?href="(.*?)".*?">(.*?)</a>', data, re.S)
-		if kxMovies:
-			for (kxLang,kxUrl,kxTitle) in kxMovies:
-				kxUrl = "http://kinox.to" + kxUrl
-				kxImage = None
-				kxHandlung = ""
-				self.streamList.append((decodeHtml(kxTitle),kxUrl,kxImage,kxLang,kxHandlung))
-				self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
-			self.keyLocked = False
-			self.th_ThumbsQuery(self.streamList, 0, 1, 2, None, None, self.page)
-			self.showInfos()
-		else:
-			self['page'].setText("END")
-
-	def showInfos(self):
-		filmName = self['liste'].getCurrent()[0][0]
-		self['name'].setText(filmName)
-		self['page'].setText(str(self.page))
-
-	def keyOK(self):
-		exist = self['liste'].getCurrent()
-		if self.keyLocked or exist == None:
-			return
-		stream_name = self['liste'].getCurrent()[0][0]
-		auswahl = self['liste'].getCurrent()[0][1]
-		self.session.open(kxEpisoden, auswahl, stream_name)
-
-	def keyAdd(self):
-		exist = self['liste'].getCurrent()
-		if self.keyLocked or exist == None:
-			return
-		muTitle = self['liste'].getCurrent()[0][0]
-		muID = self['liste'].getCurrent()[0][1]
-		muLang = self['liste'].getCurrent()[0][3]
 		if not fileExists(config.mediaportal.watchlistpath.value+"mp_kx_watchlist"):
 			open(config.mediaportal.watchlistpath.value+"mp_kx_watchlist","w").close()
 		if fileExists(config.mediaportal.watchlistpath.value+"mp_kx_watchlist"):
@@ -779,13 +678,11 @@ class kxEpisoden(MPScreen):
 							self.staffel_episode = "%s%s" % (staffel3, episode3)
 							if self.staffel_episode:
 								streamname = "%s - %s" % (self.stream_name, self.staffel_episode)
-								#check = ("%s %s" % (self.stream_name, streamname))
 								if streamname in self.watched_liste:
 									self.streamList.append((streamname,url_to_streams,True))
 									self.mark_last_watched.append(streamname)
 								else:
 									self.streamList.append((streamname,url_to_streams,False))
-						self.ml.setList(map(self._defaultlistleftmarked, self.streamList))
 						if len(self.mark_last_watched) != 0:
 							counting_watched = 0
 							for (name,url,watched) in self.streamList:
@@ -795,7 +692,6 @@ class kxEpisoden(MPScreen):
 									print "[kinox] last watched episode: %s" % counting_watched
 									break
 							self["liste"].moveToIndex(int(counting_watched))
-							self.keyLocked = False
 						else:
 							if len(self.streamList) != 0:
 								jump_last = len(self.streamList) -1
@@ -803,12 +699,17 @@ class kxEpisoden(MPScreen):
 								jump_last = 0
 							print "[kinox] last episode: %s" % jump_last
 							self["liste"].moveToIndex(int(jump_last))
-							self.keyLocked = False
+		if len(self.streamList) == 0:
+			self.streamList.append((_('No episodes found!'), None, None))
+			self.ml.setList(map(self._defaultlistleft, self.streamList))
+		else:
+			self.keyLocked = False
+			self.ml.setList(map(self._defaultlistleftmarked, self.streamList))
 		details = re.findall('<div class="Grahpics">.*?<img src="(.*?)".*?<div class="Descriptore">(.*?)</div>', data, re.S)
 		if details:
 			for (image, handlung) in details:
 				image = "http://kinox.to"+ image
-				self['handlung'].setText(decodeHtml(handlung))
+				self['handlung'].setText(decodeHtml(stripAllTags(handlung)))
 				CoverHelper(self['coverArt']).getCover(image)
 
 	def keyOK(self):
@@ -865,17 +766,19 @@ class kxWatchlist(MPScreen):
 					(stationName, stationLink, stationLang, stationTotaleps) = data[0]
 					self.streamList.append((stationName, stationLink, '', stationLang))
 			self.streamList.sort()
-			self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
 			readStations.close()
-			self.keyLocked = False
-			self.showInfos()
+			self.ml.setList(map(self.kinoxlistleftflagged, self.streamList))
+		if len(self.streamList) == 0:
+			self.streamList.append((_('Watchlist is currently empty'), None))
+			self.ml.setList(map(self._defaultlistleft, self.streamList))
+		self.keyLocked = False
+		self.showInfos()
 
 	def keyOK(self):
-		exist = self['liste'].getCurrent()
-		if self.keyLocked or exist == None:
+		auswahl = self['liste'].getCurrent()[0][1]
+		if self.keyLocked or not auswahl:
 			return
 		stream_name = self['liste'].getCurrent()[0][0]
-		auswahl = self['liste'].getCurrent()[0][1]
 		self.session.open(kxEpisoden, auswahl, stream_name)
 
 	def keyDel(self):
@@ -977,10 +880,12 @@ class kxStreams(MPScreen):
 						get_stream_url = "http://kinox.to/aGET/Mirror/%s" % get_stream_url.replace('&amp;','&')
 						if isSupportedHoster(hostername, True):
 							self.streamList.append((hostername, get_stream_url, "1", '', date))
-			if len(self.streamList) == 0:
-				self.streamList.append((_('No supported streams found!'), None, None, None, None))
-			self.ml.setList(map(self.kxStreamListEntry, self.streamList))
+		if len(self.streamList) == 0:
+			self.streamList.append((_('No supported streams found!'), None, None, None, None))
+			self.ml.setList(map(self._defaultlistleft, self.streamList))
+		else:
 			self.keyLocked = False
+			self.ml.setList(map(self.kxStreamListEntry, self.streamList))
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()

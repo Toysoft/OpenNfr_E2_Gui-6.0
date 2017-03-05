@@ -23,7 +23,6 @@ from Components.ProgressBar import ProgressBar
 from Screens.InfoBarGenerics import *
 from imports import *
 from youtubelink import YoutubeLink
-from ampyalink import AmpyaLink
 if mechanizeModule:
 	from cannalink import CannaLink
 from eightieslink import EightiesLink
@@ -650,7 +649,7 @@ class SimplePlaylist(MPScreen):
 			self['F2'] = Label("")
 		self['F3'] = Label(_("Playmode"))
 		self['F1'] = Label(_("Exit"))
-		self['playmode'] = Label(self.playMode[0].capitalize())
+		self['playmode'] = Label(_(self.playMode[0].capitalize()))
 
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
@@ -748,7 +747,7 @@ class SimplePlaylist(MPScreen):
 		else:
 			self.playMode[0] = "forward"
 
-		self["playmode"].setText(self.playMode[0].capitalize())
+		self["playmode"].setText(_(self.playMode[0].capitalize()))
 
 class SimplePlayerPVRState(Screen):
 	def __init__(self, session):
@@ -1407,9 +1406,6 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 
 			if ltype == 'youtube':
 				YoutubeLink(self.session).getLink(self.playStream, self.dataError, titel, url, imgurl)
-			elif ltype == 'ampya':
-				token = self.playList2[self.playIdx][6]
-				AmpyaLink(self.session).getLink(self.playStream, self.dataError, titel, url, token, imgurl)
 			elif mechanizeModule and ltype == 'canna':
 				CannaLink(self.session).getLink(self.playStream, self.dataError, titel, artist, album, url, imgurl)
 			elif ltype == 'eighties':
@@ -1529,16 +1525,13 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			url = self.playList[self.playIdx][self.title_inr+1]
 		elif self.pl_entry[4] == 'mtv':
 			url = self.playList[self.playIdx][1]
-		elif self.pl_entry[4] == 'ampya' and self.playList[self.playIdx][2]:
-			url = self.playList[self.playIdx][1]
-			self.pl_entry[5] = self.playList[self.playIdx][2]
 		else:
 			if '.m3u8' in self.playList[self.playIdx][1]:
 				url = self.playList[self.playIdx][1]
 			else:
 				url = self.session.nav.getCurrentlyPlayingServiceReference().getPath()
 
-			if re.search('(putpat.tv|/myspass)', url, re.I):
+			if re.search('(/myspass)', url, re.I):
 				self.session.open(MessageBoxExt, _("Error: URL is not persistent!"), MessageBoxExt.TYPE_INFO, timeout=5)
 				return
 

@@ -4,9 +4,7 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.additions.fun.youtube import YT_ListScreen
 
-USER_Version = "USER-Channels v0.97"
-
-USER_siteEncoding = 'utf-8'
+USER_Version = "USER-Channels"
 
 class show_USER_Genre(MPScreen):
 
@@ -25,13 +23,12 @@ class show_USER_Genre(MPScreen):
 			f.close()
 		MPScreen.__init__(self, session)
 
-		self["actions"] = ActionMap(["OkCancelActions", "ShortcutActions", "WizardActions", "ColorActions", "SetupActions", "NumberActions", "MenuActions"], {
-			"0"		: self.closeAll,
+		self["actions"] = ActionMap(["MP_Actions"], {
+			"0"	: self.closeAll,
 			"ok"    : self.keyOK,
 			"cancel": self.keyCancel,
 			"green"	: self.keyGreen
 		}, -1)
-
 
 		self['title'] = Label(USER_Version)
 		self['ContentTitle'] = Label("User Channels")
@@ -105,7 +102,7 @@ class show_USER_Genre(MPScreen):
 		else:
 			self.genreliste.append((0, "Keine User Channels gefunden !", ""))
 
-		self.ml.setList(map(self.ChannelsListEntryLeft, self.genreliste))
+		self.ml.setList(map(self.ChannelsListEntryCenter, self.genreliste))
 
 	def keyGreen(self):
 		self.getUserFile()
@@ -114,7 +111,6 @@ class show_USER_Genre(MPScreen):
 		if self.keyLocked:
 			return
 
-		genreID = self['liste'].getCurrent()[0][0]
 		genre = self['liste'].getCurrent()[0][1]
 		stvLink = self['liste'].getCurrent()[0][2]
 		if stvLink == '/':

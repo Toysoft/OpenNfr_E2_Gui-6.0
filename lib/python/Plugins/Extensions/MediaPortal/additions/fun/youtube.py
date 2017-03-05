@@ -11,11 +11,7 @@ from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPag
 
 YT_Version = "YouTube"
 
-YT_siteEncoding = 'utf-8'
-
-useProxy = lambda : config.mediaportal.sp_use_yt_with_proxy.value != 'no'
-
-config.mediaportal.yt_param_regionid_idx = ConfigInteger(default = 0)
+config.mediaportal.yt_param_regionid_idx = ConfigInteger(default = 2)
 config.mediaportal.yt_param_time_idx = ConfigInteger(default = 0)
 config.mediaportal.yt_param_meta_idx = ConfigInteger(default = 1)
 config.mediaportal.yt_paramListIdx = ConfigInteger(default = 0)
@@ -27,10 +23,16 @@ config.mediaportal.yt_param_video_type_idx = ConfigInteger(default = 0)
 config.mediaportal.yt_refresh_token = ConfigText(default="")
 
 APIKEYV3 = mp_globals.yt_a
-param_hl = ('&hl=en_GB', '&hl=de_DE', '&hl=fr_FR', '&hl=it_IT', '')
+param_hl = ('&hl=en-GB', '&hl=de-DE', '&hl=fr-FR', '&hl=it-IT', '')
 param_ajax_hl = ('en', 'de', 'fr', 'it', '')
 picker_lang = ''
 param_ajax_gl = ('us','gb','de','fr','it')
+
+agent = getUserAgent()
+std_headers = {
+	'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+	'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+}
 
 class youtubeGenreScreen(MenuHelper):
 	def __init__(self, session):
@@ -103,12 +105,12 @@ class youtubeGenreScreen(MenuHelper):
 			]
 
 		self.paramList = [
-			(_('Search request'), (self.paraQuery, None), (0,1,2)),
+			(_('Search request'), (self.paraQuery, None), (0,1,2,)),
 			(_('Event type'), (self.param_event_types, config.mediaportal.yt_param_event_types_idx), (0,)),
-			(_('Sort by'), (self.param_time, config.mediaportal.yt_param_time_idx), (0,1,2)),
-			(_('Language'), (self.param_metalang, config.mediaportal.yt_param_meta_idx), (0,1,2,4)),
-			(_('Search region'), (self.param_regionid, config.mediaportal.yt_param_regionid_idx), (0,1,2,4)),
-			(_('User name'), (self.paraAuthor, None), (0,1,2)),
+			(_('Sort by'), (self.param_time, config.mediaportal.yt_param_time_idx), (0,1,2,)),
+			(_('Language'), (self.param_metalang, config.mediaportal.yt_param_meta_idx), (0,1,2,5,6,7,8,9,10,11)),
+			(_('Search region'), (self.param_regionid, config.mediaportal.yt_param_regionid_idx), (0,1,2,5,6,7,8,9,10,11)),
+			(_('User name'), (self.paraAuthor, None), (0,1,2,)),
 			(_('3D Search'), (self.param_3d, config.mediaportal.yt_param_3d_idx), (0,)),
 			(_('Runtime'), (self.param_duration, config.mediaportal.yt_param_duration_idx), (0,)),
 			(_('Video definition'), (self.param_video_definition, config.mediaportal.yt_param_video_definition_idx), (0,)),
@@ -116,84 +118,220 @@ class youtubeGenreScreen(MenuHelper):
 			]
 
 		self.subCatUserChannel = [
-			('Start', '/featured?'),
-			('Videos', '/videos?'),
-			('Playlists', '/playlists?'),
-			('Channels', '/channels?')
+			(_('Featured'), '/featured?'),
+			(_('Videos'), '/videos?'),
+			(_('Playlists'), '/playlists?'),
+			(_('Channels'), '/channels?')
 			]
 
-		self.subCatMusicGenres = [
-			('Featured Playlists','https://www.youtube.com/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ/featured?'),
-			('All Playlists','https://www.youtube.com/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ/playlists?view=1&sort=lad&'),
-			('Genres','https://www.youtube.com/channel/%s/videos?'),
-			('All Video Uploads','https://www.youtube.com/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ/videos?')
+		self.subCatUserChannelPopularWorldwide = [
+			(_('Featured'), '/featured?'),
 			]
 
-		self.subCatMusicChannels = [
-			('Rap & Hip-Hop', 'UCUnSTiCHiHgZA9NQUG6lZkQ'),
-			('Rock', 'UCRZoK7sezr5KRjk7BBjmH6w'),
-			('Popmusik', 'UCE80FOXpJydkkMo-BYoJdEg'),
-			('Klassische Musik', 'UCLwMU2tKAlCoMSbGQDuiMSg'),
-			('Country', 'UClYMFaf6IdjQnZmsnw9N1hQ'),
-			('Jazz', 'UC7KZmdQxhcajZSEFLJr3gCg'),
-			('Disco', 'UCNGkvx5UwHzqlo6zDgRDYsQ'),
-			('Blues', 'UCYlU_M1PLtYZ6qTfKIUlxLQ'),
-			('Alternative Rock', 'UCHtUkBSmt4d92XP8q17JC3w'),
-			('Soul', 'UCsFaF_3y_L__y8kWAIEhv1w'),
-			('Funk', 'UCxk1wRJGOTmzJAbvbQ8VicQ'),
-			('R&B', 'UCvwDeZSN2oUHlLWYRLvKceA'),
-			('Reggae', 'UCEdvzYtzTH_FFpB3VRjFV6Q'),
-			("Children's Music", 'UCMBT_zT5NtEG_3Nn3XSPTxw'),
-			('Volksmusic', 'UCbMcht964OUJoeVi9oxFcKg'),
-			('Fingerstyle', 'UC63oXoh_yThcEiUmHbAiLiw'),
-			('Folk', 'UC9GxgUzRt2qUIII3tSSRjwQ'),
-			('Elektronische Musik', 'UCCIPrrom6DIftcrInjeMvsQ'),
-			('Lateinamerikanische Musik', 'UCYYsyo5ekR-2Nw10s4mj3pQ'),
-			('New Age', 'UCfqBDMEJrevX2_2XBUSxAqg'),
-			('K-Pop', 'UCsEonk9fs_9jmtw9PwER9yg'),
-			('Afrikanische Musik', 'UCadO807x4w5SAo-KKnQTMcA'),
-			('Arabische Musik', 'UCCStUvXbY5TbjDYJD_xKByQ'),
-			('Vokalmusik', 'UCrrrTqJSxijC3hIJ-2oL8mw'),
-			('Geistliche Musik', 'UCiIRzxB4CUW9vt5js6UFCRQ'),
-			('Comedy music', 'UCxKwRTQMME5HahBLLLMMELg'),
-			('Music of Asia', 'UCDQ_5Wcc54n1_GrAzf05uWQ'),
-			('Weltmusik', 'UCMHQZBr9QGPkACZ4hu2wqbQ'),
-			('Elektronische Tanzmusik', 'UCeAIo5P3sKEiuhGn-rExx7Q'),
-			('Techno', 'UCQLbTKToYT86oML-jx_DJMA'),
-			('Trance', 'UC5d4piMBQlBQRFpS9m_8UZQ'),
-			('Indische Musik', 'UC4K4LBy_IQGmQrAQVIa1JlA'),
-			('Pop-Rock', 'UCcu0YYUpyosw5_sLnK4wK4A'),
-			('Turkish pop music', 'UC7PC8CGB-pU7OJgMGhXIA_g'),
-			('Softrock', 'UCFGhkqw3_rCSBTb2_i0P0Zg')
+		self.subCatUserChannelPopular = [
+			(_('Featured'), '/featured?'),
+			(_('Videos'), '/videos?'),
+			(_('Playlists'), '/playlists?')
 			]
-		self.subCatMusicChannels.sort(key=lambda t : t[0].lower())
 
 		self.subCatYourChannel = [
-			('Favorites', 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=favorites%'),
-			('History', 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=watchHistory%'),
-			('Likes', 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=likes%'),
-			('New Subscription Videos', 'https://www.googleapis.com/youtube/v3/activities?part=contentDetails%2Csnippet&home=true&access_token=%ACCESSTOKEN%%ACT-upload%'),
-			('Playlists', 'https://www.googleapis.com/youtube/v3/playlists?part=snippet%2Cid&mine=true&access_token=%ACCESSTOKEN%'),
-			('Recommendations', 'https://www.googleapis.com/youtube/v3/activities?part=contentDetails%2Csnippet&home=true&access_token=%ACCESSTOKEN%%ACT-recommendation%'),
-			('Subscriptions', 'https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&access_token=%ACCESSTOKEN%'),
-			('Uploads', 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=uploads%'),
-			('Watch Later', 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=watchLater%')
+			(_('Playlists'), 'https://www.googleapis.com/youtube/v3/playlists?part=snippet%2Cid&mine=true&access_token=%ACCESSTOKEN%'),
+			(_('Uploads'), 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=uploads%'),
+			(_('Likes'), 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true&access_token=%ACCESSTOKEN%%playlistId=likes%'),
+			(_('Subscriptions'), 'https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&access_token=%ACCESSTOKEN%'),
 			]
 
 		self.mainGenres = [
-			('Video search', 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=video&key=%KEY%'),
-			('Playlist search', 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=playlist&key=%KEY%'),
-			('Channel search', 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=channel&key=%KEY%'),
-			('Your channel', ''),
-			('Guide Categories', 'https://www.googleapis.com/youtube/v3/guideCategories?part=snippet&key=%KEY%'),
-			('Favoriten', ''),
-			('Beliebt auf YouTube - Deutschland', 'http://www.youtube.com/channel/UCK274iXLZhs8MFGLsncOyZQ'),
-			('Sport', 'https://www.youtube.com/channel/UCEgdi0XIXXZ-qJOFPf4JSKw'),
-			('KinoCheck', 'https://www.youtube.com/user/KinoCheck'),
-			('#Live', 'https://www.youtube.com/channel/UC4R8DWoMoI7CAwX8_LjQHig')
+			(_('Video search'), 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=video&key=%KEY%'),
+			(_('Playlist search'), 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=playlist&key=%KEY%'),
+			(_('Channel search'), 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=channel&key=%KEY%'),
+			(_('My channel'), ''),
+			(_('Favorites'), ''),
+			(_('Categories'), 'https://www.googleapis.com/youtube/v3/guideCategories?part=snippet&key=%KEY%'),
+			(_('YouTube Channels'), ''),
+			(_('Selected Channels'), ''),
+			(_('Music Channels'), ''),
+			(_('Gaming Channels'), ''),
+			(_('Car & Vehicle Channels'), ''),
+			(_('Radio Play Channels'), ''),
 			]
-		self.mainGenres.append(('Youtube Music', ''))
-		self.mainGenres.append(('VEVO Music', 'https://www.youtube.com/user/VEVO'))
+
+		self.YTChannels = [
+			(_('Popular on YouTube') + " - " + _('Worldwide'), 'http://www.youtube.com/channel/UCgGzSIa8zIsJHbSs0bLplag'),
+			(_('Popular on YouTube') + " - " + _('Germany'), 'http://www.youtube.com/channel/UCK274iXLZhs8MFGLsncOyZQ'),
+			(_('Popular on YouTube') + " - " + _('USA'), 'http://www.youtube.com/channel/UCF0pVplsI8R5kcAqgtoRqoA'),
+			(_('News'), 'https://www.youtube.com/channel/UCYfdidRxbB8Qhf0Nx7ioOYw'),
+			(_('Music'), 'https://www.youtube.com/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ'),
+			(_('Gaming'), 'https://www.youtube.com/channel/UCOpNcN46UbXVtpKMrmU4Abg'),
+			(_('Sports'), 'https://www.youtube.com/channel/UCEgdi0XIXXZ-qJOFPf4JSKw'),
+			(_('Live'), 'https://www.youtube.com/channel/UC4R8DWoMoI7CAwX8_LjQHig'),
+			(_('Education'), 'https://www.youtube.com/channel/UC3yA8nDwraeOfnYfBWun83g'),
+			('YouTube Spotlight', 'https://www.youtube.com/channel/UCBR8-60-B28hp2BmDPdntcQ'),
+			('YouTube Trends', 'https://www.youtube.com/channel/UCeNZlh03MyUkjRlLFpVQxsg'),
+			('YouTube Creators', 'https://www.youtube.com/channel/UCUZHFZ9jIKrLroW8LcyJEQQ'),
+			('YouTube Nation', 'https://www.youtube.com/channel/UCUD4yDVyM54QpfqGJX4S7ng'),
+			('YouTube Rewind', 'https://www.youtube.com/channel/UCnHXLLNHjNAnDQ50JANLG1g')
+			]
+
+		self.HoerspielChannels = [
+			('Audible Hörbücher', 'https://www.youtube.com/user/audibletrailer'),
+			('Björns Hörspiel-TV', 'https://www.youtube.com/user/BjoernsHoerspielTV'),
+			('Edgar Allan Poe´s Kaminzimmer', 'https://www.youtube.com/user/EAPoeProductions'),
+			('felix auris', 'https://www.youtube.com/user/mercuriius'),
+			('FRUITY - SOUND - DISASTER', 'https://www.youtube.com/user/MrFruitylooper'),
+			('Hein Bloed', 'https://www.youtube.com/user/Heinbloedful'),
+			('Hörbücher, Hörspiele und mehr', 'https://www.youtube.com/user/BestSound1000'),
+			('Hörspiele und Klassik', 'https://www.youtube.com/user/scyliorhinus'),
+			('LAUSCH - Phantastische Hörspiele', 'https://www.youtube.com/user/merlausch'),
+			('Lauschgoldladen', 'https://www.youtube.com/user/Lauschgoldladen'),
+			('Multipolizei2', 'https://www.youtube.com/user/Multipolizei2'),
+			('Multipolizei3', 'https://www.youtube.com/user/Multipolizei3'),
+			('Soundtales Productions', 'https://www.youtube.com/user/SoundtalesProduction'),
+			]
+		self.HoerspielChannels.sort(key=lambda t : t[0].lower())
+		self.subCatHoerspielChannels = []
+		for item in self.HoerspielChannels:
+			self.subCatHoerspielChannels.append(self.subCatUserChannel)
+
+		self.CarChannels = [
+			('Alfa Romeo Deutschland', 'https://www.youtube.com/user/AlfaRomeoDE'),
+			('Audi Deutschland', 'https://www.youtube.com/user/Audi'),
+			('BMW Deutschland', 'https://www.youtube.com/user/BMWDeutschland'),
+			('BMW Motorrad', 'https://www.youtube.com/user/bmwmotorrad'),
+			('CITROËN Deutschland', 'https://www.youtube.com/user/CitroenDeutschland'),
+			('Ducati Motor Official Channel', 'https://www.youtube.com/user/DucatiMotorHolding'),
+			('Fiat Deutschland', 'https://www.youtube.com/user/FiatDeutschland'),
+			('Ford Deutschland', 'https://www.youtube.com/user/fordindeutschland'),
+			('Harley-Davidson Europe', 'https://www.youtube.com/user/HarleyDavidsonEurope'),
+			('Honda Deutschland', 'https://www.youtube.com/user/HondaDeutschlandGmbH'),
+			('Kawasaki Motors Europe', 'https://www.youtube.com/user/Kawasakimotors'),
+			('Land Rover Deutschland', 'https://www.youtube.com/user/experiencegermany'),
+			('Mazda Deutschland', 'https://www.youtube.com/user/MazdaDeutschland'),
+			('Mercedes-Benz', 'https://www.youtube.com/user/mercedesbenz'),
+			('MITSUBISHI MOTORS Deutschland', 'https://www.youtube.com/user/MitsubishiMotorsDE'),
+			('Moto Guzzi', 'https://www.youtube.com/user/motoguzziofficial'),
+			('Nissan Deutschland', 'https://www.youtube.com/user/NissanDeutsch'),
+			('Porsche Channel', 'https://www.youtube.com/user/Porsche'),
+			('SEAT Deutschland', 'https://www.youtube.com/user/SEATde'),
+			('ŠKODA AUTO Deutschland', 'https://www.youtube.com/user/skodade'),
+			('WAYOFLIFE SUZUKI', 'https://www.youtube.com/user/GlobalSuzukiChannel'),
+			('Toyota Deutschland', 'https://www.youtube.com/user/toyota'),
+			('Official Triumph Motorcycles', 'https://www.youtube.com/user/OfficialTriumph'),
+			('Volkswagen', 'https://www.youtube.com/user/myvolkswagen'),
+			('Yamaha Motor Europe', 'https://www.youtube.com/user/YamahaMotorEurope'),
+			('AUTO BILD TV', 'https://www.youtube.com/user/Autobild'),
+			('autotouring-TV', 'https://www.youtube.com/user/autotouring'),
+			('ADAC e.V.', 'https://www.youtube.com/user/adac'),
+			('MOTORVISION BIKE', 'https://www.youtube.com/user/motorvisionbike'),
+			('www.MOTORRADonline.de', 'https://www.youtube.com/user/motorrad'),
+			('TOURENFAHRER', 'https://www.youtube.com/user/Tourenfahrer'),
+			('DEKRA Automobil GmbH', 'https://www.youtube.com/user/DEKRAAutomobil'),
+			('Motorvision', 'https://www.youtube.com/user/MOTORVISIONcom'),
+			('Auto Motor & Sport', 'https://www.youtube.com/user/automotorundsport'),
+			('1000PS Motorradvideos', 'https://www.youtube.com/user/1000ps'),
+			('Motorrad Online', 'https://www.youtube.com/user/motorrad'),
+			('DMAX MOTOR', 'https://www.youtube.com/user/DMAX'),
+			]
+		self.CarChannels.sort(key=lambda t : t[0].lower())
+		self.subCatCarChannels = []
+		for item in self.CarChannels:
+			self.subCatCarChannels.append(self.subCatUserChannel)
+
+		self.GamingChannels = [
+			('THCsGameChannel', 'https://www.youtube.com/user/THCsGameChannel'),
+			('Game Tube', 'https://www.youtube.com/user/GameTube'),
+			('Electronic Arts GmbH', 'https://www.youtube.com/user/ElectronicArtsDE'),
+			('Ubisoft', 'https://www.youtube.com/user/ubisoft'),
+			('PlayStation', 'https://www.youtube.com/user/PlayStation'),
+			('Game Star', 'https://www.youtube.com/user/GameStarDE'),
+			('Assassins Creed DE', 'https://www.youtube.com/user/AssassinsCreedDE'),
+			('XboxDE\'s channel', 'https://www.youtube.com/user/XboxDE'),
+			('Disney Deutschland', 'https://www.youtube.com/user/WaltDisneyStudiosDE'),
+			('GIGA', 'https://www.youtube.com/user/giga'),
+			('Gronkh', 'https://www.youtube.com/user/Gronkh'),
+			('Sarazar', 'https://www.youtube.com/user/SarazarLP'),
+			('RANDOM ENCOUNTER', 'https://www.youtube.com/user/thegeekmythology'),
+			('gameinside tv', 'https://www.youtube.com/user/gameinsideshow'),
+			('Comedy Gaming mit Pink Panter', 'https://www.youtube.com/user/WartimeDignity'),
+			('CommanderKrieger - Baff Disch', 'https://www.youtube.com/user/CommanderKrieger'),
+			('Danny Burnage - Darauf ein Snickers-Eis!', 'https://www.youtube.com/user/TheDannyBurnage'),
+			('m4xFPS - Keks mit ♥', 'https://www.youtube.com/user/m4xFPS'),
+			('Kanal von xTheSolution', 'https://www.youtube.com/user/xTheSolution'),
+			('TheDoctorKaboom', 'https://www.youtube.com/user/TheDoctorKaboom'),
+			]
+		self.GamingChannels.sort(key=lambda t : t[0].lower())
+		self.subCatGamingChannels = []
+		for item in self.GamingChannels:
+			self.subCatGamingChannels.append(self.subCatUserChannel)
+
+		self.MusicChannels = [
+			('Ultra Music', 'https://www.youtube.com/user/UltraRecords'),
+			('ArmadaMusic.TV', 'https://www.youtube.com/user/armadamusic'),
+			('YOU LOVE DANCE.TV', 'https://www.youtube.com/user/Planetpunkmusic'),
+			('Classical Music Only Channel', 'https://www.youtube.com/user/ClassicalMusicOnly'),
+			('Music Channel Romania', 'https://www.youtube.com/user/1musicchannel'),
+			('50 Cent Music', 'https://www.youtube.com/user/50CentMusic'),
+			('GMC Schlager', 'https://www.youtube.com/user/BlueSilverstar'),
+			('Classical Music Channel / Klassische', 'https://www.youtube.com/user/BPanther'),
+			('EMI Music Germany', 'https://www.youtube.com/user/EMIMusicGermany'),
+			('Sony Music Germany', 'https://www.youtube.com/user/SMECatalogGermany'),
+			('Kanal von MyWorldCharts', 'https://www.youtube.com/user/MyWorldCharts'),
+			('CaptainCharts', 'https://www.youtube.com/user/CaptainCharts'),
+			('PowerCharts', 'https://www.youtube.com/user/PowerCharts'),
+			('Kontor.TV', 'https://www.youtube.com/user/kontor'),
+			('Scooter Official', 'https://www.youtube.com/user/scooter'),
+			('ATZEN MUSIK TV', 'https://www.youtube.com/user/atzenmusiktv'),
+			('BigCityBeats', 'https://www.youtube.com/user/HammerDontHurtEm'),
+			('The Best Of', 'https://www.youtube.com/user/alltimebestofmusic'),
+			('Tomorrowland', 'https://www.youtube.com/user/TomorrowlandChannel'),
+			('DrDoubleT', 'https://www.youtube.com/user/DrDoubleT'),
+			('►Techno, HandsUp & Dance◄', 'https://www.youtube.com/user/DJFlyBeatMusic'),
+			('Zooland Records', 'https://www.youtube.com/user/zoolandMusicGmbH'),
+			('Bazooka Records', 'https://www.youtube.com/user/bazookalabel'),
+			('Crystal Lake Music', 'https://www.youtube.com/user/CrystaLakeTV'),
+			('SKRILLEX', 'https://www.youtube.com/user/TheOfficialSkrillex'),
+			('AggroTV', 'https://www.youtube.com/user/aggroTV'),
+			('Bands & ART-Ellie Goulding', 'https://www.youtube.com/user/EllieGouldingEmpire'),
+			('Bands & ART-Psyche', 'https://www.youtube.com/user/thandewye'),
+			('Bands & ART-Joint Venture', 'https://www.youtube.com/user/srudlak'),
+			('Bands & ART-Madonna', 'https://www.youtube.com/user/madonna'),
+			('BB Sound Production', 'https://www.youtube.com/user/b0ssy007'),
+			('Chill-out,Lounge,Jazz,Electronic,Psy,Piano,Trance', 'https://www.youtube.com/user/aliasmike2002'),
+			('Gothic1', 'https://www.youtube.com/user/AiratzuMusic'),
+			('Gothic2', 'https://www.youtube.com/user/INM0R4L'),
+			('Gothic-Industrial Mix', 'https://www.youtube.com/user/noetek'),
+			('Wave & Gothic', 'https://www.youtube.com/user/MrBelorix'),
+			('Indie', 'https://www.youtube.com/user/curie78'),
+			('Planetpunkmusic TV', 'https://www.youtube.com/user/Planetpunkmusic'),
+			('Selfmade Records', 'https://www.youtube.com/user/SelfmadeRecords'),
+			('UKF-DrumandBass', 'https://www.youtube.com/user/UKFDrumandBass'),
+			('UKF-Dubstep', 'https://www.youtube.com/user/UKFDubstep'),
+			('UKF-Music', 'https://www.youtube.com/user/UKFMusic'),
+			('UKF-Mixes', 'https://www.youtube.com/user/UKFMixes'),
+			('UKF-Live', 'https://www.youtube.com/user/UKFLive'),
+			('Smarty Music', 'https://www.youtube.com/user/smartymcfly'),
+			('MoMMusic Network', 'https://www.youtube.com/user/MrMoMMusic'),
+			('Schlager Affe', 'https://www.youtube.com/user/schlageraffe2011'),
+			('Elvis Presley', 'https://www.youtube.com/user/elvis'),
+			('Dj3P51LON', 'https://www.youtube.com/user/Dj3P51LON'),
+			('HeadhunterzMedia', 'https://www.youtube.com/user/HeadhunterzMedia'),
+			('GMC Volkstümlicher Schlager', 'https://www.youtube.com/user/gusbara'),
+			('GMC HQ Volkstümlicher Schlager', 'https://www.youtube.com/user/GMChq'),
+			]
+		self.MusicChannels.sort(key=lambda t : t[0].lower())
+		self.subCatMusicChannels = []
+		for item in self.MusicChannels:
+			self.subCatMusicChannels.append(self.subCatUserChannel)
+
+		self.SelectedChannels = [
+			('VEVO Music', 'https://www.youtube.com/user/VEVO'),
+			('KinoCheck', 'https://www.youtube.com/user/KinoCheck'),
+			('Rocket Beans TV', 'https://www.youtube.com/user/ROCKETBEANSTV'),
+			]
+		self.SelectedChannels.sort(key=lambda t : t[0].lower())
+		self.subCatSelectedChannels = []
+		for item in self.SelectedChannels:
+			self.subCatSelectedChannels.append(self.subCatUserChannel)
 
 		MenuHelper.__init__(self, session, 2, None, "", "", self._defaultlistcenter, "ytSearchScreen.xml")
 
@@ -246,7 +384,7 @@ class youtubeGenreScreen(MenuHelper):
 			rc = 'US'
 
 		url = 'https://www.googleapis.com/youtube/v3/videoCategories?part=snippet%s&regionCode=%s&key=%s' % (hl, rc, APIKEYV3)
-		twAgentGetPage(url).addCallback(self.parseCats)
+		twAgentGetPage(url, agent=agent, headers=std_headers).addCallback(self.parseCats)
 
 	def parseCats(self, data):
 		data = json.loads(data)
@@ -259,21 +397,32 @@ class youtubeGenreScreen(MenuHelper):
 		self.mh_genreMenu = [
 			self.mainGenres,
 			[
-			self.subCat, None, None, self.subCatYourChannel, None, None, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannel, self.subCatMusicGenres, self.subCatUserChannel
+			self.subCat,
+			None,
+			None,
+			self.subCatYourChannel,
+			None,
+			None,
+			self.YTChannels,
+			self.SelectedChannels,
+			self.MusicChannels,
+			self.GamingChannels,
+			self.CarChannels,
+			self.HoerspielChannels,
 			],
 			[
 			self.subCat_L2,
 			None,
 			None,
-			[None,None,None,None,None,None,None,None,None],
+			[None, None, None, None],
 			None,
 			None,
-			[None,None,None,None],
-			[None, None, None, None],
-			[None, None, None, None],
-			[None, None, None, None],
-			[None, None, self.subCatMusicChannels, None],
-			[None, None, None,None]
+			[self.subCatUserChannelPopularWorldwide, self.subCatUserChannelPopular, self.subCatUserChannelPopular, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannel, self.subCatUserChannelPopular, self.subCatUserChannelPopular, self.subCatUserChannelPopular, self.subCatUserChannelPopular, self.subCatUserChannelPopular],
+			self.subCatSelectedChannels,
+			self.subCatMusicChannels,
+			self.subCatGamingChannels,
+			self.subCatCarChannels,
+			self.subCatHoerspielChannels,
 			]
 			]
 		self.mh_loadMenu()
@@ -319,9 +468,11 @@ class youtubeGenreScreen(MenuHelper):
 			self.old_mainidx = self.mh_menuIdx[0]
 
 		showCtr = 0
+		self['Parameter'].hide()
 		if self.mh_menuIdx[0] in self.paramList[0][2]:
 			self['query'].show()
 			self['Query'].show()
+			self['Parameter'].show()
 			showCtr = 1
 		else:
 			self['query'].hide()
@@ -346,6 +497,7 @@ class youtubeGenreScreen(MenuHelper):
 		if self.mh_menuIdx[0] in self.paramList[3][2]:
 			self['metalang'].show()
 			self['Metalang'].show()
+			self['Parameter'].show()
 			showCtr = 1
 		else:
 			self['metalang'].hide()
@@ -453,7 +605,7 @@ class youtubeGenreScreen(MenuHelper):
 
 	def getUserChannelId(self, usernm, callback):
 		url = 'https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=%s&key=%s' % (usernm, APIKEYV3)
-		twAgentGetPage(url).addCallback(self.parseChannelId).addCallback(lambda x: callback()).addErrback(self.parseChannelId, True)
+		twAgentGetPage(url, agent=agent, headers=std_headers).addCallback(self.parseChannelId).addCallback(lambda x: callback()).addErrback(self.parseChannelId, True)
 
 	def parseChannelId(self, data, err=False):
 		try:
@@ -490,11 +642,9 @@ class youtubeGenreScreen(MenuHelper):
 					vid_type = self.param_video_type[config.mediaportal.yt_param_video_type_idx.value][1]
 					genreurl += _3d + dura + vid_def + event_type + vid_type
 
-		elif 'Favoriten' in self.mh_genreTitle:
+		elif _('Favorites') in self.mh_genreTitle:
 			genreurl = ''
-		elif ':Genres' in self.mh_genreTitle:
-			genreurl = self.mh_genreUrl[1] % self.mh_genreUrl[2]
-		elif 'Sport:' in self.mh_genreTitle or 'Beliebt auf' in self.mh_genreTitle or 'Music:' in self.mh_genreTitle or 'KinoCheck' in self.mh_genreTitle or '#Live' in self.mh_genreTitle:
+		else:
 			genreurl = self.mh_genreUrl[0] + self.mh_genreUrl[1] + self.mh_genreUrl[2]
 
 		self.session.open(YT_ListScreen, genreurl, self.mh_genreTitle)
@@ -502,7 +652,7 @@ class youtubeGenreScreen(MenuHelper):
 	def mh_callGenreListScreen(self):
 		global picker_lang
 		picker_lang = ''
-		if 'Your channel' in self.mh_genreTitle:
+		if _('My channel') in self.mh_genreTitle:
 			if not config.mediaportal.yt_refresh_token.value:
 				self.session.open(MessageBoxExt, _("You need to request a token to allow access to your YouTube account."), MessageBoxExt.TYPE_INFO)
 				return
@@ -526,7 +676,7 @@ class youtubeGenreScreen(MenuHelper):
 		hl = param_ajax_hl[config.mediaportal.yt_param_meta_idx.value]
 		gl = param_ajax_gl[config.mediaportal.yt_param_regionid_idx.value]
 		url = "https://clients1.google.com/complete/search?client=youtube&hl=%s&gl=%s&ds=yt&q=%s" % (hl, gl, urllib.quote_plus(text))
-		d = twAgentGetPage(url, agent=None, headers=std_headers, timeout=5)
+		d = twAgentGetPage(url, agent=agent, headers=std_headers, timeout=5)
 		d.addCallback(self.gotSuggestions, max_res)
 		d.addErrback(self.gotSuggestions, max_res, True)
 		return d
@@ -570,13 +720,9 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
-		self.favoGenre = self.genreName.startswith('Favoriten')
-		self.playlistGenre = 'Playlist feeds' == self.genreName or ':Playlists' in self.genreName
-		self.channelGenre =  self.genreName in ('Channel feeds', 'Channel search')
-		self.subscriptionGenre = ':Subscriptions' in self.genreName
+		self.favoGenre = self.genreName.startswith(_('Favorites'))
 		self.apiUrl = 'gdata.youtube.com' in self.stvLink
 		self.apiUrlv3 = 'googleapis.com' in self.stvLink
-		self.musicGenre = 'Music:' in self.genreName
 		self.ajaxUrl = '/c4_browse_ajax' in self.stvLink
 		self.c4_browse_ajax = ''
 		self.url_c4_browse_ajax_list = ['']
@@ -658,6 +804,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		self.modeShowThumb = 1
 		self.playAll = True
 		self.showCover = False
+		self.lastCover = ""
 		self.actType = None
 
 		if not self.apiUrl:
@@ -670,7 +817,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		if m:
 			if not m.group(1).startswith('UC'):
 				url = 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=%s&key=%s' % (m.group(1), APIKEYV3)
-				return twAgentGetPage(url, agent=None, headers=self.headers).addCallback(self.parsePlaylistId).addErrback(self.dataError)
+				return twAgentGetPage(url, agent=agent, headers=self.headers).addCallback(self.parsePlaylistId).addErrback(self.dataError)
 			else:
 				self.apiUrl = False
 				self.apiUrlv3 = True
@@ -739,7 +886,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 
 	def setLang(self, url, hl):
 		picker_url = "https://www.youtube.com/picker_ajax?action_language=1&base_url=" + urllib.quote(url)
-		twAgentGetPage(picker_url, cookieJar=self.keckse, agent=None, headers=self.headers).addCallback(self.gotPickerData, hl).addErrback(self.dataError)
+		twAgentGetPage(picker_url, cookieJar=self.keckse, agent=agent, headers=self.headers).addCallback(self.gotPickerData, hl).addErrback(self.dataError)
 
 	def gotPickerData(self, data, hl):
 		global picker_lang
@@ -759,7 +906,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 				'hl': hl})
 			headers = self.headers.copy()
 			headers['Content-Type'] = 'application/x-www-form-urlencoded'
-			twAgentGetPage(action_url, method='POST', cookieJar=self.keckse, agent=None, headers=headers, postdata=postdata).addCallback(lambda _: self.loadPageData()).addErrback(self.pickerError)
+			twAgentGetPage(action_url, method='POST', cookieJar=self.keckse, agent=agent, headers=headers, postdata=postdata).addCallback(lambda _: self.loadPageData()).addErrback(self.pickerError)
 
 	def pickerError(self, err):
 		printl('pickerError:%s' % err,self,'E')
@@ -769,12 +916,12 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 			url = url.replace('%ACCESSTOKEN%', token, 1)
 			if '%playlistId=' in url:
 				return self.getRelatedUserPL(url, token)
-		twAgentGetPage(url, cookieJar=self.keckse, agent=None, headers=self.headers).addCallback(self.genreData).addErrback(self.dataError)
+		twAgentGetPage(url, cookieJar=self.keckse, agent=agent, headers=self.headers).addCallback(self.genreData).addErrback(self.dataError)
 
 	def getRelatedUserPL(self, url, token):
 		pl = re.search('%playlistId=(.*?)%', url).group(1)
 		yt_url = re.sub('%playlistId=.*?%', '', url, 1)
-		twAgentGetPage(yt_url, cookieJar=self.keckse, agent=None, headers=self.headers).addCallback(self.parseRelatedPL, token, pl).addErrback(self.dataError)
+		twAgentGetPage(yt_url, cookieJar=self.keckse, agent=agent, headers=self.headers).addCallback(self.parseRelatedPL, token, pl).addErrback(self.dataError)
 
 	def parseRelatedPL(self, data, token, pl):
 		try:
@@ -786,7 +933,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 				playlist = item['contentDetails']['relatedPlaylists']
 				if pl in playlist:
 					yt_url = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=%s&access_token=%s&order=date' % (str(playlist[pl]), token)
-					return twAgentGetPage(yt_url, cookieJar=self.keckse, agent=None, headers=self.headers).addCallback(self.genreData).addErrback(self.dataError)
+					return twAgentGetPage(yt_url, cookieJar=self.keckse, agent=agent, headers=self.headers).addCallback(self.genreData).addErrback(self.dataError)
 
 		reactor.callLater(0, genreData, '')
 
@@ -1081,7 +1228,9 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		desc = self['liste'].getCurrent()[0][4]
 		self['name'].setText(stvTitle)
 		self['handlung'].setText(desc)
-		self.coverHelper.getCover(stvImage)
+		if self.lastCover != stvImage:
+			self.lastCover = stvImage
+			self.coverHelper.getCover(stvImage)
 
 	def youtubeErr(self, error):
 		self['handlung'].setText(_("Unfortunately, this video can not be played!\n")+str(error))
@@ -1513,7 +1662,6 @@ class YT_Oauth2:
 		if error:
 			self.session.open(MessageBoxExt, _("Error: Unable to request the Device code"), MessageBoxExt.TYPE_ERROR)
 			printl(_("Error: Unable to request the Device code"),self,'E')
-			print data
 		else:
 			googleData = json.loads(data)
 			self._interval = googleData['interval']
@@ -1541,7 +1689,6 @@ class YT_Oauth2:
 			self.waitingBox.cancel()
 			self.session.open(MessageBoxExt, _('Error: Unable to get tokens!'), MessageBoxExt.TYPE_ERROR)
 			printl(_('Error: Unable to get tokens!'),self,'E')
-			print data
 		else:
 			try:
 				tokenData = json.loads(data)
@@ -1579,7 +1726,6 @@ class YT_Oauth2:
 	def _cb_refresh(self, data, error=True):
 		if error:
 			printl(_('Error: Unable to refresh token!'),self,'E')
-			print data
 			return data
 		else:
 			try:
@@ -1588,7 +1734,6 @@ class YT_Oauth2:
 				self._expiresIn = tokenData['expires_in']
 			except:
 				printl('json data error!',self,'E')
-				print data
 				return ""
 			else:
 				self._startRefreshTimer()
@@ -1601,7 +1746,6 @@ class YT_Oauth2:
 	def _cb_revoke(self, data, error=True):
 		if error:
 			printl('Error: Unable to revoke!',self,'E')
-			print data
 
 	def _startRefreshTimer(self):
 		if self._refreshTimer != None and self._refreshTimer.active():

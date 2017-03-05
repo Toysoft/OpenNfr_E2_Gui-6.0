@@ -258,32 +258,6 @@ class hdfilmeParsing(MPScreen, ThumbsHelper):
 		self.session.open(hdfilmeStreams, title, url, cover)
 
 class hdfilmeStreams(MPScreen):
-	video_formats = (
-			{
-				'38' : 5, #MP4 Original (HD)
-				'37' : 5, #MP4 1080p (HD)
-				'22' : 4, #MP4 720p (HD)
-				'35' : 2, #FLV 480p
-				'18' : 1, #MP4 360p
-				'34' : 3, #FLV 360p
-			},
-			{
-				'38' : 5, #MP4 Original (HD)
-				'37' : 5, #MP4 1080p (HD)
-				'22' : 4, #MP4 720p (HD)
-				'35' : 1, #FLV 480p
-				'18' : 2, #MP4 360p
-				'34' : 3, #FLV 360p
-			},
-			{
-				'38' : 2, #MP4 Original (HD)
-				'37' : 1, #MP4 1080p (HD)
-				'22' : 1, #MP4 720p (HD)
-				'35' : 3, #FLV 480p
-				'18' : 4, #MP4 360p
-				'34' : 5, #FLV 360p
-			}
-		)
 	new_video_formats = (
 			{
 				'1080' : 4, #MP4 1080p
@@ -358,7 +332,7 @@ class hdfilmeStreams(MPScreen):
 						folge = 'Folge ' if len(streams) > 1 and len(servers) == 1 else server.strip()
 						for (epi_num, link) in streams:
 							if not folge[0] == 'F': epi_num = ''
-							self.streamList.append((folge+epi_num, link, epi_num))
+							self.streamList.append((folge+epi_num, link.replace('&amp;','&'), epi_num))
 		if not len(self.streamList):
 			streams = re.findall('_episode=".*?" _link="" _sub=""\s+href="(.*?)">', data, re.S)
 			if streams:
@@ -366,14 +340,13 @@ class hdfilmeStreams(MPScreen):
 					epi_num = re.findall('episode=(\d+)\&amp', link)
 					if epi_num:
 						epi_num = epi_num[0]
-						print link, epi_num
 						if re.search('staffel ', self.movietitle, re.I):
 							folge = 'Folge '
 							_epi_num = epi_num.strip(' \t\n\r')
 						else:
 							folge = 'Stream '
 							_epi_num = ''
-						self.streamList.append((folge+epi_num, link, _epi_num))
+						self.streamList.append((folge+epi_num, link.replace('&amp;','&'), _epi_num))
 
 		if len(self.streamList) == 0:
 			self.streamList.append((_('No supported streams found!'), None, None))
@@ -387,7 +360,7 @@ class hdfilmeStreams(MPScreen):
 		if self.keyLocked or exist == None:
 			return
 		link = self['liste'].getCurrent()[0][1]
-		self.getStreamUrl(link)
+		twAgentGetPage(link, agent=hf_agent, cookieJar=hf_cookies).addCallback(self.getStreamUrl).addErrback(self.dataError)
 
 	def makeTitle(self):
 		episode = self['liste'].getCurrent()[0][2]
@@ -397,153 +370,33 @@ class hdfilmeStreams(MPScreen):
 			title = self.movietitle
 		return title
 
-	def getStreamUrl(self, link):
-		import codecs, base64
-		if not link.startswith('http'):
-			stream_url = str(codecs.decode(base64.decodestring(link), 'rot_13'))
-		else:
-			stream_url = link
-		if stream_url.startswith(BASE_URL):
-			data = hf_grabpage(stream_url)
-			self.getBaseStreamUrl(data, stream_url)
-		elif '/picasaweb' in stream_url:
-			data = hf_grabpage(stream_url)
-			self.extractPicasa(data, stream_url, videoPrio=int(config.mediaportal.videoquali_others.value))
-		elif '.youtube.' in stream_url:
-			m = re.search('\?v=(.*?)(&|)', stream_url)
-			if m:
-				id = m.group(1)
-				title = self.makeTitle()
-				self.session.open(
-					YoutubePlayer,
-					[(title, id, self.cover)],
-					playAll = False,
-					showPlaylist=False,
-					showCover=True
-					)
-			else:
-				self.stream_not_found()
-		else:
-			self.play(stream_url)
+	def getStreamUrl(self, data):
+		parse = re.findall('movieid\s=\s(\d+).*?episode\s=\s(\d+)', data, re.S)
+		if parse:
+			url = BASE_URL + "/movie/getlink/"+str(parse[0][0])+"/"+str(parse[0][1])
+			twAgentGetPage(url, agent=hf_agent, cookieJar=hf_cookies).addCallback(self.extractStreams).addErrback(self.dataError)
 
-	def getBaseStreamUrl(self, data, stream_url):
-		m = re.search('myplayer"><iframe.+?src="(.*?)"', data)
-		if m:
-			std_headers = {
-				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-				'Accept-Language': 'en-us,en;q=0.5',
-				'Referer': stream_url
-			}
-			twAgentGetPage(m.group(1), agent=hf_agent, headers=std_headers).addCallback(self.extractVimeoStream, videoPrio=int(config.mediaportal.videoquali_others.value)).addErrback(self.dataError)
-		else:
-			m = re.search('<div\sid="myplayer">\s*<script>(.*?)</iframe></div>', data, re.S)
-			if m:
-				self.extractPlayerDiv(m.group(1), stream_url)
-			else:
-				self.extractSourceStream(data, videoPrio=int(config.mediaportal.videoquali_others.value))
-
-	def extractPlayerDiv(self, dcontent, stream_url):
-		import array, binascii
-		from Crypto.Cipher import AES
-		key = array.array('B', "KHONGcoKEYdauMA!")
-		decrypter = AES.new(key, AES.MODE_ECB)
-		pdiv = '<div id="myplayer">'
-		for m in re.finditer('abc\(\'(.*?)\'\);', dcontent):
-			abc = m.group(1)
-			cipher_str = array.array('B',binascii.unhexlify(abc))
-			pdiv += decrypter.decrypt(cipher_str)
-		self.getBaseStreamUrl(pdiv, stream_url)
-
-	def extractSourceStream(self, data, videoPrio=2):
-		m = re.search('\'sources\' : (\[.*?\])', data)
-		if not m:
-			m = re.search('\'sources\'\s*:\s*(\w+),', data)
-			if m:
-				m = re.search('var %s\s*=\s*(\[.*?\])' % m.group(1), data)
-		if not m:
-			self.extractOthers(data, videoPrio)
-		else:
-			d = json.loads('{"streams":%s}' % m.group(1)) if m else None
-			links = {}
+	def extractStreams(self, data, videoPrio=2):
 			try:
-				for stream in d['streams']:
-					key = str(stream.get('label'))
-					if key:
-						if self.new_video_formats[videoPrio].has_key(key):
-							links[self.new_video_formats[videoPrio][key]] = stream.get('file')
-						else:
-							print 'no format prio:', key
-				try:
-					video_url = links[sorted(links.iterkeys())[0]]
-				except (KeyError,IndexError):
-					print "Error: no video url found:\n"
-					self.stream_not_found()
-				else:
-					self.play(str(video_url))
+				import base64
+				data = base64.b64decode(data)
 			except:
 				self.stream_not_found()
-
-	def extractOthers(self, data, videoPrio):
-		m = re.search('<div\sid="mediaplayer".*?<iframe\ssrc="(.*?)"', data, re.S)
-		if m:
-			link = m.group(1)
-			get_stream_link(self.session).check_link(link, self.play)
-		else:
-			self.stream_not_found()
-
-	def extractVimeoStream(self, data, videoPrio=2):
-		m = re.search('function\(e,a\)\{var\s+\w=(\{.*?\});', data, re.S)
-		if not m:
-			self.stream_not_found()
-		else:
-			d = json.loads('{"streams":%s}' % m.group(1)) if m else None
+			d = json.loads(data)
 			links = {}
-			try:
-				for stream in d['streams']['request']['files']['progressive']:
-					key = stream.get('quality').upper()
-					if key:
-						if self.new_video_formats[videoPrio].has_key(key):
-							links[self.new_video_formats[videoPrio][key]] = stream.get('url')
-						else:
-							print 'no format prio:', key
-				try:
-					video_url = links[sorted(links.iterkeys())[0]]
-				except (KeyError,IndexError):
-					print "Error: no video url found:\n"
-					self.stream_not_found()
-				else:
-					self.play(str(video_url))
-			except:
-				self.stream_not_found()
-
-	def extractPicasa(self, data, p_url, videoPrio=2):
-		id = p_url.split('#')[-1]
-		video_url = None
-		m = re.search('"gphoto\$id":"%s".*?"media":\{"content":\[(.*?)\]' % id, data)
-		if m:
-			links = {}
-			streams = re.findall('"url":"(https://redirector.googlevideo.*?)"', m.group(1))
-			for url in streams:
-				m = re.search('itag=(\d+)', url)
-				if m:
-					key = m.group(1).upper()
-					if self.video_formats[videoPrio].has_key(key):
-						links[self.video_formats[videoPrio][key]] = urllib.unquote_plus(url)
+			for stream in d['playinfo']:
+				key = str(stream.get('label'))
+				if key:
+					if self.new_video_formats[videoPrio].has_key(key):
+						links[self.new_video_formats[videoPrio][key]] = stream.get('file')
 					else:
-						print 'no stream:',key,url
+						print 'no format prio:', key
 			try:
 				video_url = links[sorted(links.iterkeys())[0]]
 			except (KeyError,IndexError):
-				print "Error: no video url found"
+				self.stream_not_found()
 			else:
-				pass
-		else:
-			print 'no id found'
-
-		if not video_url:
-			self.stream_not_found()
-		else:
-			self.play(video_url)
+				self.play(str(video_url))
 
 	def play(self, url):
 		title = self.makeTitle()

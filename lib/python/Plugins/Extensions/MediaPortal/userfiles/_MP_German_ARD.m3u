@@ -1,8 +1,8 @@
 ﻿#EXTM3U,$MODE=IPTV
 #EXTINF:-1,Das Erste
-http://daserste_live-lh.akamaihd.net/i/daserste_de@91204/master.m3u8
+http://live-lh.daserste.de/i/daserste_de@446299/master.m3u8
 #EXTINF:-1,arte
-http://delive.artestras.cshls.lldns.net/artestras/delive/delive.m3u8
+http://artelive-lh.akamaihd.net/i/artelive_de@393591/master.m3u8
 #EXTINF:-1,ARD alpha
 http://livestreams.br.de/i/bralpha_germany@119899/master.m3u8
 #EXTINF:-1,Bayerisches Fernsehen Nord

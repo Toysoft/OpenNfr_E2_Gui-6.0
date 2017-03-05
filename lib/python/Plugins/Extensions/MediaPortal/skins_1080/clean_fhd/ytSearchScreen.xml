@@ -17,7 +17,7 @@
   <eLabel name="button green" position="385,1068" size="365,2" backgroundColor="#0031a500" zPosition="1" />
   <eLabel name="button yellow" position="755,1068" size="365,2" backgroundColor="#00e5b243" zPosition="1" />
   <eLabel name="button blue" position="1125,1068" size="365,2" backgroundColor="#000064c7" zPosition="1" />
-  <widget backgroundColor="#20000000" font="mediaportal_clean;40" halign="center" position="20,120" size="1880,90" name="title" transparent="1" />
+  <widget backgroundColor="#20000000" font="mediaportal_clean;50" halign="center" position="20,120" size="1880,90" name="title" transparent="1" valign="center" />
   <widget backgroundColor="#20000000" font="mediaportal_clean;30" halign="center" position="20,240" size="1880,45" name="ContentTitle" transparent="1" />
   <widget backgroundColor="#20000000" font="mediaportal_clean;30" halign="center" position="20,285" size="1880,45" name="name" transparent="1" />
   <widget backgroundColor="#20000000" name="liste" position="975,360" scrollbarMode="showOnDemand" size="925,650" transparent="1" itemHeight="35" />
@@ -37,13 +37,13 @@
   <widget name="Duration" position="20,960" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
   <widget name="duration" position="280,960" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
   <widget name="Regionid" position="520,825" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="regionid" position="780,825" size="160,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="regionid" position="780,825" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
   <widget name="Keywords" position="520,870" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="keywords" position="780,870" size="160,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="keywords" position="780,870" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
   <widget name="Reserve1" position="520,915" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="reserve1" position="780,915" size="160,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="reserve1" position="780,915" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
   <widget name="Reserve2" position="520,960" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="reserve2" position="780,960" size="160,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="reserve2" position="780,960" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
   <widget name="F1" position="15,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
   <widget name="F2" position="385,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
   <widget name="F3" position="755,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />

@@ -12,7 +12,7 @@ from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPag
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
 
-JBTO_Version = "JUKEBOX.to v0.96"
+JBTO_Version = "JUKEBOX.to"
 JBTO_siteEncoding = 'utf-8'
 cookies = CookieJar()
 baseUrl = "http://jukebox.to"
@@ -49,7 +49,7 @@ class show_JBTO_Genre(MenuHelper):
 				(0, "/albums/top", "Popular Albums"),
 				(0, "/albums/latest-releases", "Latest Releases"),
 				(0, "/tracks/top", "Top 50"),
-				(0, "/genres/Rock,%20Hip%20Hop,%20Pop,%20Country?limit=10", "Popular Genres"),
+				(0, "/genres?names=Rock,%20Hip%20Hop,%20Pop,%20Country", "Popular Genres"),
 				(0, "/get-search-results/%s?limit=3", "Suche..."),
 				]
 		elif type(data) in (str, buffer):
@@ -57,11 +57,11 @@ class show_JBTO_Genre(MenuHelper):
 			max_len = 0
 			self.moreButtonTxt = None
 			self.data = json.loads(data)
-			if '/genres/' in self.genre_url:
+			if '/genres?names' in self.genre_url:
 				for item in self.data:
 					genre = item['name']
 					data = item['artists']
-					menu.append((0, ("/genre/",data), str(genre)))
+					menu.append((0, ("/genre/",data), str(genre).title()))
 			else:
 				if self.data.has_key('albums') and len(self.data['albums']):
 					max_len = len(self.data['albums'])
@@ -95,7 +95,7 @@ class show_JBTO_Genre(MenuHelper):
 				self.session.open(JBTO_ListScreen, genreurl, self.mh_genreTitle, data=(None, None, self.data['artists'], None))
 			elif '/genre/' in genreurl:
 				self.session.open(JBTO_ListScreen, '/artists/', self.mh_genreTitle, data=(None, None, genreurl[1], None))
-			elif '/genres/' in genreurl:
+			elif '/genres?names' in genreurl:
 				genreurl = self.mh_baseUrl + self.mh_genreUrl[0]
 				self.session.open(show_JBTO_Genre, genreurl, self.mh_genreTitle)
 			elif genreurl == '/tracks/':

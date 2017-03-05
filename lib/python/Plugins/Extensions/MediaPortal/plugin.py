@@ -79,6 +79,7 @@ try:
 	mp_globals.animations = True
 	sa = ScreenAnimations()
 	sa.fromXML(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/animations.xml"))
+	getDesktop(0).setAnimationsEnabled(True)
 except:
 	mp_globals.animations = False
 
@@ -173,8 +174,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="804"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.4"))
+config.mediaportal.version = NoSave(ConfigText(default="805"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.5"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -246,7 +247,7 @@ config.mediaportal.showTipps = ConfigYesNo(default = True)
 config.mediaportal.simplelist_key = ConfigSelection(default = "showMovies", choices = [("showMovies", _("PVR/VIDEO")),("instantRecord", _("RECORD"))])
 
 # Konfiguration erfolgt in SimplePlayer
-config.mediaportal.sp_playmode = ConfigSelection(default = "forward", choices = [("forward", _("Forward")),("backward", _("Backward")),("random", _("Random"))])
+config.mediaportal.sp_playmode = ConfigSelection(default = "forward", choices = [("forward", _("Forward")),("backward", _("Backward")),("random", _("Random")),("endless", _("Endless"))])
 config.mediaportal.sp_scrsaver = ConfigSelection(default = "off", choices = [("on", _("On")),("off", _("Off")),("automatic", _("Automatic"))])
 config.mediaportal.sp_on_movie_stop = ConfigSelection(default = "ask", choices = [("ask", _("Ask user")), ("quit", _("Return to previous service"))])
 config.mediaportal.sp_on_movie_eof = ConfigSelection(default = "ask", choices = [("ask", _("Ask user")), ("quit", _("Return to previous service")), ("pause", _("Pause movie at end"))])
@@ -3769,6 +3770,9 @@ def MPmain(session, **kwargs):
 	startMP(session)
 
 def startMP(session):
+	from resources.debuglog import printlog as printl
+	printl('Starting MediaPortal %s' % config.mediaportal.versiontext.value,None,'H')
+
 	global watcher, lc_stats
 
 	reactor.callLater(2, import_lru_caches)

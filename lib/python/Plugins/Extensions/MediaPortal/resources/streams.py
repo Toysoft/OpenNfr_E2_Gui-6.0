@@ -194,8 +194,30 @@ class get_stream_link:
 			self.prz = 0
 			self.session.openWithCallback(self.rapiCallback, realdebrid_oauth2, str(link))
 		else:
-			self.fallback = True
-			self.check_link(self.link, self._callback)
+			if re.search('status":400', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: No valid link."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":401', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: Login failed."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":402', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: You are no Premium-User."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":403', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: No Access."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":404', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: File not found."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":428', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: Hoster currently not available."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":502', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: Unknown technical error."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":503', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: Temporary technical error."), MessageBoxExt.TYPE_INFO, timeout=3)
+			elif re.search('status":509', data):
+				self.session.openWithCallback(self.papiCallback2, MessageBoxExt, _("premiumize: Fair use limit exhausted."), MessageBoxExt.TYPE_INFO, timeout=3)
+			else:
+				self.papiCallback2(True)
+
+	def papiCallback2(self, answer):
+		self.fallback = True
+		self.check_link(self.link, self._callback)
 
 	def check_link(self, data, got_link):
 		self._callback = got_link
@@ -790,7 +812,7 @@ class get_stream_link:
 						link = "http://www.thevideo.me/embed-%s-640x360.html" % id[0]
 				if config.mediaportal.realdebrid_use.value and not self.fallback:
 					self.rdb = 1
-					self.prz = 0
+					self.prz = 1
 					self.callPremium(link)
 				else:
 					getPage(link).addCallback(self.thevideo).addErrback(self.errorload)
@@ -905,7 +927,10 @@ class get_stream_link:
 		message = self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
 
 	def only_premium(self):
-		message = self.session.open(MessageBoxExt, _("This hoster is only working with enabled Premium support."), MessageBoxExt.TYPE_INFO, timeout=5)
+		if not (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value):
+			message = self.session.open(MessageBoxExt, _("This hoster is only working with enabled Premium support."), MessageBoxExt.TYPE_INFO, timeout=5)
+		else:
+			message = self.session.open(MessageBoxExt, _("This Stream link is currently not available via Premium, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
 
 	def errorload(self, error):
 		printl('[streams]: ' + str(error),'','E')

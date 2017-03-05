@@ -4,15 +4,12 @@ from Components.config import config
 
 class YoutubeLink(object):
 	def __init__(self, session):
-		print "YoutubeLink:"
 		self.session = session
 		self._callback = None
 		self.title = ''
 		self.videoPrio = int(config.mediaportal.youtubeprio.value)
 
 	def getLink(self, cb_play, cb_err, title, url, imgurl, album='', artist='', dash=None, fmt_map=None):
-		print "getLink:"
-		print "VideoPrio: ", self.videoPrio
 		self._callback = cb_play
 		self.title = title
 		self.imgurl = imgurl
@@ -30,5 +27,4 @@ class YoutubeLink(object):
 			y.getVideoUrl(url, self.videoPrio, dash=dash, fmt_map=fmt_map)
 
 	def cbYTLink(self, link, buffering=False, proxy=None):
-		print "cbYTLink:",link
 		self._callback(self.title, link, imgurl=self.imgurl, album=self.album, artist=self.artist, buffering=buffering, proxy=proxy)

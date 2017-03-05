@@ -99,8 +99,6 @@ class MTVdeChartsGenreScreen(MPScreen):
 			return
 		MTVName = self['liste'].getCurrent()[0][0]
 		MTVUrl = self['liste'].getCurrent()[0][1]
-
-		print MTVName, MTVUrl
 		self.session.open(MTVdeChartsSongListeScreen, MTVName, MTVUrl)
 
 class MTVdeChartsSongListeScreen(MPScreen):
@@ -178,7 +176,6 @@ class MTVdeChartsSongListeScreen(MPScreen):
 class MTVdeChartsPlayer(SimplePlayer):
 
 	def __init__(self, session, playList, playIdx=0, playAll=True, listTitle=None):
-		print "MTVdeChartsPlayer:"
 		SimplePlayer.__init__(self, session, playList, playIdx=playIdx, playAll=playAll, listTitle=listTitle, ltype='mtv')
 
 	def getVideo(self):

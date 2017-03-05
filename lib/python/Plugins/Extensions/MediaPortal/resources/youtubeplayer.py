@@ -9,11 +9,9 @@ class YoutubePlayer(SimplePlayer):
 	_YoutubeLink = YoutubeLink
 
 	def __init__(self, session, playList, playIdx=0, playAll=False, listTitle=None, plType='local', title_inr=0, showPlaylist=True, showCover=False, useResume=False):
-		print "YoutubePlayer:"
 		SimplePlayer.__init__(self, session, playList, playIdx=playIdx, playAll=playAll, listTitle=listTitle, plType=plType, title_inr=title_inr, ltype='youtube', showPlaylist=showPlaylist, cover=showCover, useResume=useResume)
 
 	def getVideo(self):
-		print "getVideo:"
 		dhTitle = self.playList[self.playIdx][self.title_inr]
 		if len(self.playList[self.playIdx]) >= 6:
 			gid = self.playList[self.playIdx][5]
