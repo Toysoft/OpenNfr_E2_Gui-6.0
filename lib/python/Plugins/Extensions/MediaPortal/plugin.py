@@ -223,7 +223,7 @@ config.mediaportal.hls_proxy_ip = ConfigIP(default = [127,0,0,1], auto_jump = Tr
 config.mediaportal.hls_proxy_port = ConfigInteger(default = 0, limits = (0,65535))
 config.mediaportal.hls_buffersize = ConfigInteger(default = 32, limits = (1,64))
 config.mediaportal.storagepath = ConfigText(default="/tmp/mediaportal/tmp/", fixed_size=False)
-config.mediaportal.iconcachepath = ConfigText(default="/media/hdd/mediaportal/", fixed_size=False)
+config.mediaportal.iconcachepath = ConfigText(default="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/", fixed_size=False)
 config.mediaportal.autoplayThreshold = ConfigInteger(default = 50, limits = (1,100))
 config.mediaportal.filter = ConfigSelection(default = "ALL", choices = ["ALL", "Mediathek", "Grauzone", "Fun", "Sport", "Music", "Porn"])
 config.mediaportal.youtubeprio = ConfigSelection(default = "1", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
@@ -355,12 +355,12 @@ class CheckPathes:
 			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
 
 		if mp_globals.pluginPath in config.mediaportal.iconcachepath.value:
-			config.mediaportal.iconcachepath.value = "/media/hdd/mediaportal/"
+			config.mediaportal.iconcachepath.value = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/"
 			config.mediaportal.iconcachepath.save()
 			configfile.save()
 
 		if "/tmp/" in config.mediaportal.iconcachepath.value:
-			config.mediaportal.iconcachepath.value = "/media/hdd/mediaportal/"
+			config.mediaportal.iconcachepath.value = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/"
 			config.mediaportal.iconcachepath.save()
 			configfile.save()
 
