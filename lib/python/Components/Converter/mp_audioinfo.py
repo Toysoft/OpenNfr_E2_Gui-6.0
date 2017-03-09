@@ -2,6 +2,28 @@ from enigma import iPlayableService
 from Components.Converter.Converter import Converter
 from Components.Element import cached
 from Poll import Poll
+import re
+
+try:
+	from enigma import iAudioType_ENUMS as iAt
+	AUDIO_FORMATS = {
+		   iAt.atDTSHD:  ("DTS-HD",_("DTS-HD"),1),
+		   iAt.atDTS:    ("DTS",   _("DTS"),   2),
+		   iAt.atAACHE:  ("AACHE", _("HE-AAC"),3),
+		   iAt.atAAC:    ("AAC",   _("AAC"),   4),
+		   iAt.atDDP:    ("DDP",   _("AC3+"),  5),
+		   iAt.atAC3:    ("AC3",   _("AC3"),   6),
+		   iAt.atMPEG:   ("MPEG",  _("MPEG"),  7),
+		   iAt.atMP3:    ("MP3",   _("MP3"),   8),
+		   iAt.atPCM:    ("LPCM",  _("LPCM"),  9),
+		   iAt.atPCM:    ("PCM",   _("PCM"),  10),
+		   iAt.atWMA:    ("WMA",   _("WMA"),  11),
+		   iAt.atFLAC:   ("FLAC",  _("FLAC"), -1),
+		   iAt.atOGG:    ("OGG",   _("OGG"),  -1),
+		   iAt.atUnknown:("unknown",_("<unknown>"), -1)
+	}
+except:
+	pass
 
 class mp_audioinfo(Poll, Converter, object):
 	GET_AUDIO_ICON = 0
@@ -14,25 +36,27 @@ class mp_audioinfo(Poll, Converter, object):
 		self.poll_interval = 1000
 		self.poll_enabled = True
 		self.lang_strings = ("ger", "german", "deu")
-		self.codecs = {    "01_dolbydigitalplus" : ("digital+", "digitalplus", "ac3+", "e-ac-3"),
-				   "02_dolbydigital": ("ac3", "ac-3", "dolbydigital"),
-				   "03_mp3": ("mp3", ),
-				   "04_wma": ("wma", ),
-				   "05_flac": ("flac", ),
-				   "06_aac": ("aac", ),
-				   "07_lpcm": ("lpcm", ),
-				   "08_dts-hd": ("dts-hd", ),
-				   "09_dts": ("dts", ),
-				   "10_pcm": ("pcm", ),
-				   "11_mpeg": ("mpeg", ),
-				}
+		self.codecs = {
+			"01_dolbydigitalplus" : ("digital+", "digitalplus", "ac3+", "e-ac-3"),
+			"02_dolbydigital": ("ac3", "ac-3", "dolbydigital"),
+			"03_mp3": ("mp3",),
+			"04_wma": ("wma",),
+			"05_flac": ("flac",),
+			"06_he-aac": ("he-aac",),
+			"07_aac": ("aac",),
+			"08_lpcm": ("lpcm",),
+			"09_dts-hd": ("dts-hd",),
+			"10_dts": ("dts",),
+			"11_pcm": ("pcm",),
+			"12_mpeg": ("mpeg",),
+			}
 		self.codec_info = { "dolbydigitalplus" : ("51", "20", "71"),
-				    "dolbydigital" : ("51", "20", "10", "71"),
-				    "wma" : ("8", "9"),
-				  }
+			"dolbydigital" : ("51", "20", "10", "71"),
+			"wma" : ("8", "9"),
+			}
 		self.type, self.interesting_events = {
-				"AudioIcon": (self.GET_AUDIO_ICON, (iPlayableService.evUpdatedInfo,)),
-				"AudioCodec": (self.GET_AUDIO_CODEC, (iPlayableService.evUpdatedInfo,)),
+			"AudioIcon": (self.GET_AUDIO_ICON, (iPlayableService.evUpdatedInfo,)),
+			"AudioCodec": (self.GET_AUDIO_CODEC, (iPlayableService.evUpdatedInfo,)),
 			}[type]
 
 	def getAudio(self):
@@ -55,21 +79,29 @@ class mp_audioinfo(Poll, Converter, object):
 		languages = languages.replace("und ", "")
 		return languages
 
-	def getAudioCodec(self,info):
+	def getAudioCodec(self, info):
 		description_str = _("unknown")
 		if self.getAudio():
-			languages = self.getLanguage()
-			description = self.audio_info.getDescription();
-			description_str = description.split(" ")
-			if len(description_str) and description_str[0] in languages:
-				return languages
-			if description.lower() in languages.lower():
-				languages = ""
-			description_str = description + " " + languages
+			try:
+				type = AUDIO_FORMATS[self.audio_info.getType()][1];
+				description_str = type
+				channels = self.audio_info.getDescription();
+				channels_str = re.search("([0-9\.]+)", channels)
+				if channels_str:
+					description_str = description_str + " " + channels_str.group(1)
+			except:
+				languages = self.getLanguage()
+				description = self.audio_info.getDescription();
+				description_str = description.split(" ")
+				if len(description_str) and description_str[0] in languages:
+					return languages
+				if description.lower() in languages.lower():
+					languages = ""
+				description_str = description + " " + languages
 		return description_str
 
-	def getAudioIcon(self,info):
-		description_str = self.get_short(self.getAudioCodec(info).translate(None,' .').lower())
+	def getAudioIcon(self, info):
+		description_str = self.get_short(self.getAudioCodec(info).translate(None, ' .').lower())
 		return description_str
 
 	def get_short(self, audioName):
