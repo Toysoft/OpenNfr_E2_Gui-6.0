@@ -191,11 +191,11 @@ class pornmvzFilmListeScreen(MPScreen, ThumbsHelper):
 		ddDescription = re.search('class="post-content-single">\n<center>.*?</a><br\s/>\n{0,1}(.*?)<br\s/>.*?</center>', data, re.S)
 		if ddDescription:
 			if ddDescription.group(1) == "&#8230;":
-				self['handlung'].setText(_("No information found."))
+				self['handlung'].setText(_("No further information available!"))
 			else:
 				self['handlung'].setText(decodeHtml(ddDescription.group(1)))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def keyOK(self):
 		if self.keyLocked:

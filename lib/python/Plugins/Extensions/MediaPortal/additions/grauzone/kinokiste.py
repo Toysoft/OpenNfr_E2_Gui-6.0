@@ -155,7 +155,7 @@ class kinokisteKinoScreen(MPScreen, ThumbsHelper):
 		if ddDescription:
 			self['handlung'].setText(decodeHtml(ddDescription[0]))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -511,7 +511,7 @@ class kinokisteInGenreScreen(MPScreen, ThumbsHelper):
 		if ddDescription:
 			self['handlung'].setText(decodeHtml(ddDescription[0]))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def showInfos(self):
 		exist = self['liste'].getCurrent()
@@ -613,7 +613,7 @@ class kinokisteFilmLetterScreen(MPScreen, ThumbsHelper):
 		if ddDescription:
 			self['handlung'].setText(decodeHtml(ddDescription[0]))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 		kkImage = kkCover[0]
 		self.kkImageUrl = "%s" % kkImage.replace('_170_120','_145_215')
 		CoverHelper(self['coverArt']).getCover(self.kkImageUrl)

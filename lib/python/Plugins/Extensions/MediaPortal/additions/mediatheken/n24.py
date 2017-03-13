@@ -147,7 +147,7 @@ class n24ListScreen(MPScreen, ThumbsHelper):
 		if handlung:
 			self['handlung'].setText(decodeHtml(stripAllTags(handlung.group(1)).strip()))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def keyOK(self):
 		if self.keyLocked:

@@ -104,9 +104,9 @@ class kxMain(MPScreen):
 		if auswahl == "Kinofilme":
 			self.session.open(kxKino, url)
 		elif "Neue Filme online vom" in auswahl:
-			self.session.open(kxNeuesteKino, url)
-		elif "Frisches aus dem Kino vom" in auswahl:
 			self.session.open(kxNeuesteOnline, url)
+		elif "Frisches aus dem Kino vom" in auswahl:
+			self.session.open(kxNeuesteKino, url)
 		elif "Neueste" in auswahl:
 			self.session.open(kxNeueste, url, auswahl)
 		elif "Beliebte" in auswahl:

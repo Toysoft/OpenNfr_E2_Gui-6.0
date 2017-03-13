@@ -367,7 +367,7 @@ class bsStaffeln(MPScreen):
 		if desc:
 			self['handlung'].setText(decodeHtml(desc.group(1).replace('\\"','"')))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 		ID = re.search('"id":"(.*?)"', data, re.S)
 		cover = BASE_URL + "/public/img/cover/" + ID.group(1) + ".jpg"
 		movies = re.search('movies":"(.*?)"', data, re.S)
@@ -517,7 +517,7 @@ class bsEpisoden(MPScreen):
 		if desc:
 			self['handlung'].setText(decodeHtml(desc.group(1).replace('\\"','"')))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -584,7 +584,7 @@ class bsStreams(MPScreen):
 		if desc:
 			self['handlung'].setText(decodeHtml(desc.group(1).replace('\\"','"')))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 		streams =  re.findall('"hoster":"(.*?)","id":"(.*?)"', data, re.S)
 		if streams:
 			for (Hoster,ID) in streams:

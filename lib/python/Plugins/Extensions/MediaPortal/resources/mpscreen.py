@@ -638,22 +638,6 @@ class MPScreen(Screen):
 ##################
 
 ####### YouTube
-	def ChannelsListEntryLeft(self, entry):
-		width = self['liste'].instance.size().width()
-		height = self['liste'].l.getItemSize().height()
-		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
-		res = [entry]
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[1]))
-		return res
-
-	def ChannelsListEntryCenter(self, entry):
-		width = self['liste'].instance.size().width()
-		height = self['liste'].l.getItemSize().height()
-		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
-		res = [entry]
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width, height, 0, RT_HALIGN_CENTER | RT_VALIGN_CENTER, entry[1]))
-		return res
-
 	def YT_ListEntry(self, entry):
 		width = self['liste'].instance.size().width()
 		height = self['liste'].l.getItemSize().height()

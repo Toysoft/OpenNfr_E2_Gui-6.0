@@ -163,10 +163,12 @@ class flimmerstubeFilmScreen(MPScreen):
 			self.lastpage = 1
 		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
 		vSearch = re.search('<section class="content">(.*?)<aside class="sidebar">',data,re.S)
-		titles = re.findall('<h4 class="ve-title">.*?<a href="(.*?)">.*?</a>.*?</h4>.*?<div class="ve-screen" title="(.*?\(\d+\)).*?style="background-image: url\((.*?)\);',vSearch.group(1), re.S)
+		titles = re.findall('<h4 class="ve-title">.*?<a href="(.*?)">.*?</a>.*?</h4>.*?<div class="ve-screen" title="(.*?)".*?style="background-image: url\((.*?)\);',vSearch.group(1), re.S)
 		if titles:
 			for (url, title, img) in titles:
-				self.filmliste.append((decodeHtml(title), url, img))
+				title = title.replace(' - Stream - Deutsch','').replace(' - Stream','').replace(' - DDR Scifi','').replace(' - Giallo','').replace(' - Scifi','').replace(' - Komödie','').replace(' - Exploitation','').replace(' - Horror Komödie','').replace(' - Horror Doku','').replace(' - Horror','').replace(' - Endzeit','').replace(' - Fantasy','').replace(' - Doku','').replace(' - Deutsch','').replace(' - Western','').replace(' - Krimi','').replace(' - Biografie','').replace(' - HD','').replace(' - Tormented','').replace(' - Asia Horror','').replace(' - STream','').replace(' German/Deutsch','').strip('-Horror')
+				if not ('TV Serie' or 'Mehrteiler') in title:
+					self.filmliste.append((decodeHtml(title), url, img))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False

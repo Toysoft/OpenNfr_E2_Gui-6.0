@@ -34,8 +34,6 @@
 		<plugin type="mod" modfile="fun.sciencetv" confopt="showScienceTV" default="True" confcat="fun" listcat="funsport" gz="0" name="ScienceTV" icon="sciencetv" filter="Fun" screen="scienceTvGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gigatv" confopt="showGIGA" default="True" confcat="fun" listcat="funsport" gz="0" name="GIGA.de" icon="gigatv" filter="Fun" screen="gigatvGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gronkh" confopt="showgronkh" default="True" confcat="fun" listcat="funsport" gz="0" name="gronkh.de" icon="gronkh" filter="Fun" screen="gronkhGenreScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.userchannels" confopt="showUserChannels" default="True" confcat="fun" listcat="funsport" gz="0" name="USER-Channels" icon="userchannels" filter="Fun" screen="show_USER_Genre" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.youtube" confopt="showYoutube" default="True" confcat="fun" listcat="funsport" gz="0" name="YouTube" icon="youtube" filter="Fun/Music" screen="youtubeGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.wissen" confopt="showwissen" default="True" confcat="fun" listcat="funsport" gz="0" name="Wissen.de" icon="wissen" filter="Fun" screen="wissenListeScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.bild" confopt="showbildde" default="True" confcat="fun" listcat="funsport" gz="0" name="Bild.de" icon="bild" filter="Fun" screen="bildFirstScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gaskrank_tv" confopt="showGaskrank" default="False" confcat="fun" listcat="funsport" gz="0" name="GasKrank.tv" icon="gaskrank_tv" filter="Fun" screen="show_GKTV_Genre" param1="" param2=""/>
@@ -71,6 +69,8 @@
 		<plugin type="mod" modfile="mediatheken.servustv" confopt="showServusTV" default="True" confcat="mediatheken" listcat="mediatheken" gz="0" name="ServusTV" icon="servustv" filter="Mediathek" screen="sTVGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="mediatheken.redbull" confopt="showRedBullTV" default="True" confcat="mediatheken" listcat="mediatheken" gz="0" name="Red Bull TV" icon="redbull" filter="Mediathek" screen="RBtvGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="mediatheken.videogold_de" confopt="showVideoGold" default="True" confcat="mediatheken" listcat="mediatheken" gz="0" name="VideoGold.de" icon="videogold_de" filter="Mediathek" screen="show_VGDE_Genre" param1="" param2=""/>
+		<plugin type="mod" modfile="mediatheken.youtube" confopt="showyoutube" default="True" confcat="mediatheken" listcat="mediatheken" gz="0" name="YouTube" icon="youtube" filter="Mediathek/Music" screen="youtubeGenreScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="mediatheken.youtube_user" confopt="showyoutubeuser" default="True" confcat="mediatheken" listcat="mediatheken" gz="0" name="YouTube Channels" icon="userchannels" filter="Mediathek" screen="show_USER_Genre" param1="" param2=""/>
 		<!--porn section-->
 		<plugin type="mod" modfile="porn.chaturbate" confopt="showchaturbate" default="False" confcat="porn" listcat="porn" gz="0" name="Chaturbate" icon="chaturbate" filter="Porn" screen="chaturbateGenreScreen" param1="" param2="" />
 		<plugin type="mod" modfile="porn.brazzers" confopt="showbrazzerscom" default="False" confcat="porn" listcat="porn" gz="1" name="Brazzers.com" icon="brazzers" filter="Porn" screen="brazzersGenreScreen" param1="" param2="" search="1" delim="+" searchurl="%s" searchscreen="brazzersFilmScreen" searchparam=""/>
@@ -173,7 +173,6 @@
 		<plugin type="mod" modfile="grauzone.tata" confopt="showstata" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="tata" icon="tata" filter="Grauzone" screen="tataMain" param1="" param2=""/>
 		<plugin type="mod" modfile="grauzone.flimmerstube" confopt="showflimmerstube" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="FlimmerStube" icon="flimmerstube" filter="Grauzone" screen="flimmerstubeGenreScreen" param1="" param2=""/>
 		<!--watchlist section-->
-		<plugin type="mod" modfile="grauzone.movie4k" confopt="showM4kWatchlist" default="False" confcat="watchlist" listcat="grauzone" gz="1" name="Movie4k Watchlist" icon="movie4kwatchlist" filter="Grauzone" screen="m4kWatchlist" param1="" param2=""/>
 		<plugin type="mod" modfile="grauzone.kinoxto" confopt="showKinoxWatchlist" default="False" confcat="watchlist" listcat="grauzone" gz="1" name="Kinox Watchlist" icon="kinoxwatchlist" filter="Grauzone" screen="kxWatchlist" param1="" param2=""/>
 	</set>
 </plugins>

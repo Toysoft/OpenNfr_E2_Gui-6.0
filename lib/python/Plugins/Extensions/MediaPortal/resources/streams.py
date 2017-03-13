@@ -804,17 +804,23 @@ class get_stream_link:
 					getPage(link).addCallback(self.openloadApi).addErrback(self.errorload)
 
 			elif re.search('thevideo\.me', data, re.S):
-				if re.search('thevideo\.me/embed-', data, re.S):
-					link = data
-				else:
-					id = re.findall('thevideo\.me/(.*?)$', data)
-					if id:
-						link = "http://www.thevideo.me/embed-%s-640x360.html" % id[0]
-				if config.mediaportal.realdebrid_use.value and not self.fallback:
+				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
+					if (re.search('thevideo\.me/embed-', data, re.S) or re.search('640x360.html', data, re.S)):
+						id = re.findall('thevideo\.me/(?:embed-|)(.*?)(?:\.html|-\d+x\d+\.html)', data)
+						if id:
+							link = "https://www.thevideo.me/%s" % id[0]
+					else:
+						link = data
 					self.rdb = 1
 					self.prz = 1
 					self.callPremium(link)
 				else:
+					if re.search('thevideo\.me/embed-', data, re.S):
+						link = data
+					else:
+						id = re.findall('thevideo\.me/(.*?)$', data)
+						if id:
+							link = "https://www.thevideo.me/embed-%s-640x360.html" % id[0]
 					getPage(link).addCallback(self.thevideo).addErrback(self.errorload)
 
 			elif re.search('exashare\.com', data, re.S):

@@ -19,27 +19,7 @@ else:
 	IMDbPresent = False
 	TMDbPresent = False
 
-DDLME_Version = "ddl.me v1.08"
-
-DDLME_siteEncoding = 'utf-8'
-
-"""
-Sondertastenbelegung:
-
-Genre Auswahl:
-	KeyCancel	: Menu Up / Exit
-	KeyOK		: Menu Down / Select
-
-Tastenfunktionen in der Filmliste:
-	Bouquet +/-				: Seitenweise blättern in 1 Schritten Up/Down
-	'1', '4', '7',
-	'3', 6', '9'			: blättern in 2er, 5er, 10er Schritten Down/Up
-	INFO					: anzeige der IMDB-Bewertung
-	KeyYellow				: Sortierung
-
-Stream Auswahl:
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-"""
+DDLME_Version = "ddl.me"
 
 class show_DDLME_Genre(MenuHelper):
 
@@ -51,7 +31,6 @@ class show_DDLME_Genre(MenuHelper):
 			("Suche...", ""),
 			("Filme", ""),
 			("Serien", "")
-			#("Hörbücher", "")
 			],
 			[None,
 			[
@@ -299,8 +278,6 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 						self.filmListe.append((t, h, self.imgLink, '', ''))
 					else:
 						a = l
-
-				#self.filmListe.sort(key=lambda t : t[0].lower())
 		elif self.genreUpdates:
 			m = None
 			if 'Neue Filme' in self.genreName:
@@ -311,7 +288,7 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 				m = re.search(">Neue Blockbuster<.*?<div id='view' class='small one'>(.*?)</div><div class=.hr.", data)
 
 			if m:
-				m = re.findall('title=\'(.*?)\'.*?href=\'(.*?)\'.*?<img.*?(http://.*?jpg)', m.group(1))
+				m = re.findall('title=\'(.*?)\'.*?href=\'(.*?)\'.*?<img.*?(http[s]?://.*?jpg)', m.group(1))
 				if m:
 					self.page = 1
 					self.pages = 1
@@ -357,7 +334,7 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 
 		if len(self.filmListe) == 0:
 			self.pages = 0
-			self.filmListe.append(('Keine Filme / Serien gefunden !','','','',''))
+			self.filmListe.append((_('No movies/shows found!'),'','','',''))
 		else:
 			menu_len = len(self.filmListe)
 
@@ -382,7 +359,7 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 
 	def getHandlung(self, desc):
 		if desc == None:
-			self['handlung'].setText("Keine weiteren Info's vorhanden.")
+			self['handlung'].setText(_("No further information available!"))
 			return
 		self.setHandlung(desc)
 
@@ -548,9 +525,9 @@ class DDLMEStreams(MPScreen):
 			desc = mdesc.group(1).strip()
 			desc = stripAllTags(decodeHtml(desc))
 		else:
-			desc = "Keine weiteren Info's !"
+			desc = _("No further information available!")
 
-		m = re.search('http://www.youtube.com/watch\?v=(.*?)\'', data)
+		m = re.search('http[s]?://www.youtube.com/watch\?v=(.*?)\'', data)
 		if m:
 			self.trailerId = m.group(1)
 			self['F2'].setText('Trailer')
@@ -577,7 +554,7 @@ class DDLMEStreams(MPScreen):
 								mg = re.search('"(.*?)":\[(\[.*?\])\]', info.group(3)[a2:])
 								if mg:
 									a2 += mg.end()
-									streams = re.findall('"(http:.*?)".*?("stream"|"download")\]', mg.group(2))
+									streams = re.findall('"(http[s]?:.*?)".*?("stream"|"download").*?\]', mg.group(2))
 
 									if streams:
 										s = mg.group(1)
@@ -591,10 +568,6 @@ class DDLMEStreams(MPScreen):
 							a = l
 					else:
 						a = l
-
-			if len(self.streamListe) == 0:
-				self.streamListe.append(("No streams found!","","",""))
-
 			self.ml.setList(map(self.DDLMEStreamListEntry, self.streamListe))
 		else:
 			np = re.search('var subcats =', data)
@@ -627,7 +600,7 @@ class DDLMEStreams(MPScreen):
 					if mg:
 						a += mg.end()
 
-						streams = re.findall('\["(.*?)".*?"(http:.*?)".*?("stream"|"download")\]', mg.group(2))
+						streams = re.findall('\["(.*?)".*?"(http[s]?:.*?)".*?("stream"|"download").*?\]', mg.group(2))
 
 						if streams:
 							s = mg.group(1)
@@ -643,10 +616,10 @@ class DDLMEStreams(MPScreen):
 					else:
 						a = l
 
-			if len(self.streamListe) == 0:
-				self.streamListe.append(("No streams found!","","",""))
-
 			self.ml.setList(map(self.DDLMEStreamListEntry2, self.streamListe))
+		if len(self.streamListe) == 0:
+			self.streamListe.append((_("No supported streams found!"),"","",""))
+			self.ml.setList(map(self._defaultlistleft, self.streamListe))
 
 		self['handlung'].setText(decodeHtml(desc))
 		self.keyLocked = False
@@ -657,7 +630,7 @@ class DDLMEStreams(MPScreen):
 
 	def dataError(self, error):
 		printl(error,self,"E")
-		self.streamListe.append(("Read error !","","",""))
+		self.streamListe.append(("Read error!","","",""))
 		self.ml.setList(map(self.DDLMEStreamListEntry, self.streamListe))
 
 	def got_link(self, stream_url):

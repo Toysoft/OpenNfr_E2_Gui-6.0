@@ -8,13 +8,8 @@ import Queue
 import threading
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
-from Plugins.Extensions.MediaPortal.additions.fun.youtube import YT_ListScreen
+from Plugins.Extensions.MediaPortal.additions.mediatheken.youtube import YT_ListScreen
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
-from Plugins.Extensions.MediaPortal.additions.music.jukebox_to import show_JBTO_Genre
-
-DUTO_Version = "DOKU.to v0.91"
-
-DUTO_siteEncoding = 'utf-8'
 
 class show_DUTO_Genre(MenuHelper):
 
@@ -23,7 +18,7 @@ class show_DUTO_Genre(MenuHelper):
 		baseUrl = "http://doku.to"
 		MenuHelper.__init__(self, session, 0, None, baseUrl, "", self._defaultlistcenter)
 
-		self['title'] = Label(DUTO_Version)
+		self['title'] = Label("DOKU.to")
 		self['ContentTitle'] = Label("Genres")
 
 		self.onLayoutFinish.append(self.mh_initMenu)
@@ -35,7 +30,6 @@ class show_DUTO_Genre(MenuHelper):
 			]
 		menu_marker = '">Kategorien</h3'
 		menu += self.scanMenu(data,menu_marker, base_url=self.mh_baseUrl, init_level=0)
-		menu.append((0, "musicstreams", "MUSIK STREAMS"))
 		m = re.search('="widget-title">Schlagwörter<(.*?)</div>', data, re.S)
 		if m:
 			menu.append((0, "", "Schlagwörter"))
@@ -47,12 +41,9 @@ class show_DUTO_Genre(MenuHelper):
 
 	def mh_callGenreListScreen(self):
 		genreurl = self.mh_genreUrl[self.mh_menuLevel].replace('&#038;','&')
-		if genreurl == 'musicstreams':
-			self.session.open(show_JBTO_Genre, genre_title=self.mh_genreTitle)
-		else:
-			if not genreurl.startswith('http'):
-				genreurl = self.mh_baseUrl+genreurl
-			self.session.open(DUTO_FilmListeScreen, genreurl, self.mh_genreTitle)
+		if not genreurl.startswith('http'):
+			genreurl = self.mh_baseUrl+genreurl
+		self.session.open(DUTO_FilmListeScreen, genreurl, self.mh_genreTitle)
 
 class DUTO_FilmListeScreen(MPScreen, ThumbsHelper):
 
@@ -106,7 +97,7 @@ class DUTO_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.sortOrderStrAZ = ""
 		self.sortOrderStrIMDB = ""
 		self.sortOrderStrGenre = ""
-		self['title'] = Label(DUTO_Version)
+		self['title'] = Label("DOKU.to")
 
 		self['F1'] = Label(_("Text-"))
 		self['F4'] = Label(_("Text+"))
@@ -247,7 +238,7 @@ class DUTO_FilmListeScreen(MPScreen, ThumbsHelper):
 		if m2:
 			dhVideoId = m2.group(2)
 			if 'p' == m2.group(1):
-				url = 'http://gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
+				url = 'gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
 		else:
 			m2 = re.search('youtu.*?/(.*?)</p>', data)
 			if not m2:
@@ -257,8 +248,8 @@ class DUTO_FilmListeScreen(MPScreen, ThumbsHelper):
 		if m2:
 			dhTitle = self['liste'].getCurrent()[0][0]
 			if url:
-				url = 'http://gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
-				self.session.open(YT_ListScreen, url, dhTitle, title=DUTO_Version)
+				url = 'gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
+				self.session.open(YT_ListScreen, url, dhTitle, title="DOKU.to")
 			else:
 				self.session.open(
 					YoutubePlayer,
@@ -311,7 +302,7 @@ class DUTO_FilmListeScreen(MPScreen, ThumbsHelper):
 		oldpage = self.page
 		if (self.page + step) <= self.pages:
 			self.page += step
-		elif self.pageplus: 
+		elif self.pageplus:
 			self.page += 1
 			self.pages += 1
 			self.pageplus = ''

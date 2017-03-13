@@ -121,7 +121,7 @@ class focus(MPScreen, ThumbsHelper):
 		if handlung:
 			self['handlung'].setText(decodeHtml(handlung[0]))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def keyOK(self):
 		if self.keyLocked:

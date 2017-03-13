@@ -191,7 +191,7 @@ class freeomovieFilmListeScreen(MPScreen, ThumbsHelper):
 		if ddDescription:
 			self['handlung'].setText(decodeHtml(ddDescription.group(1)))
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def keyOK(self):
 		if self.keyLocked:

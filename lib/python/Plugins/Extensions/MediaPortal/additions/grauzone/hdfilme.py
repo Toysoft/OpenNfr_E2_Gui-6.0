@@ -38,7 +38,6 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
-from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 
 try:
@@ -360,7 +359,8 @@ class hdfilmeStreams(MPScreen):
 		if self.keyLocked or exist == None:
 			return
 		link = self['liste'].getCurrent()[0][1]
-		twAgentGetPage(link, agent=hf_agent, cookieJar=hf_cookies).addCallback(self.getStreamUrl).addErrback(self.dataError)
+		data = hf_grabpage(link)
+		self.getStreamUrl(data)
 
 	def makeTitle(self):
 		episode = self['liste'].getCurrent()[0][2]
@@ -374,7 +374,8 @@ class hdfilmeStreams(MPScreen):
 		parse = re.findall('movieid\s=\s(\d+).*?episode\s=\s(\d+)', data, re.S)
 		if parse:
 			url = BASE_URL + "/movie/getlink/"+str(parse[0][0])+"/"+str(parse[0][1])
-			twAgentGetPage(url, agent=hf_agent, cookieJar=hf_cookies).addCallback(self.extractStreams).addErrback(self.dataError)
+			data = hf_grabpage(url)
+			self.extractStreams(data)
 
 	def extractStreams(self, data, videoPrio=2):
 			try:

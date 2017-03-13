@@ -174,8 +174,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="805"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.5"))
+config.mediaportal.version = NoSave(ConfigText(default="806"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.6"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)

@@ -700,7 +700,7 @@ class meMovieScreen(MPScreen, ThumbsHelper):
                         file.write(handlung.strip())
                         file.close
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 class meSerienScreen(MPScreen):
 
@@ -755,7 +755,7 @@ class meSerienScreen(MPScreen):
 		        self.text = self.info.read()
 		        self['handlung'].setText(self.text)
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 	def getEpisoden(self, data):
 		m = re.search('//www.youtube\.com/(embed|v|p)/(.*?)(\?|" |&amp)', data)
@@ -1068,7 +1068,7 @@ class meCollectionScreen(MPScreen):
 		        self.text = self.info.read()
 		        self['handlung'].setText(self.text)
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
 
         def getEpisoden(self, data):
@@ -1164,7 +1164,7 @@ class meCollectionScreen(MPScreen):
 			                file.write(handlung.strip())
 			                file.close
 		        else:
-			        self['handlung'].setText(_("No information found."))
+			        self['handlung'].setText(_("No further information available!"))
                                 if not fileExists('/tmp/.mpevo'):
 			                action = ' > /tmp/.mpevo'
 			                os.system(action)
@@ -1450,7 +1450,7 @@ class meServerScreen(MPScreen):
 		                self['name'].hide()
 		        self['name'].setText(self.text)
 		else:
-			self['name'].setText(_("No information found."))
+			self['name'].setText(_("No further information available!"))
 
                 if fileExists('/tmp/.mpevo'):
                         self.infos = "/tmp/.mpevo"
@@ -1460,7 +1460,7 @@ class meServerScreen(MPScreen):
 		                self['coverArt'].hide()
 		        self['handlung'].setText(self.text)
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
         def keyOK(self):
 		if self.keyLocked:
@@ -1537,7 +1537,7 @@ class meHosterScreen(MPScreen):
 		        self.text = self.info.read()
 		        self['handlung'].setText(self.text)
 		else:
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 
         def keyOK(self):
 		if self.keyLocked:

@@ -232,7 +232,7 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 		print "getHandlung:"
 		if desc == None:
 			print "No Infos found !"
-			self['handlung'].setText(_("No information found."))
+			self['handlung'].setText(_("No further information available!"))
 			return
 		self.setHandlung(desc)
 

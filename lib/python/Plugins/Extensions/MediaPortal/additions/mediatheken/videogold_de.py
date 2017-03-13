@@ -5,12 +5,8 @@ import Queue
 import threading
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
-from Plugins.Extensions.MediaPortal.additions.fun.youtube import YT_ListScreen
+from Plugins.Extensions.MediaPortal.additions.mediatheken.youtube import YT_ListScreen
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
-
-VGDE_Version = "VideoGold.de"
-
-VGDE_siteEncoding = 'utf-8'
 
 class show_VGDE_Genre(MenuHelper):
 
@@ -231,7 +227,7 @@ class VGDE_FilmListeScreen(MPScreen, ThumbsHelper):
 		if m2:
 			dhVideoId = m2.group(2)
 			if 'p' == m2.group(1):
-				url = 'http://gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
+				url = 'gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
 		else:
 			m2 = re.search('youtu.*?/(.*?)</p>', data)
 			if not m2:
@@ -241,7 +237,7 @@ class VGDE_FilmListeScreen(MPScreen, ThumbsHelper):
 		if m2:
 			dhTitle = self['liste'].getCurrent()[0][0]
 			if url:
-				url = 'http://gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
+				url = 'gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
 				self.session.open(YT_ListScreen, url, dhTitle, title=VGDE_Version)
 			else:
 				self.session.open(

@@ -50,7 +50,7 @@ phLoggedIn = False
 phAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 json_headers = {
 	'Accept':'application/json',
-	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
+	'Accept-Language':'en,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
@@ -102,6 +102,7 @@ class pornhubGenreScreen(MPScreen):
 			self.onLayoutFinish.append(self.layoutFinished)
 
 	def Login(self):
+		ck.update({'lang':'en'})
 		url = "http://www.pornhub.com"
 		getPage(url, agent=phAgent, cookies=ck).addCallback(self.Login2).addErrback(self.dataError)
 
