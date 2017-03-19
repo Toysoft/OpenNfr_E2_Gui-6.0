@@ -6,7 +6,7 @@ Sky Cinema +24
 Sky Cinema Action
 Sky Cinema Comedy
 Sky Cinema Emotion
-Sky Cinema Harry Potter
+Sky Cinema Hits
 Sky Cinema Family
 Sky Cinema Nostalgie
 Sky Krimi
@@ -16,7 +16,6 @@ Fox Serie
 Heimatkanal
 kabel eins classics
 Kinowelt TV
-MGM
 RTL Crime
 RTL Passion
 RTL Living

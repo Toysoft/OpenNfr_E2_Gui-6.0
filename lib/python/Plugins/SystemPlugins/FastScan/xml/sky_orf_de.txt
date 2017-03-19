@@ -8,11 +8,10 @@ Sky Cinema HD
 Sky Cinema +1 HD
 Sky Cinema +24 HD
 Sky Cinema Action HD
-Sky Cinema Harry Potter HD
+Sky Cinema Hits HD
 Sky Cinema Family HD
 13th Street HD
 Fox HD
-MGM HD
 RTL Crime HD
 Syfy HD
 TNT Serie HD
@@ -76,7 +75,7 @@ Sky Cinema +24
 Sky Cinema Action
 Sky Cinema Comedy
 Sky Cinema Emotion
-Sky Cinema Harry Potter
+Sky Cinema Hits
 Sky Cinema Family
 Sky Cinema Nostalgie
 Sky Krimi
@@ -86,7 +85,6 @@ Fox Serie
 Heimatkanal
 kabel eins classics
 Kinowelt TV
-MGM
 RTL Crime
 RTL Passion
 RTL Living
