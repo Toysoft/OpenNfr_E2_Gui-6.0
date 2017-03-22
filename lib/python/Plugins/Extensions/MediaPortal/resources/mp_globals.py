@@ -28,6 +28,7 @@ sizefactor = 1
 hls_proxy_port = 0
 ThumbViewTextForeground = '#00ffffff'
 bsp = None
+bdmt = None
 requests = False
 
 std_headers = {

@@ -6,17 +6,13 @@ import threading
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
-GKTV_Version = "GasKrank.tv v0.91"
-
-GKTV_siteEncoding = 'utf-8'
-
 class show_GKTV_Genre(MenuHelper):
 
 	def __init__(self, session):
 
 		MenuHelper.__init__(self, session, 2, [[],[],[]], "http://www.gaskrank.tv", "/tv", self._defaultlistcenter)
 
-		self['title'] = Label(GKTV_Version)
+		self['title'] = Label("GasKrank.tv")
 		self['ContentTitle'] = Label("Genres")
 
 		self.onLayoutFinish.append(self.mh_initMenu)
@@ -95,7 +91,7 @@ class GKTV_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.sortOrderStrAZ = ""
 		self.sortOrderStrIMDB = ""
 		self.sortOrderStrGenre = ""
-		self['title'] = Label(GKTV_Version)
+		self['title'] = Label("GasKrank.tv")
 
 		self['F1'] = Label(_("Text-"))
 		self['F4'] = Label(_("Text+"))
@@ -306,7 +302,7 @@ class GKTVPlayer(SimplePlayer):
 		twAgentGetPage(url).addCallback(self.parseStream).addErrback(self.dataError)
 
 	def parseStream(self, data):
-		m2 = re.findall('\d: {\s{0,1}src:"(.*?)"', data)
+		m2 = re.findall('source\ssrc="(.*?)"', data)
 		if m2:
 			url = m2[-1]
 			title = self.playList[self.playIdx][0]

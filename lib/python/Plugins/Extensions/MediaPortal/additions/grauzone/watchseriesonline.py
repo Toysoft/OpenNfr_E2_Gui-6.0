@@ -390,7 +390,7 @@ class wsoEpisodes(MPScreen):
 					if line:
 						self.watched_list.append("%s" % (line[0]))
 				self.updates_read.close()
-		parse = re.search('<div id="episode-list">((.|\s)*?)</div> <!-- \.post_wrapper -->', data, re.S)
+		parse = re.search('<div id="episode-list">(.*?)</footer>', data, re.S)
 		if parse:
 			episodes = re.findall("<a\shref='(https://(?:watchseries-online.pl|wseries.org)/.*?)'.*?</span>(.*?)</a>", parse.group(1), re.S)
 			if episodes:

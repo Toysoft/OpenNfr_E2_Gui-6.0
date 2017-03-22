@@ -54,6 +54,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
+default_cover = "http://therealpornwikileaks.com/wp-content/uploads/2017/02/Youporn.png"
 
 class youpornGenreScreen(MPScreen):
 
@@ -139,21 +140,21 @@ class youpornGenreScreen(MPScreen):
 			self.genreliste = list(set(self.genreliste))
 			self.genreliste.sort()
 		if ypLoggedIn:
-			self.genreliste.insert(0, (400 * "—", None, None))
-			self.genreliste.insert(0, ("Recommended", "http://www.youporn.com/recommended/?page=", None))
-			self.genreliste.insert(0, ("Favourite Collections", "http://www.youporn.com/favorites/collections/?page=", None))
-			self.genreliste.insert(0, ("Favourite Videos", "http://www.youporn.com/favorites/?page=", None))
-		self.genreliste.insert(0, (400 * "—", None, None))
-		self.genreliste.insert(0, ("Channels", "http://www.youporn.com/channels/most_subscribed/?page=", None))
-		self.genreliste.insert(0, ("Popular by Country", "http://www.youporn.com/categories/", None))
-		self.genreliste.insert(0, ("Most Discussed", "http://www.youporn.com/most_discussed/?page=", None))
-		self.genreliste.insert(0, ("Most Favorited", "http://www.youporn.com/most_favorited/?page=", None))
-		self.genreliste.insert(0, ("Most Viewed", "http://www.youporn.com/most_viewed/?page=", None))
-		self.genreliste.insert(0, ("Top Rated", "http://www.youporn.com/top_rated/?page=", None))
+			self.genreliste.insert(0, (400 * "—", None, default_cover))
+			self.genreliste.insert(0, ("Recommended", "http://www.youporn.com/recommended/?page=", default_cover))
+			self.genreliste.insert(0, ("Favourite Collections", "http://www.youporn.com/favorites/collections/?page=", default_cover))
+			self.genreliste.insert(0, ("Favourite Videos", "http://www.youporn.com/favorites/?page=", default_cover))
+		self.genreliste.insert(0, (400 * "—", None, default_cover))
+		self.genreliste.insert(0, ("Channels", "http://www.youporn.com/channels/most_subscribed/?page=", default_cover))
+		self.genreliste.insert(0, ("Popular by Country", "http://www.youporn.com/categories/", default_cover))
+		self.genreliste.insert(0, ("Most Discussed", "http://www.youporn.com/most_discussed/?page=", default_cover))
+		self.genreliste.insert(0, ("Most Favorited", "http://www.youporn.com/most_favorited/?page=", default_cover))
+		self.genreliste.insert(0, ("Most Viewed", "http://www.youporn.com/most_viewed/?page=", default_cover))
+		self.genreliste.insert(0, ("Top Rated", "http://www.youporn.com/top_rated/?page=", default_cover))
 		if not ypLoggedIn:
-			self.genreliste.insert(0, ("Recommended", "http://www.youporn.com/recommended/?page=", None))
-		self.genreliste.insert(0, ("Newest", "http://www.youporn.com/browse/time/?page=", None))
-		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Recommended", "http://www.youporn.com/recommended/?page=", default_cover))
+		self.genreliste.insert(0, ("Newest", "http://www.youporn.com/browse/time/?page=", default_cover))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False

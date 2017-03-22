@@ -174,8 +174,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="806"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.6"))
+config.mediaportal.version = NoSave(ConfigText(default="807"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.7"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -228,7 +228,7 @@ config.mediaportal.autoplayThreshold = ConfigInteger(default = 50, limits = (1,1
 config.mediaportal.filter = ConfigSelection(default = "ALL", choices = ["ALL", "Mediathek", "Grauzone", "Fun", "Sport", "Music", "Porn"])
 config.mediaportal.youtubeprio = ConfigSelection(default = "1", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
 config.mediaportal.videoquali_others = ConfigSelection(default = "1", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
-config.mediaportal.youtube_max_items_pp = ConfigInteger(default = 12, limits = (10,50))
+config.mediaportal.youtube_max_items_pp = ConfigInteger(default = 19, limits = (10,50))
 config.mediaportal.pornpin = ConfigYesNo(default = True)
 config.mediaportal.pornpin_cache = ConfigSelection(default = "0", choices = [("0", _("never")), ("5", _("5 minutes")), ("15", _("15 minutes")), ("30", _("30 minutes")), ("60", _("60 minutes"))])
 config.mediaportal.kidspin = ConfigYesNo(default = False)
@@ -298,6 +298,7 @@ mp_globals.bsp = bsdcd(bsdcd(bsdcd(decrypt('Sz/1Vnx8fHysl9jsO32INqWDtQEsyyDPYlBc
 mp_globals.yt_a = bsdcd(bsdcd(bsdcd(decrypt('kj8yV97e3t4fDPdo3ca07O6kKsuY9oZkvUqpBPJPkvzRYyzeAuLofAra3HKWsJmhvQ8EsGMDfnziGjqj3047WS8bojGewMj+in3daO4hlTSA6GUSwft7LNFdibC0hxTppR1VLXaRvKs=', CONFIG, 256))))
 mp_globals.yt_i = bsdcd(bsdcd(bsdcd(decrypt('6T8yV5mZmZkf3mpGhQOBtEl8qSHI314cYq7dLTlEswoOTaaMktY5N37bfxUXGzUcKMBVEjMRiiTOSkNBaOzfKLy3tPmUvE3dYv2CAmayBgrftcOkb7hMaz6Y/jAQym1oT6E/X7P7tpComuUMFWJhDhSuYYt1o3CFx3j53vFgAdUdsWNlN96bgwCEUaJr4JeuaCh+4mMZbN0mDHb0D8jscSZ1MJ97En2ZMRbanG5O/e/3d3kvxN4dU0PaVy4qRUQ9UEhO0XL1E0eV2S4dORGFqXeLTvs=', CONFIG, 256))))
 mp_globals.yt_s = bsdcd(bsdcd(bsdcd(decrypt('LUAyV6SkpKS3bO2Io81BlkONIwZfjHfCJgDdZMqw47QAGmIZT7tupMulXgbH+EkiOqKf84cqJX4T0EJYyhfiWF2Fy3Tb/nRdkzlcv5GgCF8rXFo1rFTW5ibXzsHu5HCmqRLW5meGHTo=', CONFIG, 256))))
+mp_globals.bdmt = bsdcd(bsdcd(bsdcd(decrypt('Q8fFWGdnZ2djFfvOea2AHqS5bqR9nO0b8bxJ433nOffxa5nD1ELvd/Nm9sdojTjgz0knJTFI2jl0RYrtf4c5YnqSS3hkiq+CjpnV3uQG4Kr5wZZ91zKE3A==', CONFIG, 256))))
 
 # Global variable
 autoStartTimer = None
@@ -578,8 +579,8 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		self.configlist.append(getConfigListEntry(_("Use HLS-Player:"), config.mediaportal.use_hls_proxy, True))
 		if config.mediaportal.use_hls_proxy.value:
 			self.configlist.append(getConfigListEntry(_("HLS-Player buffersize [MB]:"), config.mediaportal.hls_buffersize, False))
-			self.configlist.append(getConfigListEntry(_("HLS-Player IP:"), config.mediaportal.hls_proxy_ip, False))
-			self.configlist.append(getConfigListEntry(_("HLS-Player Port:"), config.mediaportal.hls_proxy_port, False))
+			#self.configlist.append(getConfigListEntry(_("HLS-Player IP:"), config.mediaportal.hls_proxy_ip, False))
+			#self.configlist.append(getConfigListEntry(_("HLS-Player Port:"), config.mediaportal.hls_proxy_port, False))
 			self.configlist.append(getConfigListEntry(_('Use HLS-Player Proxy:'), config.mediaportal.sp_use_hlsp_with_proxy, False))
 			self.configlist.append(getConfigListEntry(_("HLSP-HTTP-Proxy Host or IP:"), config.mediaportal.hlsp_proxy_host, False))
 			self.configlist.append(getConfigListEntry(_("HLSP-Proxy Port:"), config.mediaportal.hlsp_proxy_port, False))
@@ -603,15 +604,15 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		if MediaInfoPresent:
 			self.configlist.append(getConfigListEntry(_('MediaInfo on key:'), config.mediaportal.sp_mi_key, False))
 		self._separator()
-		self.configlist.append(getConfigListEntry("MP-EPG-IMPORTER", ))
-		self._separator()
-		self.configlist.append(getConfigListEntry(_("Enable import:"), config.mediaportal.epg_enabled, True))
-		if config.mediaportal.epg_enabled.value:
-			self.configlist.append(getConfigListEntry(_("Automatic start time:"), config.mediaportal.epg_wakeup, False))
-			self.configlist.append(getConfigListEntry(_("Standby at startup:"), config.mediaportal.epg_wakeupsleep, False))
-			self.configlist.append(getConfigListEntry(_("When in deep standby:"), config.mediaportal.epg_deepstandby, False))
-			self.configlist.append(getConfigListEntry(_("Start import after booting up:"), config.mediaportal.epg_runboot, False))
-		self._separator()
+		#self.configlist.append(getConfigListEntry("MP-EPG-IMPORTER", ))
+		#self._separator()
+		#self.configlist.append(getConfigListEntry(_("Enable import:"), config.mediaportal.epg_enabled, True))
+		#if config.mediaportal.epg_enabled.value:
+		#	self.configlist.append(getConfigListEntry(_("Automatic start time:"), config.mediaportal.epg_wakeup, False))
+		#	self.configlist.append(getConfigListEntry(_("Standby at startup:"), config.mediaportal.epg_wakeupsleep, False))
+		#	self.configlist.append(getConfigListEntry(_("When in deep standby:"), config.mediaportal.epg_deepstandby, False))
+		#	self.configlist.append(getConfigListEntry(_("Start import after booting up:"), config.mediaportal.epg_runboot, False))
+		#self._separator()
 		self.configlist.append(getConfigListEntry("PREMIUMIZE.ME", ))
 		self._separator()
 		self.configlist.append(getConfigListEntry(_("Activate premiumize.me:"), config.mediaportal.premiumize_use, True))
@@ -3789,10 +3790,10 @@ def startMP(session):
 		lc_stats = task.LoopingCall(watcher.print_stats)
 		lc_stats.start(60)
 
-	if config.mediaportal.epg_enabled.value and not config.mediaportal.epg_runboot.value and not mpepg.has_epg:
-		def importFini(msg):
-			session.open(MessageBoxExt, msg, type = MessageBoxExt.TYPE_INFO, timeout=5)
-		mpepg.importEPGData().addCallback(importFini)
+	#if config.mediaportal.epg_enabled.value and not config.mediaportal.epg_runboot.value and not mpepg.has_epg:
+	#	def importFini(msg):
+	#		session.open(MessageBoxExt, msg, type = MessageBoxExt.TYPE_INFO, timeout=5)
+	#	mpepg.importEPGData().addCallback(importFini)
 
 	if config.mediaportal.premiumize_use.value:
 		if not mp_globals.premium_yt_proxy_host:
@@ -3881,26 +3882,27 @@ def onBootStartCheck():
 
 def autostart(reason, session=None, **kwargs):
 	"called with reason=1 to during shutdown, with reason=0 at startup?"
-	global autoStartTimer, _session, watcher
-	import time
-	print>>log, "[MP EPGImport] autostart (%s) occured at" % reason, time.time()
+	#global autoStartTimer
+	global _session, watcher
+	#import time
+	#print>>log, "[MP EPGImport] autostart (%s) occured at" % reason, time.time()
 	if reason == 0:
 		if session is not None:
 			_session = session
 		if watcher == None:
 			watcher = HangWatcher()
-		if autoStartTimer is None:
-			autoStartTimer = AutoStartTimer(session)
-		if config.mediaportal.epg_runboot.value:
-			# timer isn't reliable here, damn
-			onBootStartCheck()
-		if config.mediaportal.epg_deepstandby.value == 'wakeup':
-			if config.mediaportal.epg_wakeupsleep.value:
-				print>>log, "[MP EPGImport] Returning to standby"
-				from Tools import Notifications
-				Notifications.AddNotification(Screens.Standby.Standby)
-	else:
-		print>>log, "[MP EPGImport] Stop"
+		#if autoStartTimer is None:
+		#	autoStartTimer = AutoStartTimer(session)
+		#if config.mediaportal.epg_runboot.value:
+		#	# timer isn't reliable here, damn
+		#	onBootStartCheck()
+		#if config.mediaportal.epg_deepstandby.value == 'wakeup':
+		#	if config.mediaportal.epg_wakeupsleep.value:
+		#		print>>log, "[MP EPGImport] Returning to standby"
+		#		from Tools import Notifications
+		#		Notifications.AddNotification(Screens.Standby.Standby)
+	#else:
+		#print>>log, "[MP EPGImport] Stop"
 		#if autoStartTimer:
 		#autoStartTimer.stop()
 

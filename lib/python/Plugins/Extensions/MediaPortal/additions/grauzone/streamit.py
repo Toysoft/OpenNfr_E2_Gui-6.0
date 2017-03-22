@@ -36,7 +36,7 @@ else:
 	IMDbPresent = False
 	TMDbPresent = False
 
-BASE_URL = "http://streamit.ws"
+BASE_URL = "https://streamit.ws"
 sit_cookies = CookieJar()
 sit_ck = {}
 sit_agent = ''
@@ -396,13 +396,16 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 
 	def getPostFuncs(self, data):
 		self.sortFuncs = []
-		m = re.search('id="postFuncs">(.*?)<!-- /#postFuncs -->', data, re.S)
-		if m:
-			for m2 in re.finditer('href="(.*?)">(.*?)</a', m.group(1)):
-				href, name = m2.groups()
-				href = re.sub('&page=\d+', '', href, 1)
-				href = re.sub('\?page=\d+', '?', href, 1)
-				self.sortFuncs.append((decodeHtml(name), decodeHtml(href)))
+		try:
+			m = re.search('id="postFuncs">(.*?)<!-- /#postFuncs -->', data, re.S)
+			if m:
+				for m2 in re.finditer('href="(.*?)">(.*?)</a', m.group(1)):
+					href, name = m2.groups()
+					href = re.sub('&page=\d+', '', href, 1)
+					href = re.sub('\?page=\d+', '?', href, 1)
+					self.sortFuncs.append((decodeHtml(name), decodeHtml(href)))
+		except:
+			pass
 		if self.sortFuncs:
 			self['F3'].show()
 		else:

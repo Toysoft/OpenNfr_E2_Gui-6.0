@@ -15,7 +15,7 @@ class show_VGDE_Genre(MenuHelper):
 		baseUrl = "https://videogold.de"
 		MenuHelper.__init__(self, session, 0, None, baseUrl, "", self._defaultlistcenter)
 
-		self['title'] = Label(VGDE_Version)
+		self['title'] = Label("VideoGold.de")
 		self['ContentTitle'] = Label("Genres")
 
 		self.onLayoutFinish.append(self.mh_initMenu)
@@ -85,7 +85,7 @@ class VGDE_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.sortOrderStrAZ = ""
 		self.sortOrderStrIMDB = ""
 		self.sortOrderStrGenre = ""
-		self['title'] = Label(VGDE_Version)
+		self['title'] = Label("VideoGold.de")
 
 		self['F1'] = Label(_("Text-"))
 		self['F4'] = Label(_("Text+"))
@@ -238,7 +238,7 @@ class VGDE_FilmListeScreen(MPScreen, ThumbsHelper):
 			dhTitle = self['liste'].getCurrent()[0][0]
 			if url:
 				url = 'gdata.youtube.com/feeds/api/playlists/PL'+dhVideoId+'?'
-				self.session.open(YT_ListScreen, url, dhTitle, title=VGDE_Version)
+				self.session.open(YT_ListScreen, url, dhTitle, title="videogold")
 			else:
 				self.session.open(
 					YoutubePlayer,

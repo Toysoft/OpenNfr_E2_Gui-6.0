@@ -54,6 +54,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
+default_cover = "http://blacksportsonline.com/home/wp-content/uploads/2015/08/pornhub-logo.jpg"
 
 class pornhubGenreScreen(MPScreen):
 
@@ -147,28 +148,28 @@ class pornhubGenreScreen(MPScreen):
 				self.filmliste.append((Title, Url, Image))
 			self.filmliste.sort()
 		if phLoggedIn:
-			self.filmliste.insert(0, (400 * "—", None, None))
-			self.filmliste.insert(0, ("My Feed", "http://www.pornhub.com/feeds?section=videos&page=", None))
-			self.filmliste.insert(0, ("Recommended", "http://www.pornhub.com/recommended?page=", None))
-			self.filmliste.insert(0, ("Member Subscriptions", "http://www.pornhub.com/users/%s/subscriptions?page=" % self.username, None))
-			self.filmliste.insert(0, ("Channel Subscriptions", "http://www.pornhub.com/users/%s/channel_subscriptions?page=" % self.username, None))
-			self.filmliste.insert(0, ("Pornstar Subscriptions", "http://www.pornhub.com/users/%s/pornstar_subscriptions?page=" % self.username, None))
-			self.filmliste.insert(0, ("Favourite Playlists", "http://www.pornhub.com/users/%s/playlists/favorites?page=" % self.username, None))
-			self.filmliste.insert(0, ("Favourite Videos", "http://www.pornhub.com/users/%s/videos/favorites?page=" % self.username, None))
-		self.filmliste.insert(0, (400 * "—", None, None))
-		self.filmliste.insert(0, ("Playlists", "http://www.pornhub.com/playlists?page=", None))
-		self.filmliste.insert(0, ("Channels", "http://www.pornhub.com/channels?page=", None))
-		self.filmliste.insert(0, ("Pornstars", "http://www.pornhub.com/pornstars?page=", None))
-		self.filmliste.insert(0, ("Longest", "http://www.pornhub.com/video?o=lg&page=", None))
-		self.filmliste.insert(0, ("Hottest", "http://www.pornhub.com/video?o=ht&page=", None))
-		self.filmliste.insert(0, ("Top Rated", "http://www.pornhub.com/video?o=tr&page=", None))
-		self.filmliste.insert(0, ("Most Viewed", "http://www.pornhub.com/video?o=mv&page=", None))
-		self.filmliste.insert(0, ("Community Feed", "http://www.pornhub.com/community?content=videos&page=", None))
+			self.filmliste.insert(0, (400 * "—", None, default_cover))
+			self.filmliste.insert(0, ("My Feed", "http://www.pornhub.com/feeds?section=videos&page=", default_cover))
+			self.filmliste.insert(0, ("Recommended", "http://www.pornhub.com/recommended?page=", default_cover))
+			self.filmliste.insert(0, ("Member Subscriptions", "http://www.pornhub.com/users/%s/subscriptions?page=" % self.username, default_cover))
+			self.filmliste.insert(0, ("Channel Subscriptions", "http://www.pornhub.com/users/%s/channel_subscriptions?page=" % self.username, default_cover))
+			self.filmliste.insert(0, ("Pornstar Subscriptions", "http://www.pornhub.com/users/%s/pornstar_subscriptions?page=" % self.username, default_cover))
+			self.filmliste.insert(0, ("Favourite Playlists", "http://www.pornhub.com/users/%s/playlists/favorites?page=" % self.username, default_cover))
+			self.filmliste.insert(0, ("Favourite Videos", "http://www.pornhub.com/users/%s/videos/favorites?page=" % self.username, default_cover))
+		self.filmliste.insert(0, (400 * "—", None, default_cover))
+		self.filmliste.insert(0, ("Playlists", "http://www.pornhub.com/playlists?page=", default_cover))
+		self.filmliste.insert(0, ("Channels", "http://www.pornhub.com/channels?page=", default_cover))
+		self.filmliste.insert(0, ("Pornstars", "http://www.pornhub.com/pornstars?page=", default_cover))
+		self.filmliste.insert(0, ("Longest", "http://www.pornhub.com/video?o=lg&page=", default_cover))
+		self.filmliste.insert(0, ("Hottest", "http://www.pornhub.com/video?o=ht&page=", default_cover))
+		self.filmliste.insert(0, ("Top Rated", "http://www.pornhub.com/video?o=tr&page=", default_cover))
+		self.filmliste.insert(0, ("Most Viewed", "http://www.pornhub.com/video?o=mv&page=", default_cover))
+		self.filmliste.insert(0, ("Community Feed", "http://www.pornhub.com/community?content=videos&page=", default_cover))
 		if not phLoggedIn:
-			self.filmliste.insert(0, ("Recommended", "http://www.pornhub.com/recommended?page=", None))
-		self.filmliste.insert(0, ("Featured Recently", "http://www.pornhub.com/video?o=mr&page=", None))
-		self.filmliste.insert(0, ("Newest", "http://www.pornhub.com/video?o=cm&page=", None))
-		self.filmliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.filmliste.insert(0, ("Recommended", "http://www.pornhub.com/recommended?page=", default_cover))
+		self.filmliste.insert(0, ("Featured Recently", "http://www.pornhub.com/video?o=mr&page=", default_cover))
+		self.filmliste.insert(0, ("Newest", "http://www.pornhub.com/video?o=cm&page=", default_cover))
+		self.filmliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False

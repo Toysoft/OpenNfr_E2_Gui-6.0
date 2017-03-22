@@ -93,6 +93,7 @@ class MPScreen(Screen):
 		self['handlung'] = ScrollLabel("")
 
 		self.langoffset = 0
+		self.keyLocked = False
 
 		if mp_globals.isDreamOS:
 			self.onLayoutFinish.append(self._animation)
@@ -658,16 +659,6 @@ class MPScreen(Screen):
 		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
 		res = [entry]
 		res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width, height * 2, 0, RT_HALIGN_LEFT, entry[0]+entry[1]))
-		return res
-##################
-
-####### GEOde
-	def GEOdeListEntry(self, entry):
-		width = self['liste'].instance.size().width()
-		height = self['liste'].l.getItemSize().height()
-		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
-		res = [entry]
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, self.DEFAULT_LM, 0, width - 2 * self.DEFAULT_LM, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[0] + entry[1]))
 		return res
 ##################
 

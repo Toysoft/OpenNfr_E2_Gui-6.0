@@ -194,7 +194,7 @@ class ORFFilmeListeScreen(MPScreen):
 
 	def loadPageData(self, data):
 		suchstring = self.Name
-		suchstring = suchstring.replace('(','\(').replace(')','\)')
+		suchstring = suchstring.replace('(','\(').replace(')','\)').replace('[','\[').replace(']','\]').replace('|','\|')
 		parse = re.search('base_list_item_headline">'+suchstring+'(.*?)</ul>', data, re.S)
 		folgen = re.findall('a\shref="(.*?)".*?meta_date">(.*?)</span.*?meta_time">(.*?)</span', parse.group(1), re.S)
 		self.filmliste = []

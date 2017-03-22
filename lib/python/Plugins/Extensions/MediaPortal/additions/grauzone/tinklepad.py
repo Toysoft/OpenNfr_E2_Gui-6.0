@@ -1,10 +1,47 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-baseurl = "http://tinklepad.is/"
+baseurl = "http://tinklepad.ag/"
 
-class movie25GenreScreen(MPScreen):
+class tinklepadGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -24,7 +61,7 @@ class movie25GenreScreen(MPScreen):
 		}, -1)
 
 		self.keyLocked = True
-		self['title'] = Label("Movie25")
+		self['title'] = Label("TinklePad")
 		self['ContentTitle'] = Label("Genre:")
 
 		self.genreliste = []
@@ -100,9 +137,9 @@ class movie25GenreScreen(MPScreen):
 		streamGenreLink = self['liste'].getCurrent()[0][1]
 		print streamGenreName, streamGenreLink
 
-		self.session.open(movie25FilmeListeScreen, streamGenreLink, streamGenreName)
+		self.session.open(tinklepadFilmeListeScreen, streamGenreLink, streamGenreName)
 
-class movie25FilmeListeScreen(MPScreen, ThumbsHelper):
+class tinklepadFilmeListeScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, streamGenreLink, streamGenreName):
 		self.streamGenreLink = streamGenreLink
@@ -131,36 +168,32 @@ class movie25FilmeListeScreen(MPScreen, ThumbsHelper):
 			"prevBouquet" : self.keyPageDown
 		}, -1)
 
-		self['title'] = Label("Movie25")
+		self['title'] = Label("TinklePad")
 		self['ContentTitle'] = Label("%s:" % self.streamGenreName)
 
 		self.keyLocked = True
 		self.page = 1
-		self.lastpage = 999
+		self.lastpage = 1
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
+		self['Page'].setText(_('Page:'))
 
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		self['Page'].setText(str(self.page)+ " of")
 		url = "%s%s" % (self.streamGenreLink, str(self.page))
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		lastpage = re.findall('<div class="count">.*?\d/(.*\d)&nbsp', data, re.S)
-		if lastpage:
-			self.lastpage = lastpage[0]
-			self['page'].setText(lastpage[0])
-		else:
-			self.lastpage = 999
-
+		self.getLastPage(data, '<div\sclass="count">(.*?)</div>', '.*[\/|>](\d+)[\/|<]')
 		data=data.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
 		movies = re.findall('<div\sclass="movie_pic"><a\shref="(.*?)".*?src="(.*?)".*?alt="(.*?)"', data, re.S)
 		if movies:
 			self.filmliste = []
 			for (link,image,title) in movies:
+				if link.startswith('//'):
+					link = 'http:' + link
 				self.filmliste.append((decodeHtml(title),link,image))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.keyLocked = False
@@ -176,9 +209,9 @@ class movie25FilmeListeScreen(MPScreen, ThumbsHelper):
 			return
 		streamName = self['liste'].getCurrent()[0][0]
 		streamLink = self['liste'].getCurrent()[0][1]
-		self.session.open(movie25StreamListeScreen, streamLink, streamName)
+		self.session.open(tinklepadStreamListeScreen, streamLink, streamName)
 
-class movie25StreamListeScreen(MPScreen):
+class tinklepadStreamListeScreen(MPScreen):
 
 	def __init__(self, session, streamGenreLink, streamGenreName):
 		self.streamGenreLink = streamGenreLink
@@ -199,7 +232,7 @@ class movie25StreamListeScreen(MPScreen):
 			"cancel": self.keyCancel
 		}, -1)
 
-		self['title'] = Label("Movie25")
+		self['title'] = Label("TinklePad")
 		self['ContentTitle'] = Label("Streams for %s:" % self.streamGenreName)
 
 		self.keyLocked = True
@@ -213,12 +246,14 @@ class movie25StreamListeScreen(MPScreen):
 		getPage(self.streamGenreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		streams = re.findall('<li id="link_name">(.*?)</li>.*?<li id="playing_button"><a href="(.*?)" target', data, re.S)
+		streams = re.findall('<li id="link_name">(.*?)</li>.*?<li id="playing_button"><a href=".*?play/(.*?)" target', data, re.S)
 		if streams:
 			self.filmliste = []
 			for (name, link) in streams:
 				name = name.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
 				if isSupportedHoster(name, True):
+					import base64
+					link = base64.b64decode(link).split('&&')[-1]
 					self.filmliste.append((decodeHtml(name.strip()),link))
 			if len(self.filmliste) == 0:
 				self.filmliste.append((_('No supported streams found!'), None))
@@ -229,15 +264,7 @@ class movie25StreamListeScreen(MPScreen):
 		if self.keyLocked:
 			return
 		streamLink = self['liste'].getCurrent()[0][1]
-		if streamLink:
-			getPage(streamLink).addCallback(self.getLink).addErrback(self.dataError)
-
-	def getLink(self, data):
-		link = re.findall('showvideo"\ssrc="(http[s]?://.*?)"', data, re.S)
-		if link:
-			get_stream_link(self.session).check_link(link[0], self.got_link)
-		else:
-			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
+		get_stream_link(self.session).check_link(streamLink, self.got_link)
 
 	def got_link(self, stream_url):
-		self.session.open(SimplePlayer, [(self.streamGenreName, stream_url)], showPlaylist=False, ltype='movie25')
+		self.session.open(SimplePlayer, [(self.streamGenreName, stream_url)], showPlaylist=False, ltype='tinklepad')

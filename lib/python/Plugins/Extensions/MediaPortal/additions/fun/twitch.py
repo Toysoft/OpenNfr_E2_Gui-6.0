@@ -1,10 +1,47 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from enigma import eLabel, eSize
 
 headers = {'Accept': 'application/vnd.twitchtv.v5+json', 'Client-ID': '6r2dhbo9ek6mm1gab2snj0navo4sgqy'}
-limit = 15
+limit = 19
 
 class twitchGames(MPScreen):
 
@@ -34,11 +71,11 @@ class twitchGames(MPScreen):
 
 		self['title'] = Label("Twitch")
 		self['ContentTitle'] = Label("Games:")
+		self['F2'] = Label(_("Page"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
-		self.page = 0
-		self.lastpage = 999
+		self.page = 1
 
 		self.gameList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -48,12 +85,18 @@ class twitchGames(MPScreen):
 
 	def loadPage(self):
 		self.gameList = []
-		url = "https://api.twitch.tv/kraken/games/top?limit=" + str(limit) + "&offset=" + str(self.page * limit)
+		url = "https://api.twitch.tv/kraken/games/top?limit=" + str(limit) + "&offset=" + str((self.page-1) * limit)
 		getPage(url, headers=headers).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		self['page'].setText(str(self.page+1))
 		topGamesJson = json.loads(data)
+		try:
+			lastp = round((float(topGamesJson["_total"]) / limit) + 0.5)
+			self.lastpage = int(lastp)
+			self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
+		except:
+			self.lastpage = 999
+			self['page'].setText(str(self.page))
 		for node in topGamesJson["top"]:
 			self.gameList.append((str(node["game"]["name"]), str(node["game"]["box"]["large"])));
 		self.ml.moveToIndex(0)
@@ -71,20 +114,6 @@ class twitchGames(MPScreen):
 		if self.keyLocked or self['liste'].getCurrent() == None:
 			return
 		self.session.open(twitchChannels, self['liste'].getCurrent()[0][0])
-
-	def keyPageDown(self):
-		if self.keyLocked:
-			return
-		if not self.page < 1:
-			self.page -= 1
-			self.loadPage()
-
-	def keyPageUp(self):
-		if self.keyLocked:
-			return
-		if self.page+1 < self.lastpage:
-			self.page += 1
-			self.loadPage()
 
 class twitchChannels(MPScreen):
 
@@ -115,11 +144,11 @@ class twitchChannels(MPScreen):
 
 		self['title'] = Label("Twitch")
 		self['ContentTitle'] = Label("Channels:")
+		self['F2'] = Label(_("Page"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
-		self.page = 0
-		self.lastpage = 999
+		self.page = 1
 
 		self.channelList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -129,14 +158,20 @@ class twitchChannels(MPScreen):
 
 	def loadPage(self):
 		self.channelList = []
-		url = "https://api.twitch.tv/kraken/search/streams?query=" + self.gameName.replace(" ", "%20") + "&limit=" + str(limit) + "&offset=" + str(self.page * limit) + "&hls=true"
+		url = "https://api.twitch.tv/kraken/search/streams?query=" + self.gameName.replace(" ", "%20") + "&limit=" + str(limit) + "&offset=" + str((self.page-1) * limit) + "&hls=true"
 		getPage(url, headers=headers).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		self.textRenderer = eLabel(self.instance)
 		self.textRenderer.hide()
-		self['page'].setText(str(self.page+1))
 		topChannelsJson = json.loads(data)
+		try:
+			lastp = round((float(topChannelsJson["_total"]) / limit) + 0.5)
+			self.lastpage = int(lastp)
+			self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
+		except:
+			self.lastpage = 999
+			self['page'].setText(str(self.page))
 		for node in topChannelsJson["streams"]:
 			length = self._calcTextWidth(str(node["channel"]["display_name"]))
 			if length != -1:
@@ -167,20 +202,6 @@ class twitchChannels(MPScreen):
 		self.channelName = self['liste'].getCurrent()[0][1]
 		url = "http://api.twitch.tv/api/channels/" + self.channelName + "/access_token"
 		getPage(url, headers=headers).addCallback(self.parseAccessToken).addErrback(self.dataError)
-
-	def keyPageDown(self):
-		if self.keyLocked:
-			return
-		if not self.page < 1:
-			self.page -= 1
-			self.loadPage()
-
-	def keyPageUp(self):
-		if self.keyLocked:
-			return
-		if self.page+1 < self.lastpage:
-			self.page += 1
-			self.loadPage()
 
 	def parseAccessToken(self, data):
 		token = json.loads(data)

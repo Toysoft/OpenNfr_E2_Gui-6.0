@@ -7,39 +7,17 @@ from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
-DH_Version = "DokuHouse.de v1.01"
-
-DH_siteEncoding = 'utf-8'
-
-"""
-Sondertastenbelegung:
-
-Genre Auswahl:
-	KeyCancel	: Menu Up / Exit
-	KeyOK		: Menu Down / Select
-
-Doku Auswahl:
-	Bouquet +/-				: Seitenweise blättern in 1er Schritten Up/Down
-	'1', '4', '7',
-	'3', 6', '9'			: blättern in 2er, 5er, 10er Schritten Down/Up
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-
-Stream Auswahl:
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-"""
-
 class show_DH_Genre(MenuHelper):
 
 	def __init__(self, session):
 		MenuHelper.__init__(self, session, 1, [[],[],[]], "http://www.dokuhouse.de", "/category", self._defaultlistcenter)
 
-		self['title'] = Label(DH_Version)
+		self['title'] = Label("DokuHouse.de")
 		self['ContentTitle'] = Label("Genres")
 
 		self.onLayoutFinish.append(self.mh_initMenu)
 
 	def mh_parseData(self, data):
-		print 'parseData:'
 		m = re.search('<div id="sub-menu-full">(.*?)</div>', data, re.S)
 		if m:
 			entrys=re.findall('<li id="menu-item.*?<a href="http://www.dokuhouse.de/category(.*?)/">(.*?)</a>', m.group(1))
@@ -49,7 +27,6 @@ class show_DH_Genre(MenuHelper):
 
 	def mh_callGenreListScreen(self):
 		url = self.mh_baseUrl+self.mh_genreBase+self.mh_genreUrl[0]+self.mh_genreUrl[1]
-		print url
 		self.session.open(DH_FilmListeScreen, url, self.mh_genreTitle)
 
 class DH_FilmListeScreen(MPScreen, ThumbsHelper):
@@ -62,7 +39,6 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		print path
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -96,10 +72,6 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 			"0"	: self.closeAll,
 			"blue" :  self.keyTxtPageDown,
 			"red" :  self.keyTxtPageUp
-			#"seekBackManual" :  self.keyPageDownMan,
-			#"seekFwdManual" :  self.keyPageUpMan,
-			#"seekFwd" :  self.keyPageUp,
-			#"seekBack" :  self.keyPageDown
 		}, -1)
 
 		self.sortOrder = 0
@@ -110,7 +82,7 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.sortOrderStrAZ = ""
 		self.sortOrderStrIMDB = ""
 		self.sortOrderStrGenre = ""
-		self['title'] = Label(DH_Version)
+		self['title'] = Label("DokuHouse.de")
 
 		self['F1'] = Label(_("Text-"))
 		self['F4'] = Label(_("Text+"))
@@ -140,45 +112,32 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 
 	def setGenreStrTitle(self):
 		genreName = "%s%s" % (self.genreTitle,self.genreName)
-		#print genreName
 		self['ContentTitle'].setText(genreName)
 
 	def loadPage(self):
-		print "loadPage:"
-		#if not self.genreSpecials:
 		url = "%s/page/%d/" % (self.genreLink, self.page)
-		#else:
-		#	url =
 		if self.page:
 			self['page'].setText("%d / %d" % (self.page,self.pages))
 		self.filmQ.put(url)
 		if not self.eventL.is_set():
 			self.eventL.set()
 			self.loadPageQueued()
-		print "eventL ",self.eventL.is_set()
 
 	def loadPageQueued(self):
-		print "loadPageQueued:"
 		self['name'].setText(_('Please wait...'))
 		while not self.filmQ.empty():
 			url = self.filmQ.get_nowait()
-		#self.eventL.clear()
-		print url
 		twAgentGetPage(url, cookieJar=self.keckse, agent=None, headers=std_headers).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def dataError(self, error):
 		self.eventL.clear()
-		print "dataError:"
 		printl(error,self,"E")
 		self.dokusListe.append((_("No dokus found!"),"","",""))
 		self.ml.setList(map(self._defaultlistleft, self.dokusListe))
 
 	def loadPageData(self, data):
-		print "loadPageData:"
-		dokus = re.findall('class="article-image darken"><a href="(.*?)".*?<img.*?src="(.*?)".*?alt="(.*?)".*?class="excerpt">(.*?)</div>', data)
+		dokus = re.findall('class="article-image darken"><a href="(.*?)".*?<img.*?src="(.*?)".*?title="(.*?)".*?class="excerpt">(.*?)</div>', data)
 		if dokus:
-			print "Dokus found !"
-			#print dokus
 			if not self.pages:
 				m = re.findall('data-paginated="(.*?)"', data)
 				if m:
@@ -186,16 +145,13 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 				else:
 					self.pages = 1
 				self.page = 1
-				print "Page: %d / %d" % (self.page,self.pages)
 				self['page'].setText("%d / %d" % (self.page,self.pages))
 			self.dokusListe = []
-			for	(url,img,name,desc) in dokus:
-				#print	"Url: ", url, "Name: ", name
+			for (url,img,name,desc) in dokus:
 				self.dokusListe.append((decodeHtml(name), url, img, decodeHtml(desc.strip())))
 			self.ml.setList(map(self._defaultlistleft, self.dokusListe))
 			self.loadPicQueued()
 		else:
-			print "No dokus found!"
 			self.dokusListe.append((_("No dokus found!"),"","",""))
 			self.ml.setList(map(self._defaultlistleft, self.dokusListe))
 			if self.filmQ.empty():
@@ -204,44 +160,31 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 				self.loadPageQueued()
 
 	def loadPic(self):
-		print "loadPic:"
 		if self.picQ.empty():
 			self.eventP.clear()
-			print "picQ is empty"
 			return
 		if self.updateP:
-			print "Pict. or descr. update in progress"
-			print "eventP: ",self.eventP.is_set()
-			print "updateP: ",self.updateP
 			return
 		while not self.picQ.empty():
 			self.picQ.get_nowait()
 		streamName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(streamName)
 		streamPic = self['liste'].getCurrent()[0][2]
-		#streamUrl = self.baseUrl+re.sub('amp;','',self['liste'].getCurrent()[0][1])
 		desc = self['liste'].getCurrent()[0][3]
-		#print "streamName: ",streamName
-		#print "streamPic: ",streamPic
-		#print "streamUrl: ",streamUrl
 		self.getHandlung(desc)
 		self.updateP = 1
 		CoverHelper(self['coverArt'], self.ShowCoverFileExit).getCover(streamPic)
 
 	def getHandlung(self, desc):
-		print "getHandlung:"
 		if desc == None:
-			print "No Infos found !"
 			self['handlung'].setText(_("No further information available!"))
 			return
 		self.setHandlung(desc)
 
 	def setHandlung(self, data):
-		print "setHandlung:"
 		self['handlung'].setText(decodeHtml(data))
 
 	def ShowCoverFileExit(self):
-		print "showCoverFileExit:"
 		self.updateP = 0;
 		self.keyLocked	= False
 		if not self.filmQ.empty():
@@ -252,12 +195,10 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 
 	def loadPicQueued(self):
 		self.th_ThumbsQuery(self.dokusListe, 0, 1, 2, None, None, self.page, self.pages, mode=1)
-		print "loadPicQueued:"
 		self.picQ.put(None)
 		if not self.eventP.is_set():
 			self.eventP.set()
 		self.loadPic()
-		print "eventP: ",self.eventP.is_set()
 
 	def keyOK(self):
 		if (self.keyLocked|self.eventL.is_set()):
@@ -265,25 +206,19 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 		streamLink = self['liste'].getCurrent()[0][1]
 		streamName = self['liste'].getCurrent()[0][0]
 		streamPic = self['liste'].getCurrent()[0][2]
-		print "Open DH_Streams:"
-		print "Name: ",streamName
-		print "Link: ",streamLink
 		self.session.open(DH_Streams, streamLink, streamName, streamPic)
 
 	def keyUpRepeated(self):
-		#print "keyUpRepeated"
 		if self.keyLocked:
 			return
 		self['liste'].up()
 
 	def keyDownRepeated(self):
-		#print "keyDownRepeated"
 		if self.keyLocked:
 			return
 		self['liste'].down()
 
 	def key_repeatedUp(self):
-		#print "key_repeatedUp"
 		if self.keyLocked:
 			return
 		self.loadPicQueued()
@@ -299,13 +234,11 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 		self['liste'].pageDown()
 
 	def keyPageDown(self):
-		#print "keyPageDown()"
 		if self.seekTimerRun:
 			self.seekTimerRun = False
 		self.keyPageDownFast(1)
 
 	def keyPageUp(self):
-		#print "keyPageUp()"
 		if self.seekTimerRun:
 			self.seekTimerRun = False
 		self.keyPageUpFast(1)
@@ -313,51 +246,41 @@ class DH_FilmListeScreen(MPScreen, ThumbsHelper):
 	def keyPageUpFast(self,step):
 		if self.keyLocked:
 			return
-		#print "keyPageUpFast: ",step
 		oldpage = self.page
 		if (self.page + step) <= self.pages:
 			self.page += step
 		else:
 			self.page = 1
-		#print "Page %d/%d" % (self.page,self.pages)
 		if oldpage != self.page:
 			self.loadPage()
 
 	def keyPageDownFast(self,step):
 		if self.keyLocked:
 			return
-		print "keyPageDownFast: ",step
 		oldpage = self.page
 		if (self.page - step) >= 1:
 			self.page -= step
 		else:
 			self.page = self.pages
-		#print "Page %d/%d" % (self.page,self.pages)
 		if oldpage != self.page:
 			self.loadPage()
 
 	def key_1(self):
-		#print "keyPageDownFast(2)"
 		self.keyPageDownFast(2)
 
 	def key_4(self):
-		#print "keyPageDownFast(5)"
 		self.keyPageDownFast(5)
 
 	def key_7(self):
-		#print "keyPageDownFast(10)"
 		self.keyPageDownFast(10)
 
 	def key_3(self):
-		#print "keyPageUpFast(2)"
 		self.keyPageUpFast(2)
 
 	def key_6(self):
-		#print "keyPageUpFast(5)"
 		self.keyPageUpFast(5)
 
 	def key_9(self):
-		#print "keyPageUpFast(10)"
 		self.keyPageUpFast(10)
 
 class DH_Streams(MPScreen):
@@ -371,7 +294,6 @@ class DH_Streams(MPScreen):
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		print path
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -390,7 +312,7 @@ class DH_Streams(MPScreen):
 			"blue" : self.keyPageDown,
 		}, -1)
 
-		self['title'] = Label(DH_Version)
+		self['title'] = Label("DokuHouse.de")
 		self['ContentTitle'] = Label("Streams für "+dokuName)
 		self['name'] = Label(self.dokuName)
 		self['F1'] = Label(_("Text-"))
@@ -404,14 +326,10 @@ class DH_Streams(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		print "loadPage:"
 		streamUrl = self.dokuUrl
-		#print "FilmUrl: %s" % self.dokuUrl
-		#print "FilmName: %s" % self.dokuName
 		twAgentGetPage(streamUrl).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		print "parseData:"
 		desc = ''
 		imgurl = self.dokuImg
 		self.streamListe = []
@@ -431,43 +349,34 @@ class DH_Streams(MPScreen):
 					i += 1
 			m2 = re.search('//www.youtube.com/(embed|v)/(.*?)("|\?)', m.group(1))
 		if m2:
-			print "Streams found"
 			self.nParts = 0
 			pstr = self.dokuName
 			self.streamListe.append((pstr,m2.group(2),desc,imgurl))
 			self.keyLocked	= False
 		else:
-			print "No dokus found!"
 			desc = None
 			self.streamListe.append(("No streams found!","","",""))
 		self.ml.setList(map(self._defaultlistleft, self.streamListe))
 		self.showInfos()
 
 	def getHandlung(self, desc):
-		print "getHandlung:"
 		if desc == None:
-			print "No Infos found !"
 			self['handlung'].setText(_("No further information available!"))
 		else:
 			self.setHandlung(desc)
 
 	def setHandlung(self, data):
-		print "setHandlung:"
 		self['handlung'].setText(decodeHtml(data))
 
 	def showInfos(self):
-		print "showInfos:"
 		streamName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(streamName)
 		streamPic = self['liste'].getCurrent()[0][3]
 		desc = self['liste'].getCurrent()[0][2]
-		print "streamName: ",streamName
-		print "streamPic: ",streamPic
 		self.getHandlung(desc)
 		CoverHelper(self['coverArt']).getCover(streamPic)
 
 	def dataError(self, error):
-		print "dataError:"
 		printl(error,self,"E")
 		self.streamListe.append((_("Read error!"),"","",""))
 		self.ml.setList(map(self._defaultlistleft, self.streamListe))
@@ -476,7 +385,6 @@ class DH_Streams(MPScreen):
 		self.videoPrio = int(config.mediaportal.youtubeprio.value)
 
 	def keyOK(self):
-		print "keyOK:"
 		if self.keyLocked:
 			return
 		dhTitle = self['liste'].getCurrent()[0][0]

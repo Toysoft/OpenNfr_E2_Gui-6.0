@@ -75,7 +75,7 @@ try:
 					if uri:
 						self._bitrate = self._getBandwidth()
 						path = config.mediaportal.storagepath.value
-						ip = ".".join(str(x) for x in config.mediaportal.hls_proxy_ip.value)
+						ip = "127.0.0.1" #".".join(str(x) for x in config.mediaportal.hls_proxy_ip.value)
 						import uuid
 						uid = uuid.uuid1()
 						uri = 'http://%s:%d/?url=%s&bitrate=%d&path=%s&uid=%s' % (ip, mp_globals.hls_proxy_port, uri, self._bitrate, path, uid)

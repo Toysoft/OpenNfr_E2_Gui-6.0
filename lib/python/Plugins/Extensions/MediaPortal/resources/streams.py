@@ -88,7 +88,6 @@ class get_stream_link:
 	from hosters.divxpress import divxpress, divxpressPostdata
 	from hosters.epornik import epornik
 	from hosters.exashare import exashare
-	from hosters.filehoot import filehoot
 	from hosters.flyflv import flyflv, flyflvData
 	from hosters.google import google
 	from hosters.kodik import kodik, kodikData
@@ -96,13 +95,10 @@ class get_stream_link:
 	from hosters.nowvideo import nowvideo
 	from hosters.mailru import mailru
 	from hosters.mega3x import mega3x
-	from hosters.moviecloud import moviecloud
 	from hosters.movshare import movshare, movshare_code1, movshare_base36decode, movshare_xml
 	from hosters.mp4upload import mp4upload
-	from hosters.mrfile import mrfile
 	from hosters.okru import okru
 	from hosters.openload import openloadApi
-	from hosters.powerwatch import powerwatch, powerwatchGetPage, powerwatch_postData
 	from hosters.powvideo import powvideo
 	from hosters.promptfile import promptfile, promptfilePost
 	from hosters.rapidvideo import rapidvideo
@@ -112,7 +108,6 @@ class get_stream_link:
 	from hosters.uptostream import uptostream
 	from hosters.videonest import videonest
 	from hosters.videowood import videowood
-	from hosters.vidbull import vidbull
 	from hosters.vidlox import vidlox
 	from hosters.vidspot import vidspot
 	from hosters.vidwoot import vidwoot
@@ -120,11 +115,9 @@ class get_stream_link:
 	from hosters.vkme import vkme, vkmeHash, vkmeHashGet, vkmeHashData, vkPrivat, vkPrivatData
 	from hosters.vidto import vidto
 	from hosters.vidzi import vidzi
-	from hosters.vodlocker import vodlocker, vodlockerGetPage, vodlockerData
 	from hosters.watchers import watchers
 	from hosters.yourupload import yourupload
 	from hosters.youwatch import youwatch, youwatchLink
-	from hosters.zettahost import zettahost
 	from.hosters.zstream import zstream
 
 	def __init__(self, session):
@@ -427,6 +420,33 @@ class get_stream_link:
 				else:
 					self.only_premium()
 
+			elif re.search('digitalplayground.com', data, re.S):
+				link = data
+				if config.mediaportal.premiumize_use.value and not self.fallback:
+					self.rdb = 0
+					self.prz = 1
+					self.callPremium(link)
+				else:
+					self.only_premium()
+
+			elif re.search('mofos.com', data, re.S):
+				link = data
+				if config.mediaportal.premiumize_use.value and not self.fallback:
+					self.rdb = 0
+					self.prz = 1
+					self.callPremium(link)
+				else:
+					self.only_premium()
+
+			elif re.search('realitykings.com', data, re.S):
+				link = data
+				if config.mediaportal.premiumize_use.value and not self.fallback:
+					self.rdb = 0
+					self.prz = 1
+					self.callPremium(link)
+				else:
+					self.only_premium()
+
 			elif re.search('1fichier.com', data, re.S):
 				link = data
 				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
@@ -639,29 +659,6 @@ class get_stream_link:
 				link = data
 				getPage(link).addCallback(self.trollvid).addErrback(self.errorload)
 
-			elif re.search("vidbull.com", data, re.S):
-				id = re.search('/embed-(.*?)-', data, re.S)
-				if not id:
-					id = re.search('vidbull.com/(.*?)$', data, re.S)
-				if id:
-					link = 'http://www.vidbull.com/%s' % id.group(1)
-					spezialagent = 'Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/BuildID) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36'
-					getPage(link, agent=spezialagent).addCallback(self.vidbull).addErrback(self.errorload)
-
-			elif re.search("vodlocker.com", data, re.S):
-				link = data
-				getPage(link).addCallback(self.vodlocker, link).addErrback(self.errorload)
-
-			elif re.search("mrfile\.me", data, re.S):
-				if re.search('mrfile\.me/embed', data, re.S):
-					link = data
-				else:
-					data = data.replace('http://','')
-					id = data.split('/')[1]
-					if id:
-						link = "http://mrfile.me/embed-%s-645x353.html" % id
-				getPage(link).addCallback(self.mrfile).addErrback(self.errorload)
-
 			elif re.search("flyflv\.com", data, re.S):
 				link = data
 				getPage(link).addCallback(self.flyflv).addErrback(self.errorload)
@@ -737,15 +734,6 @@ class get_stream_link:
 						link = "http://vidspot.net/embed-%s.html" % id[0]
 				getPage(link).addCallback(self.vidspot).addErrback(self.errorload)
 
-			elif re.search('zettahost\.tv/', data, re.S):
-				if re.search('zettahost\.tv/embed-', data, re.S):
-					link = data
-				else:
-					id = re.search('zettahost\.tv/(\w+)', data)
-					if id:
-						link = "http://zettahost.tv/embed-%s.html" % id.group(1)
-				getPage(link).addCallback(self.zettahost).addErrback(self.errorload)
-
 			elif re.search('kodik\.biz/', data, re.S):
 				link = data
 				getPage(link).addCallback(self.kodik).addErrback(self.errorload)
@@ -770,15 +758,6 @@ class get_stream_link:
 					self.callPremium(link)
 				else:
 					getPage(link).addCallback(self.rapidvideo).addErrback(self.errorload)
-
-			elif re.search('powerwatch.pw', data, re.S):
-				link = data
-				if config.mediaportal.premiumize_use.value and not self.fallback:
-					self.rdb = 0
-					self.prz = 1
-					self.callPremium(link)
-				else:
-					getPage(link).addCallback(self.powerwatch, link).addErrback(self.errorload)
 
 			elif re.search('vid\.gg|vidgg\.to', data, re.S):
 				data = data.replace('vid.gg','vidgg.to')
@@ -842,15 +821,6 @@ class get_stream_link:
 						link = "http://letwatch.us/embed-%s-640x360.html" % id[0]
 				getPage(link).addCallback(self.letwatch).addErrback(self.errorload)
 
-			elif re.search('filehoot\.com', data, re.S):
-				if re.search('filehoot\.com/embed', data, re.S):
-					link = data
-				else:
-					id = re.search('filehoot\.com/(\w+)', data)
-					if id:
-						link = "http://filehoot.com/embed-%s-1046x562.html" % id.group(1)
-				getPage(link).addCallback(self.filehoot).addErrback(self.errorload)
-
 			elif re.search('powvideo\.net/', data, re.S):
 				id = re.search('powvideo\.net/(embed-|)(\w+)', data)
 				if id:
@@ -869,14 +839,6 @@ class get_stream_link:
 
 			elif re.search('my\.pcloud\.com', data, re.S):
 				getPage(data).addCallback(self.mypcloud).addErrback(self.errorload)
-
-			elif re.search('moviecloud\.to', data, re.S):
-				id = re.search('http://moviecloud.to/(.*?)/', data, re.S)
-				if id:
-					link = "http://moviecloud.to/plugins/mediaplayer/site/_embed.php?u=%s&w=600&h=330" % id.group(1)
-				else:
-					link = ""
-				getPage(link).addCallback(self.moviecloud).addErrback(self.errorload)
 
 			elif re.search('ok\.ru', data, re.S):
 				id = data.split('/')[-1]

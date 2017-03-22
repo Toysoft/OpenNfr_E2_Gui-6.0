@@ -8,6 +8,8 @@ from coverhelper import CoverHelper
 from youtubeplayer import YoutubePlayer
 from Components.ProgressBar import ProgressBar
 
+api_key = mp_globals.bdmt
+
 class MediaPortalTmdbScreen(Screen):
 
 	def __init__(self, session, movie_title):
@@ -56,7 +58,7 @@ class MediaPortalTmdbScreen(Screen):
 	def tmdbSearch(self):
 		self.filmliste = []
 		self['name'].setText(_("Trying to find results for \"%s\" in TMDb...") % self.movie_title)
-		url = "http://api.themoviedb.org/3/search/movie?api_key=8789cfd3fbab7dccf1269c3d7d867aff&query=%s&language=%s" % (self.movie_title.replace(' ','%20'), "de")
+		url = "http://api.themoviedb.org/3/search/movie?api_key=%s&query=%s&language=%s" % (api_key, self.movie_title.replace(' ','%20'), "de")
 		getPage(url).addCallback(self.getResults).addErrback(self.dataError)
 
 	def getResults(self, data):
@@ -64,10 +66,10 @@ class MediaPortalTmdbScreen(Screen):
 		if list:
 			for id,otitle,coverPath,title in list:
 				url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/')
-				url = "http://api.themoviedb.org/3/movie/%s?api_key=8789cfd3fbab7dccf1269c3d7d867aff&append_to_response=releases,trailers,casts&language=%s" % (id, "de")
+				url = "http://api.themoviedb.org/3/movie/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (api_key, id, "de")
 				type = _("Movie")
 				self.filmliste.append((title, url_cover, url, id, type, 'movie'))
-		url = "http://api.themoviedb.org/3/search/tv?api_key=8789cfd3fbab7dccf1269c3d7d867aff&query=%s&language=%s" % (self.movie_title.replace(' ','%20'), "de")
+		url = "http://api.themoviedb.org/3/search/tv?api_key=%s&query=%s&language=%s" % (api_key, self.movie_title.replace(' ','%20'), "de")
 		getPage(url).addCallback(self.getResults2).addErrback(self.dataError)
 
 	def getResults2(self, data):
@@ -75,7 +77,7 @@ class MediaPortalTmdbScreen(Screen):
 		if list:
 			for id,otitle,coverPath,title in list:
 				url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/')
-				url = "http://api.themoviedb.org/3/tv/%s?api_key=8789cfd3fbab7dccf1269c3d7d867aff&append_to_response=releases,trailers,casts&language=%s" % (id, "de")
+				url = "http://api.themoviedb.org/3/tv/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (api_key, id, "de")
 				type = _("TV Show")
 				self.filmliste.append((title, url_cover, url, id, type, 'tv'))
 		self.ml.setList(map(self.movielist, self.filmliste))

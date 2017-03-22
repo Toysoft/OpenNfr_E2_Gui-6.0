@@ -129,7 +129,7 @@ class gigatvFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, '<ul\sclass="sequences\shlist">(.*?)</ul>')
-		Movies = re.findall('embed\/(\d+).*?<article\sclass=.*?smallimg">.*?hgroup>.*?<a\shref=".*?>(.*?)</a>.*?src="(http://www.giga.de/.*?)"\salt=', data, re.S|re.I)
+		Movies = re.findall('embed\/(\d+).*?<article\sclass=.*?smallimg">.*?hgroup>.*?<a\shref=".*?>(.*?)</a>.*?img\ssrc="(http://static.giga.de/.*?)"\salt=', data, re.S|re.I)
 		if Movies:
 			for (ID, Title, Image) in Movies:
 				Title = Title.replace('<b>','').replace('</b>','')

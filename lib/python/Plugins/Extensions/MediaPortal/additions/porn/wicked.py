@@ -60,6 +60,10 @@ class wickedGenreScreen(MPScreen):
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft,
 			"cancel" : self.keyCancel
 		}, -1)
 
@@ -67,6 +71,7 @@ class wickedGenreScreen(MPScreen):
 		self['ContentTitle'] = Label("Genre:")
 
 		self.genreliste = []
+		self.suchString = ''
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
@@ -83,7 +88,9 @@ class wickedGenreScreen(MPScreen):
 		self.genreliste.insert(0, ("Most Viewed Scenes", 'http://www.wicked.com/tour/videos/mostviewed/', None))
 		self.genreliste.insert(0, ("Top Rated Scenes", 'http://www.wicked.com/tour/videos/toprated/', None))
 		self.genreliste.insert(0, ("Latest Scenes", 'http://www.wicked.com/tour/videos/latest/', None))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.showInfos()
 
 	def keyOK(self):
 		if not config.mediaportal.premiumize_use.value:
@@ -91,9 +98,18 @@ class wickedGenreScreen(MPScreen):
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		Link = self['liste'].getCurrent()[0][1]
-		if re.match(".*?Girls", Name):
+		if Name == "--- Search ---":
+			self.suchen()
+		elif re.match(".*?Girls", Name):
 			self.session.open(wickedGirlsScreen, Link, Name)
 		else:
+			self.session.open(wickedFilmScreen, Link, Name)
+
+	def SuchenCallback(self, callback = None, entry = None):
+		if callback is not None and len(callback):
+			self.suchString = callback
+			Name = "--- Search ---"
+			Link = self.suchString.replace(' ', '-')
 			self.session.open(wickedFilmScreen, Link, Name)
 
 class wickedGirlsScreen(MPScreen, ThumbsHelper):
@@ -237,11 +253,16 @@ class wickedFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		url = "%s%s/" % (self.Link, str(self.page))
+		if re.match(".*?Search", self.Name):
+			url = "http://www.wicked.com/tour/search/videos/%s/%s/" % (self.Link, str(self.page))
+		else:
+			url = "%s%s/" % (self.Link, str(self.page))
 		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		if re.match(".*?/tour/pornstar", self.Link):
+		if re.match(".*?Search", self.Name):
+			self.getLastPage(data, 'class="paginationui-container(.*?)</ul>', '.*(?:\/|>)(\d+)')
+		elif re.match(".*?/tour/pornstar", self.Link):
 			self.getLastPage(data, 'class="paginationui-container(.*?)</ul>', '.*(?:\/|>)(\d+)')
 		else:
 			self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))

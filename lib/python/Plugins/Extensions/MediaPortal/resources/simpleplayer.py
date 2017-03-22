@@ -158,7 +158,7 @@ class M3U8Player:
 		if '.m3u8' in url:
 			self._bitrate = self._getBandwidth()
 			path = config.mediaportal.storagepath.value
-			ip = ".".join(str(x) for x in config.mediaportal.hls_proxy_ip.value)
+			ip = "127.0.0.1" #".".join(str(x) for x in config.mediaportal.hls_proxy_ip.value)
 			url, proxycfg = getProxyConfig(url)
 			uid = uuid.uuid1()
 			if ' headers=' in url:

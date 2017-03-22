@@ -274,7 +274,7 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 						if i>0:
 							nm = nm[:i]
 
-						t = 'S%02dE%03d - %s' % (int(info.group(3)), int(info.group(2)), nm)
+						t = 'S%02dE%02d - %s' % (int(info.group(3)), int(info.group(2)), nm)
 						self.filmListe.append((t, h, self.imgLink, '', ''))
 					else:
 						a = l
@@ -537,7 +537,7 @@ class DDLMEStreams(MPScreen):
 		if info:
 			a = info.start()
 			l = len(data)
-			epi = re.search('S(\d{2})E(\d{3})', self.filmName)
+			epi = re.search('S(\d{2})E(\d{2})', self.filmName)
 			if epi:
 				st = int(epi.group(1))
 				ep = int(epi.group(2))

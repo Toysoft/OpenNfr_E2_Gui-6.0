@@ -61,6 +61,10 @@ class naughtyamericaGenreScreen(MPScreen):
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
 			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft,
 			"yellow" : self.keyChangeCats
 		}, -1)
 
@@ -95,11 +99,12 @@ class naughtyamericaGenreScreen(MPScreen):
 					Url = Url + "?page="
 					self.genreliste.append((decodeHtml(Title), Url, None))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Newest", 'http://tour.naughtyamerica.com/new-porn-videos?page=', None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-			self.ml.moveToIndex(0)
-			self.keyLocked = False
+		self.genreliste.insert(0, ("Newest", 'http://tour.naughtyamerica.com/new-porn-videos?page=', None))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.showInfos()
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -116,9 +121,9 @@ class naughtyamericaGenreScreen(MPScreen):
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
-			self.suchString = callback.replace(' ', '+')
-			Link = '%s' % (self.suchString)
+			self.suchString = callback
 			Name = "--- Search ---"
+			Link = self.suchString.replace(' ', '+')
 			self.session.open(naughtyamericaFilmScreen, Link, Name)
 
 	def keyChangeCats(self):
@@ -189,7 +194,6 @@ class naughtyamericaFilmScreen(MPScreen, ThumbsHelper):
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination(.*?)</div>', '.*(?:\/|>)(\d+)')
 		parse = re.search('content-main(.*?)(id="fantasySideBar"|id="wrapper-footer)', data, re.S)
-		print "aaaaa"
 		Movies = re.findall('a\shref="(http://tour.naughtyamerica.com.*?)(?:\?nats.*?)"\stitle="(.*?)".*?img.*?src="(.*?)"(.*?)class="entry-date">(.*?)</p', parse.group(1), re.S)
 		if Movies:
 			for (Url, Title, Image, VrCheck, Date) in Movies:

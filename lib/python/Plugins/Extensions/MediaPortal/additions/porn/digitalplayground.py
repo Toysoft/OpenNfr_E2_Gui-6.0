@@ -40,10 +40,10 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
-BASE_NAME = "Brazzers.com"
-default_cover = "http://static.brazzers.com/bzv2/brazzerscom/tour/assets/common/img/logo/brazzers_logo.png"
+BASE_NAME = "DigitalPlayground.com"
+default_cover = "http://staticwebp-hw-dp.dvdcdn.com/assetv3_files/DigitalPlayground/DigitalPlaygroundCom/Common/common/global/img/dp_new_main_logo_white.png"
 
-class brazzersGenreScreen(MPScreen):
+class digitalplaygroundGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -73,6 +73,7 @@ class brazzersGenreScreen(MPScreen):
 		self.suchString = ''
 
 		self.genreliste = []
+		self.cats = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
@@ -80,21 +81,29 @@ class brazzersGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		self['name'].setText(_('Please wait...'))
-		url = "http://www.brazzers.com/categories/"
+		url = "http://www.digitalplayground.com/tags/"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="categories">(.*?)</section>', data, re.S)
-		Cats = re.findall('class="tag-card">.*?href="(.*?)".*?title="(.*?)".*?img.*?src="(.*?)".*?</li>', parse.group(1), re.S|re.I)
+		Cats = re.findall('class="preview-image".*?<a\shref="(.*?)".*?title="(.*?)\svideos">.*?img\ssrc="(.*?)"', data, re.S)
 		if Cats:
 			for (Url, Title, Image) in Cats:
-				Url = 'http://www.brazzers.com%s' % Url
+				Url = 'http://www.digitalplayground.com%s' % Url
+				self.cats.append(Title)
 				self.genreliste.append((decodeHtml(Title), Url, Image))
-			self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Viewed", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostviewed/', default_cover))
-		self.genreliste.insert(0, ("Most Rated", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostrated/', default_cover))
-		self.genreliste.insert(0, ("Release Date", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/bydate/', default_cover))
+
+		parse = re.search('class="filter-options">(.*?)</section>', data, re.S)
+		if parse:
+			Cats = re.findall('data-trackId.*?href="(.*?)">(.*?)</a>', parse.group(1), re.S)
+			if Cats:
+				for (Url, Title) in Cats:
+					Url = 'http://www.digitalplayground.com%s' % Url
+					if Title not in self.cats:
+						self.genreliste.append((decodeHtml(Title), Url, default_cover))
+				self.genreliste.sort()
+		self.genreliste.insert(0, ("Most Viewed", 'http://www.digitalplayground.com/videos/all-videos/all-pornstars/all-categories/alltime/mostviewed/', default_cover))
+		self.genreliste.insert(0, ("Top Rated", 'http://www.digitalplayground.com/videos/all-videos/all-pornstars/all-categories/alltime/toprated/', default_cover))
+		self.genreliste.insert(0, ("Release Date", 'http://www.digitalplayground.com/videos/all-videos/all-pornstars/all-categories/alltime/bydate/', default_cover))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
@@ -118,16 +127,16 @@ class brazzersGenreScreen(MPScreen):
 			self.suchen()
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(brazzersFilmScreen, Link, Name)
+			self.session.open(digitalplaygroundFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
 			self.suchString = callback
 			Name = "--- Search ---"
 			Link = self.suchString.replace(' ', '+')
-			self.session.open(brazzersFilmScreen, Link, Name)
+			self.session.open(digitalplaygroundFilmScreen, Link, Name)
 
-class brazzersFilmScreen(MPScreen, ThumbsHelper):
+class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -178,20 +187,21 @@ class brazzersFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://www.brazzers.com/search/all/?q=%s" % (self.Link)
+			url = "http://www.digitalplayground.com/search/videos/%s/date/desc/%s/" % (self.Link, str(self.page))
 		else:
-			url = "%s%s/" % (self.Link, str(self.page))
+			if self.page == 1:
+				url = self.Link
+			else:
+				url = "%s%s/" % (self.Link, str(self.page))
 		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'class="pagination(.*?)</div>', '.*(?:\/|>)(\d+)')
-		Movies = re.findall('card-overlay".*?href="(.*?").*?title="(.*?)".*?src="(.*?jpg)".*?model-names">(.*?)</div>.*?<time>(.*?)</time.*?label-text">(.*?)</span', data, re.S)
+		self.getLastPage(data, 'class="pagination(.*?)</nav>')
+		Movies = re.findall('box-card scene.*?<a\shref="(.*?)".*?img\ssrc="(.*?)".*?alt="(.*?)".*?class="subtitle">.*?>(.*?)</a>.*? <span class=""><span>(.*?)</span>.*?<span>(.*?)</span>.*?class="middle">(.*?)<', data, re.S)
 		if Movies:
-			for (Url, Title, Image, Pornstars, Date, Collection) in Movies:
-				SceneUrl = re.findall(".*?\/([0-9]+)\/([^\/]+)\/\"", Url , re.S)
-				Url = "http://www.brazzers.com/scenes/view/id/%s/%s/" % (SceneUrl[0][0], SceneUrl[0][1])
-				Title = stripAllTags(Pornstars).replace('...','').strip() + " - " + Title
-				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection))
+			for (Url, Image, Title, Collection, Runtime, Date, Views) in Movies:
+				Url = "http://www.digitalplayground.com" + Url
+				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection, Runtime, Views))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None, ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -205,7 +215,9 @@ class brazzersFilmScreen(MPScreen, ThumbsHelper):
 		pic = self['liste'].getCurrent()[0][2]
 		date = self['liste'].getCurrent()[0][3]
 		coll = self['liste'].getCurrent()[0][4]
-		self['handlung'].setText(date.strip()+'\n'+coll.strip())
+		runtime = self['liste'].getCurrent()[0][5]
+		views = self['liste'].getCurrent()[0][6]
+		self['handlung'].setText("Date: "+date+'\nSeries: '+coll.strip()+'\nViews: '+views+'\nRuntime: '+runtime)
 		self['name'].setText(title)
 		CoverHelper(self['coverArt']).getCover(pic)
 
@@ -219,4 +231,4 @@ class brazzersFilmScreen(MPScreen, ThumbsHelper):
 	def play(self, url):
 		self.keyLocked = False
 		title = self['liste'].getCurrent()[0][0]
-		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='brazzers')
+		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='digitalplayground')
