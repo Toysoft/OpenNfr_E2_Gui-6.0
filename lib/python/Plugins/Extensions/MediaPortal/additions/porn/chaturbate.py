@@ -242,7 +242,7 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.play_stream).addErrback(self.dataError)
 
 	def play_stream(self, data):
-		url = re.findall('hlsSourceSlow = \'(http[s]?://edge.*?.stream.highwebmedia.com.*?m3u8)', data)
+		url = re.findall('(http[s]?://edge.*?.stream.highwebmedia.com.*?m3u8)', data)
 		if url:
 			title = self['liste'].getCurrent()[0][0]
 			self['name'].setText(title)

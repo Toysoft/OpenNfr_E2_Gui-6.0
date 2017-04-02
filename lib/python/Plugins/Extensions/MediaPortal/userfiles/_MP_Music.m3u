@@ -1,6 +1,8 @@
 ﻿#EXTM3U,$MODE=IPTV
 #EXTINF:-1,DELUXEMUSIC
 http://flash.cdn.deluxemusic.tv/deluxemusic.tv-live/web_850.stream/playlist.m3u8
+#EXTINF:-1,KRONEHIT TV HD
+http://bitcdn-kronehit-live.bitmovin.com/m3u8s/bitcodin.m3u8
 #EXTINF:-1,gotv
 http://stream007.gotv.at:1935/live/gotvlive/playlist.m3u8
 #EXTINF:-1,ESKA TV

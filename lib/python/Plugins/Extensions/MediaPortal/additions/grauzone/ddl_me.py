@@ -153,7 +153,7 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
-		self["actions"] = ActionMap(["OkCancelActions", "ShortcutActions", "ColorActions", "SetupActions", "NumberActions", "MenuActions", "EPGSelectActions","DirectionActions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok"    : self.keyOK,
 			"cancel": self.keyCancel,
 			"5" : self.keyShowThumb,
@@ -492,7 +492,7 @@ class DDLMEStreams(MPScreen):
 			f.close()
 		MPScreen.__init__(self, session)
 
-		self["actions"] = ActionMap(["OkCancelActions", "ShortcutActions", "EPGSelectActions", "WizardActions", "ColorActions", "NumberActions", "MenuActions", "MoviePlayerActions", "InfobarSeekActions"], {
+		self["actions"] = ActionMap(["MP_Actions"], {
 			"red" 		: self.keyTxtPageUp,
 			"blue" 		: self.keyTxtPageDown,
 			"green" 	: self.keyTrailer,

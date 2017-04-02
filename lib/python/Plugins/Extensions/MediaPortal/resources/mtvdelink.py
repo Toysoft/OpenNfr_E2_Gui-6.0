@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from imports import *
-from twagenthelper import TwAgentHelper
 
 class MTVdeLink:
 
-	tw_agent_hlp = TwAgentHelper()
-
 	def __init__(self, session):
-		print "MTVdeLink:"
 		self.session = session
 		self._callback = None
 
@@ -17,14 +13,13 @@ class MTVdeLink:
 		self.title = title
 		self.artist = artist
 		self.imgurl = imgurl
-		url = "http://media-utils.mtvnservices.com/services/MediaGenerator/mgid:arc:video:mtv.de:%s?accountOverride=esperanto.mtvi.com&acceptMethods=hls,phttp" % token
+		url = "http://media-utils.mtvnservices.com/services/MediaGenerator/mgid:arc:video:mtv.de:%s?accountOverride=esperanto.mtvi.com&acceptMethods=hls" % token
 		getPage(url, timeout=15).addCallback(self._parseData).addErrback(cb_err)
 
 	def _parseData(self, data):
-		print "_parseData:"
 		rtmplink = re.findall('<src>(.*?)</src>', data)
 		if rtmplink:
-			videourl = rtmplink[0].replace('&amp;','&')
+			videourl = rtmplink[-1].replace('&amp;','&')
 		else:
 			self._errback('MTVdeLink: Cannot get link!')
 			videourl = None

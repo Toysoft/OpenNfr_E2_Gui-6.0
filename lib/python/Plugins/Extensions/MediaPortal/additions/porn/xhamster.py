@@ -85,7 +85,7 @@ class xhamsterGenreScreen(MPScreen):
 			for (Url, Title) in Cats:
 				Title = Title.strip(' ')
 				self.genreliste.append((Title, Url))
-		self.genreliste.sort()		
+		self.genreliste.sort()
 		self.genreliste.insert(0, ("Most Commented (All Time)", 'https://xhamster.com/rankings/alltime-top-commented'))
 		self.genreliste.insert(0, ("Most Viewed (All Time)", 'https://xhamster.com/rankings/alltime-top-viewed'))
 		self.genreliste.insert(0, ("Top Rated (All Time)", 'https://xhamster.com/rankings/alltime-top-videos'))
@@ -183,7 +183,10 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 			elif re.match('.*?\/new\/', self.Link):
 				url = "%s%s.html" % (self.Link, str(self.page))
 			else:
-				url = "%s/%s" % (self.Link, str(self.page))
+				if self.page == 1:
+					url = self.Link
+				else:
+					url = "%s/%s" % (self.Link, str(self.page))
 		searchcookie = 'search_video=' + quote(str(self.search_video).replace(' ', '')).replace('%27', '%22')
 		getPage(url, headers={'Cookie': searchcookie, 'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.pageData).addErrback(self.dataError)
 
@@ -193,7 +196,7 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 			parse = re.search('(<div\sclass=[\'|"]video[\w\s-]*[\'|"]><div\sclass=[\'|"]vDate.*?)</html>', data, re.S)
 		else:
 			parse = re.search('<html(.*)</html>', data, re.S)
-		Liste = re.findall('class=[\'|"]video.*?><a\shref=[\'|"](.*?/movies/.*?)[\'|"].*?class=[\'|"]hRotator[\'|"]\s*><img\ssrc=[\'|"](.*?)[\'|"].*?alt=[\'|"](.*?)[\'|"].*?start2.*?<b>(.*?)</b>', parse.group(1), re.S)
+		Liste = re.findall('class=[\'|"]video.*?><a\shref=[\'|"](.*?/movies/.*?)[\'|"].*?class=[\'|"]hRotator[\'|"]\s*><img\ssrc=[\'|"](.*?)[\'|"].*?alt=[\'|"](.*?)[\'|"].*?sprite.*?<b>(.*?)</b>', parse.group(1), re.S)
 		if Liste:
 			for (Link, Image, Name, Runtime) in Liste:
 				self.streamList.append((decodeHtml(Name), Image, Link, Runtime))

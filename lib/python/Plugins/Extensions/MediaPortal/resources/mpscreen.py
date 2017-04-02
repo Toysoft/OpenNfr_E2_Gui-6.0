@@ -2,6 +2,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from imports import *
 from keyboardext import VirtualKeyBoardExt
+from Tools.BoundFunction import boundFunction
 
 screenList = []
 
@@ -26,19 +27,63 @@ class SearchHelper:
 		else:
 			self.numericalTextInput.timer.callback.append(self.doSearch)
 
-		self["search_actions"] = NumberActionMap(["NumberActions", "InputAsciiActions"], {
-			"1": self.goToLetter,
-			"2": self.goToLetter,
-			"3": self.goToLetter,
-			"4": self.goToLetter,
-			"5": self.goToLetter,
-			"6": self.goToLetter,
-			"7": self.goToLetter,
-			"8": self.goToLetter,
-			"9": self.goToLetter
-		}, -1)
+		self["search_numberactions"] = NumberActionMap(["NumberActions"], {
+			"1": self.goToNumber,
+			"2": self.goToNumber,
+			"3": self.goToNumber,
+			"4": self.goToNumber,
+			"5": self.goToNumber,
+			"6": self.goToNumber,
+			"7": self.goToNumber,
+			"8": self.goToNumber,
+			"9": self.goToNumber
+		}, -2)
 
-	def goToLetter(self, num):
+		self["search_keyactions"] = ActionMap(["MP_KeyActions"], {
+			"0": boundFunction(self.goToLetter, "0"),
+			"1": boundFunction(self.goToLetter, "1"),
+			"2": boundFunction(self.goToLetter, "2"),
+			"3": boundFunction(self.goToLetter, "3"),
+			"4": boundFunction(self.goToLetter, "4"),
+			"5": boundFunction(self.goToLetter, "5"),
+			"6": boundFunction(self.goToLetter, "6"),
+			"7": boundFunction(self.goToLetter, "7"),
+			"8": boundFunction(self.goToLetter, "8"),
+			"9": boundFunction(self.goToLetter, "9"),
+			"a": boundFunction(self.goToLetter, "a"),
+			"b": boundFunction(self.goToLetter, "b"),
+			"c": boundFunction(self.goToLetter, "c"),
+			"d": boundFunction(self.goToLetter, "d"),
+			"e": boundFunction(self.goToLetter, "e"),
+			"f": boundFunction(self.goToLetter, "f"),
+			"g": boundFunction(self.goToLetter, "g"),
+			"h": boundFunction(self.goToLetter, "h"),
+			"i": boundFunction(self.goToLetter, "i"),
+			"j": boundFunction(self.goToLetter, "j"),
+			"k": boundFunction(self.goToLetter, "k"),
+			"l": boundFunction(self.goToLetter, "l"),
+			"m": boundFunction(self.goToLetter, "m"),
+			"n": boundFunction(self.goToLetter, "n"),
+			"o": boundFunction(self.goToLetter, "o"),
+			"p": boundFunction(self.goToLetter, "p"),
+			"q": boundFunction(self.goToLetter, "q"),
+			"r": boundFunction(self.goToLetter, "r"),
+			"s": boundFunction(self.goToLetter, "s"),
+			"t": boundFunction(self.goToLetter, "t"),
+			"u": boundFunction(self.goToLetter, "u"),
+			"v": boundFunction(self.goToLetter, "v"),
+			"w": boundFunction(self.goToLetter, "w"),
+			"x": boundFunction(self.goToLetter, "x"),
+			"y": boundFunction(self.goToLetter, "y"),
+			"z": boundFunction(self.goToLetter, "z"),
+			"space": boundFunction(self.goToLetter, " "),
+			"back": boundFunction(self.goToLetter, "")
+		}, -3)
+
+	def goToNumber(self, num):
+		pass
+
+	def goToLetter(self, key):
 		pass
 
 	def showSearchkey(self, num):
@@ -49,6 +94,12 @@ class SearchHelper:
 			self["suchtitel"].show()
 			self["bg_search"].show()
 		self.lastSearchNum = num
+
+	def showSearchWord(self):
+		self['suche'].setText(str(self.keyword))
+		self['suche'].show()
+		self["suchtitel"].show()
+		self["bg_search"].show()
 
 	def doSearch(self):
 		self.lastSearchNum = -1
@@ -93,7 +144,14 @@ class MPScreen(Screen):
 		self['handlung'] = ScrollLabel("")
 
 		self.langoffset = 0
+		self.keyword = ''
 		self.keyLocked = False
+
+		self.keytimer = eTimer()
+		if mp_globals.isDreamOS:
+			self.keytimer_conn = self.keytimer.timeout.connect(self.cleankeyword)
+		else:
+			self.keytimer.callback.append(self.cleankeyword)
 
 		if mp_globals.isDreamOS:
 			self.onLayoutFinish.append(self._animation)
@@ -231,6 +289,20 @@ class MPScreen(Screen):
 	def keyCancel(self):
 		self.close()
 
+	def keyLetterGlobal(self, key, list):
+		if key == "":
+			self.keyword = self.keyword[:-1]
+		else:
+			self.keyword = self.keyword + key
+
+		self.showSearchWord()
+		self.getListIndex(self.keyword, list)
+		self.keytimer.start(1500, 1)
+
+	def cleankeyword(self):
+		self.keyword = ''
+		self.doSearch()
+
 	def keyNumberGlobal(self, key, list):
 		unichar = self.numericalTextInput.getKey(key)
 		charstr = unichar.encode("utf-8")
@@ -244,12 +316,16 @@ class MPScreen(Screen):
 			found = False
 			for x in list:
 				countIndex += 1
-				if len(x[0]) > 1:
+				f = len(letter)
+				if f == 1:
 					if x[0][0].lower() == letter.lower():
 						found = True
 						break
-				else:
-					if x[0][0].lower() == letter.lower():
+				elif f > 1:
+					if x[0][:f].lower() == letter.lower():
+						found = True
+						break
+					elif letter.lower() in x[0].lower():
 						found = True
 						break
 			print "index:", countIndex

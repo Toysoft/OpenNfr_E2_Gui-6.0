@@ -12,10 +12,14 @@ def vidto(self, data):
 		if sUnpacked:
 			stream_url = re.search('file:"(.*?)"', sUnpacked, re.S)
 			if stream_url:
-				print stream_url.group(1)
 				self._callback(stream_url.group(1))
-				return
+			else:
+				self.stream_not_found()
 		else:
 			self.stream_not_found()
 	else:
-		self.stream_not_found()
+		stream_url = re.search('file:"(.*?)"', data, re.S)
+		if stream_url:
+			self._callback(stream_url.group(1))
+		else:
+			self.stream_not_found()

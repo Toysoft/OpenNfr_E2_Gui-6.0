@@ -19,14 +19,7 @@ import urlparse
 import os
 import math
 from time import time
-
-try:
-	from debuglog import printlog as printl
-	from make_url import make_url
-except:
-	isDream = False
-else:
-	isDream = True
+from debuglog import printlog as printl
 
 class M3U8(object):
 

@@ -98,10 +98,13 @@ class nwanimeAnimes(MPScreen, SearchHelper):
 		self.keyLocked = True
 		self.onLayoutFinish.append(self.loadPage)
 
-	def goToLetter(self, num):
+	def goToNumber(self, num):
 		self.keyNumberGlobal(num, self.streamList)
 		self.showSearchkey(num)
 
+	def goToLetter(self, key):
+		self.keyLetterGlobal(key, self.streamList)
+		
 	def loadPage(self):
 		url = "http://www.nwanime.com/categories/"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)

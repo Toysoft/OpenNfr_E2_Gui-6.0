@@ -1,13 +1,18 @@
 ﻿# -*- coding: utf-8 -*-
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from Plugins.Extensions.MediaPortal.resources.packer import unpack, detect
 
 def streamin(self, data):
-	final = None
-	file = re.search('file:\s"(.*?)"', data)
-	if file:
-		final = file.group(1)
-	if final:
-		self._callback(final)
-	else:
-		self.stream_not_found()
+	get_packedjava = re.findall("<script type=.text.javascript.*?(eval.function.*?)</script>", data, re.S)
+	if get_packedjava and detect(get_packedjava[0]):
+		sJavascript = get_packedjava[0]
+		sUnpacked = unpack(sJavascript)
+		if sUnpacked:
+			stream_url = None
+			stream_url = re.findall('file:"(.*?)"', sUnpacked, re.S)
+			if stream_url:
+				url = urllib.unquote(stream_url[-1])
+				self._callback(url)
+				return
+	self.stream_not_found()

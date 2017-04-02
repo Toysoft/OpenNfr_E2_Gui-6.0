@@ -769,7 +769,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		self.c4_browse_ajax = ''
 		self.url_c4_browse_ajax_list = ['']
 
-		self["actions"]  = ActionMap(["OkCancelActions", "ShortcutActions", "ColorActions", "SetupActions", "NumberActions", "MenuActions", "EPGSelectActions","DirectionActions"], {
+		self["actions"]  = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok" 		: self.keyOK,
 			"red"		: self.keyRed,
 			"cancel"	: self.keyCancel,

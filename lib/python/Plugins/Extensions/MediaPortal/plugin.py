@@ -79,7 +79,6 @@ try:
 	mp_globals.animations = True
 	sa = ScreenAnimations()
 	sa.fromXML(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/animations.xml"))
-	getDesktop(0).setAnimationsEnabled(True)
 except:
 	mp_globals.animations = False
 
@@ -174,8 +173,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="807"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.7"))
+config.mediaportal.version = NoSave(ConfigText(default="808"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.8"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -1018,11 +1017,12 @@ class MPList(Screen, HelpableScreen):
 		poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", icon)
 		url = self.icon_url+"icons/" + icon + ".png"
 		remote_hash = ""
+		ds = defer.DeferredSemaphore(tokens=5)
 		if not fileExists(poster_path):
 			if self.icons_data:
 				for x,y in self.icons_data:
 					if y == icon+'.png':
-						downloadPage(url, poster_path)
+						ds.run(downloadPage, url, poster_path)
 			poster_path = "%s/images/comingsoon.png" % self.plugin_path
 		else:
 			local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
@@ -1030,7 +1030,7 @@ class MPList(Screen, HelpableScreen):
 				for x,y in self.icons_data:
 					if y == icon+'.png': remote_hash = x
 				if remote_hash != local_hash:
-					downloadPage(url, poster_path)
+					ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 		scale = AVSwitch().getFramebufferScale()
 		if mp_globals.videomode == 2:
@@ -1061,6 +1061,7 @@ class MPList(Screen, HelpableScreen):
 
 	def showPornOK(self, pincode):
 		if pincode:
+			pincheck.pinEntered()
 			config.mediaportal.showporn.value = True
 			config.mediaportal.showporn.save()
 			configfile.save()
@@ -2067,6 +2068,7 @@ class MPWall(Screen, HelpableScreen):
 		for x in range(1,len(self.plugin_liste)+1):
 			postername = self.plugin_liste[int(x)-1][1]
 			remote_hash = ""
+			ds = defer.DeferredSemaphore(tokens=5)
 			if self.wallbw:
 				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons_bw", postername)
 				url = icon_url+"icons_bw/" + postername + ".png"
@@ -2074,7 +2076,7 @@ class MPWall(Screen, HelpableScreen):
 					if icons_data:
 						for a,b in icons_data:
 							if b == postername+'.png':
-								downloadPage(url, poster_path)
+								ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 				else:
 					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
@@ -2082,7 +2084,7 @@ class MPWall(Screen, HelpableScreen):
 						for a,b in icons_data:
 							if b == postername+'.png': remote_hash = a
 						if remote_hash != local_hash:
-							downloadPage(url, poster_path)
+							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 			else:
 				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", postername)
@@ -2091,7 +2093,7 @@ class MPWall(Screen, HelpableScreen):
 					if icons_data:
 						for a,b in icons_data:
 							if b == postername+'.png':
-								downloadPage(url, poster_path)
+								ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 				else:
 					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
@@ -2099,7 +2101,7 @@ class MPWall(Screen, HelpableScreen):
 						for a,b in icons_data:
 							if b == postername+'.png': remote_hash = a
 						if remote_hash != local_hash:
-							downloadPage(url, poster_path)
+							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 
 			scale = AVSwitch().getFramebufferScale()
@@ -2127,7 +2129,7 @@ class MPWall(Screen, HelpableScreen):
 					if icons_data_zoom:
 						for a,b in icons_data_zoom:
 							if b == postername+'.png':
-								downloadPage(url, poster_path)
+								ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon_zoom.png" % self.plugin_path
 				else:
 					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
@@ -2135,7 +2137,7 @@ class MPWall(Screen, HelpableScreen):
 						for a,b in icons_data_zoom:
 							if b == postername+'.png': remote_hash = a
 						if remote_hash != local_hash:
-							downloadPage(url, poster_path)
+							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon_zoom.png" % self.plugin_path
 				scale = AVSwitch().getFramebufferScale()
 				if mp_globals.videomode == 2:
@@ -2552,6 +2554,7 @@ class MPWall(Screen, HelpableScreen):
 
 	def showPornOK(self, pincode):
 		if pincode:
+			pincheck.pinEntered()
 			config.mediaportal.showporn.value = True
 			config.mediaportal.showporn.save()
 			configfile.save()
@@ -2979,6 +2982,7 @@ class MPWall2(Screen, HelpableScreen):
 			icons_data = None
 		for p_name, p_picname, p_genre, p_hits, p_sort in self.plugin_liste:
 			remote_hash = ""
+			ds = defer.DeferredSemaphore(tokens=5)
 			row = []
 			itemList.append(((row),))
 			if self.wallbw:
@@ -2988,7 +2992,7 @@ class MPWall2(Screen, HelpableScreen):
 					if icons_data:
 						for x,y in icons_data:
 							if y == p_picname+'.png':
-								downloadPage(url, poster_path)
+								ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 				else:
 					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
@@ -2996,7 +3000,7 @@ class MPWall2(Screen, HelpableScreen):
 						for x,y in icons_data:
 							if y == p_picname+'.png': remote_hash = x
 						if remote_hash != local_hash:
-							downloadPage(url, poster_path)
+							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 			else:
 				poster_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "icons", p_picname)
@@ -3005,7 +3009,7 @@ class MPWall2(Screen, HelpableScreen):
 					if icons_data:
 						for x,y in icons_data:
 							if y == p_picname+'.png':
-								downloadPage(url, poster_path)
+								ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon.png" % self.plugin_path
 				else:
 					local_hash = hashlib.md5(open(poster_path, 'rb').read()).hexdigest()
@@ -3013,7 +3017,7 @@ class MPWall2(Screen, HelpableScreen):
 						for x,y in icons_data:
 							if y == p_picname+'.png': remote_hash = x
 						if remote_hash != local_hash:
-							downloadPage(url, poster_path)
+							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
 			row.append((p_name, p_picname, poster_path, p_genre, p_hits, p_sort))
 			posterlist.append(poster_path)
@@ -3275,6 +3279,7 @@ class MPWall2(Screen, HelpableScreen):
 
 	def showPornOK(self, pincode):
 		if pincode:
+			pincheck.pinEntered()
 			config.mediaportal.showporn.value = True
 			config.mediaportal.showporn.save()
 			configfile.save()
@@ -3456,6 +3461,12 @@ def exit(session, result, lastservice):
 		elif config.mediaportal.ansicht.value == "wall2":
 			session.openWithCallback(exit, MPWall2, lastservice, config.mediaportal.filter.value)
 	else:
+		try:
+			if mp_globals.animationfix:
+				getDesktop(0).setAnimationsEnabled(False)
+				mp_globals.animationfix = False
+		except:
+			pass
 		session.nav.playService(lastservice)
 		_stylemanager(0)
 		reactor.callLater(1, export_lru_caches)
@@ -3467,11 +3478,7 @@ def exit(session, result, lastservice):
 
 def _stylemanager(mode):
 	desktopSize = getDesktop(0).size()
-	if desktopSize.height() == 2160:
-		mp_globals.videomode = 3
-		mp_globals.fontsize = 50
-		mp_globals.sizefactor = 7
-	elif desktopSize.height() == 1080:
+	if desktopSize.height() == 1080:
 		mp_globals.videomode = 2
 		mp_globals.fontsize = 30
 		mp_globals.sizefactor = 3
@@ -3558,10 +3565,18 @@ def _stylemanager(mode):
 							for x in borderset:
 								if x.tag == "pixmap":
 									bpName = x.get("pos")
-									try:
-										styleskinned.setPixmap(eWindowStyleSkinned.__dict__[bsName], eWindowStyleSkinned.__dict__[bpName], LoadPixmap(file_path + x.get("filename"), desktop))
-									except:
-										pass
+									if "filename" in x.attrib:
+										try:
+											styleskinned.setPixmap(eWindowStyleSkinned.__dict__[bsName], eWindowStyleSkinned.__dict__[bpName], LoadPixmap(file_path + x.get("filename"), desktop))
+										except:
+											pass
+									elif "color" in x.attrib:
+										color = parseColor(x.get("color"))
+										size = int(x.get("size"))
+										try:
+											styleskinned.setColorBorder(eWindowStyleSkinned.__dict__[bsName], eWindowStyleSkinned.__dict__[bpName], color, size)
+										except:
+											pass
 						elif x.tag == "listfont":
 							fontType = x.get("type")
 							fontSize = int(x.get("size"))
@@ -3771,6 +3786,13 @@ def MPmain(session, **kwargs):
 	startMP(session)
 
 def startMP(session):
+	try:
+		if not getDesktop(0).isAnimationsEnabled():
+			getDesktop(0).setAnimationsEnabled(True)
+			mp_globals.animationfix = True
+	except:
+		pass
+
 	from resources.debuglog import printlog as printl
 	printl('Starting MediaPortal %s' % config.mediaportal.versiontext.value,None,'H')
 

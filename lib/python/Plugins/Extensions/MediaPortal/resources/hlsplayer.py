@@ -87,7 +87,7 @@ class HLSControler:
 	def clientFinished(self, result, err=False):
 		self._check_playing = True
 		self.player.stop()
-		self.checkTimer.start(5000, True)
+		self.checkTimer.start(3000, True)
 
 	def on_player_about_to_play(self):
 		self._check_playing = False

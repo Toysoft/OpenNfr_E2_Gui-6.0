@@ -45,9 +45,9 @@ class tubepornclassicGenreScreen(MPScreen):
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -56,11 +56,7 @@ class tubepornclassicGenreScreen(MPScreen):
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel" : self.keyCancel,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft
+			"cancel" : self.keyCancel
 		}, -1)
 
 		self['title'] = Label("TubePornClassic.com")
@@ -81,22 +77,18 @@ class tubepornclassicGenreScreen(MPScreen):
 		getPage(url, headers={'Cookie': 'language=en'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="list-categories(.*?)</html>', data, re.S)
-		Cats = re.findall('<a\sclass="item"\shref="(http://www.tubepornclassic.com/categories/.*?)"\stitle="(.*?)">.*?<img\sclass="thumb.*?data-original="(.*?)"', parse.group(1), re.S)
+		parse = re.search('id="filter-categories(.*?)</html>', data, re.S)
+		Cats = re.findall(' class="list-item__link" href="(.*?)" title=".*?">(.*?)</a>', parse.group(1), re.S)
 		if Cats:
-			for (Url, Title, Image) in Cats:
-				self.genreliste.append((Title, Url, Image))
+			for (Url, Title) in Cats:
+				self.genreliste.append((Title, Url))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Popular", "http://www.tubepornclassic.com/most-popular/", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.tubepornclassic.com/top-rated/", None))
-			self.genreliste.insert(0, ("Most Recent", "http://www.tubepornclassic.com/latest-updates/", None))
-			self.genreliste.insert(0, ("--- Search ---", "", None))
+			self.genreliste.insert(0, ("Most Popular", "http://www.tubepornclassic.com/most-popular/"))
+			self.genreliste.insert(0, ("Top Rated", "http://www.tubepornclassic.com/top-rated/"))
+			self.genreliste.insert(0, ("Most Recent", "http://www.tubepornclassic.com/latest-updates/"))
+			self.genreliste.insert(0, ("--- Search ---", ""))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
-
-	def showInfos(self):
-		Image = self['liste'].getCurrent()[0][2]
-		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
 		if self.keyLocked:

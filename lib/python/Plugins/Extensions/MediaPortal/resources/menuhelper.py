@@ -38,7 +38,7 @@ class MenuHelper(MPScreen):
 
 		MPScreen.__init__(self, session)
 
-		self["actions"] = ActionMap(["OkCancelActions", "ShortcutActions", "ColorActions", "SetupActions", "NumberActions", "MenuActions", "EPGSelectActions","DirectionActions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok"    : self.mh_keyOK,
 			"cancel": self.mh_keyCancel,
 			"up"	: self.mh_keyUp,
@@ -353,24 +353,27 @@ class MenuHelper(MPScreen):
 			self.mh_setGenreStrTitle()
 
 	def mh_setGenreStrTitle(self):
-		genreName = self['liste'].getCurrent()[0][0]
-		genreLink = self['liste'].getCurrent()[0][1]
-		if self.mh_menuLevel in range(self.mh_menuMaxLevel+1):
-			if self.mh_menuLevel == 0:
-				if self.mh_red_label:
-					self['F1'].setText(_('Exit'))
-				self.mh_genreName[self.mh_menuLevel] = genreName
-			else:
-				if self.mh_red_label:
-					self['F1'].setText(_('Back'))
-				self.mh_genreName[self.mh_menuLevel] = ':'+genreName
+		try:
+			genreName = self['liste'].getCurrent()[0][0]
+			genreLink = self['liste'].getCurrent()[0][1]
+			if self.mh_menuLevel in range(self.mh_menuMaxLevel+1):
+				if self.mh_menuLevel == 0:
+					if self.mh_red_label:
+						self['F1'].setText(_('Exit'))
+					self.mh_genreName[self.mh_menuLevel] = genreName
+				else:
+					if self.mh_red_label:
+						self['F1'].setText(_('Back'))
+					self.mh_genreName[self.mh_menuLevel] = ':'+genreName
 
-			self.mh_genreUrl[self.mh_menuLevel] = genreLink
-		self.mh_genreTitle = "%s%s%s" % (self.mh_genreName[0],self.mh_genreName[1],self.mh_genreName[2])
-		self['name'].setText(_("Selection:")+" "+self.mh_genreTitle)
+				self.mh_genreUrl[self.mh_menuLevel] = genreLink
+			self.mh_genreTitle = "%s%s%s" % (self.mh_genreName[0],self.mh_genreName[1],self.mh_genreName[2])
+			self['name'].setText(_("Selection:")+" "+self.mh_genreTitle)
 
-		for f, args in self.mh_On_setGenreStrTitle:
-			f(*args)
+			for f, args in self.mh_On_setGenreStrTitle:
+				f(*args)
+		except:
+			pass
 
 	def mh_loadMenu(self):
 		self.d_print("loadMenu:")
@@ -378,19 +381,16 @@ class MenuHelper(MPScreen):
 		self.mh_keyLocked = False
 
 	def keyUpRepeated(self):
-		#print "keyUpRepeated"
 		if self.mh_keyLocked:
 			return
 		self['liste'].up()
 
 	def keyDownRepeated(self):
-		#print "keyDownRepeated"
 		if self.mh_keyLocked:
 			return
 		self['liste'].down()
 
 	def key_repeatedUp(self):
-		#print "key_repeatedUp"
 		if self.mh_keyLocked:
 			return
 		self.mh_menuIdx[self.mh_menuLevel] = self['liste'].getSelectedIndex()

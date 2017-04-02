@@ -3,7 +3,7 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 def vidlox(self, data):
-	stream_url = re.findall(',"(.*?.mp4)"', data, re.S)
+	stream_url = re.findall('Clappr.Player.*?,"(.*?.mp4)"', data, re.S)
 	if stream_url:
 		self._callback(stream_url[-1])
 	else:

@@ -28,20 +28,12 @@ from twisted.python import log
 from twisted.internet import defer, reactor, task
 from twisted.internet.task import deferLater
 from twagenthelper import twAgentGetPage, TwHTTP11PoolHelper
+from imports import getUserAgent
 
 from m3u8 import M3U8
 
-try:
-	from Components.config import config
-	from enigma import eBackgroundFileEraser
-	from debuglog import printlog as printl
-	from make_url import make_url
-except:
-	print 'Imports error: isDream: False'
-	isDream = False
-else:
-	isDream = True
-	print 'Imports: isDream: True'
+from enigma import eBackgroundFileEraser
+from make_url import make_url
 
 class HLSFetcher(object):
 
@@ -66,7 +58,7 @@ class HLSFetcher(object):
 		else:
 			self.url = url
 
-		self.agent = self.hls_headers.pop('User-Agent', 'Enigma2 Mediaplayer')
+		self.agent = self.hls_headers.pop('User-Agent', getUserAgent())
 		if not self.path:
 			self.path = tempfile.mkdtemp()
 

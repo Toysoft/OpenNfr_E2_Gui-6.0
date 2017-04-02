@@ -50,3 +50,4 @@ yt_lruCache = None
 yt_a = None
 yt_s = None
 yt_i = None
+animationfix = False

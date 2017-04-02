@@ -198,7 +198,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 		self['rating0'] = Pixmap()
 		self["hdpic"].hide()
 
-		self["actions"] = ActionMap(["OkCancelActions", "ShortcutActions", "ColorActions", "SetupActions", "NumberActions", "MenuActions", "EPGSelectActions","DirectionActions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok"    : self.keyOK,
 			"cancel": self.keyCancel,
 			"5" : self.keyShowThumb,

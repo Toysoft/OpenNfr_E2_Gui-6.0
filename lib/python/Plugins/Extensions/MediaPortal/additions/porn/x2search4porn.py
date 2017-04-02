@@ -93,9 +93,12 @@ class toSearchForPorn(MPScreen, SearchHelper):
 
 		self.onLayoutFinish.append(self.Searches)
 
-	def goToLetter(self, num):
+	def goToNumber(self, num):
 		self.keyNumberGlobal(num, self.genreliste)
 		self.showSearchkey(num)
+
+	def goToLetter(self, key):
+		self.keyLetterGlobal(key, self.genreliste)
 
 	def Searches(self):
 		self.genreliste = []

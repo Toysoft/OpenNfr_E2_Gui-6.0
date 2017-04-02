@@ -79,7 +79,6 @@ class germanytvChannelScreen(MPScreen):
 		self.genreliste.append(('Worldnews-TV', 'http://www.worldnews-tv.tv.grid-tv.com'))
 		self.genreliste.append(('Lasershow-TV', 'http://www.lasershow-tv.germany-tv.com'))
 		self.genreliste.append(('Fashionguide-TV', 'http://www.fashionguide-tv.tv.grid-tv.com'))
-		self.genreliste.append(('ArianeSpace-TV', 'http://www.arianespace-tv.germany-tv.com'))
 		self.genreliste.append(('Fly-HDTV', 'http://www.fly-hdtv.tv.grid-tv.com'))
 		self.genreliste.append(('Auto-TV', 'http://www.auto-tv.tv.grid-tv.com'))
 		self.genreliste.append(('FineArts-TV', 'http://www.finearts-hdtv.tv.grid-tv.com'))

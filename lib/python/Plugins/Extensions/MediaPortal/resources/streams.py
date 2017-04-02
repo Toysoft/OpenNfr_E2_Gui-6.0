@@ -92,7 +92,6 @@ class get_stream_link:
 	from hosters.google import google
 	from hosters.kodik import kodik, kodikData
 	from hosters.letwatch import letwatch
-	from hosters.nowvideo import nowvideo
 	from hosters.mailru import mailru
 	from hosters.mega3x import mega3x
 	from hosters.movshare import movshare, movshare_code1, movshare_base36decode, movshare_xml
@@ -103,7 +102,6 @@ class get_stream_link:
 	from hosters.promptfile import promptfile, promptfilePost
 	from hosters.rapidvideo import rapidvideo
 	from hosters.streamin import streamin
-	from hosters.thevideo import thevideo, thevideotoken
 	from hosters.trollvid import trollvid
 	from hosters.uptostream import uptostream
 	from hosters.videonest import videonest
@@ -476,11 +474,7 @@ class get_stream_link:
 					self.prz = 1
 					self.callPremium(link)
 				else:
-					ID = re.search('http://(www\.|embed\.|)nowvideo.(eu|sx|ch|co|li|to)/(?:mobile/video\.php\?id=|video/|file/|embed\.php\?.*?v=)([0-9a-z]+)', link)
-					if ID:
-						data = 'http://embed.nowvideo.sx/embed/?v=%s' % ID.group(3)
-						link = data
-					getPage(link).addCallback(self.nowvideo).addErrback(self.errorload)
+					self.only_premium()
 
 			elif re.search('videoweed.es', data, re.S):
 				link = data
@@ -794,13 +788,7 @@ class get_stream_link:
 					self.prz = 1
 					self.callPremium(link)
 				else:
-					if re.search('thevideo\.me/embed-', data, re.S):
-						link = data
-					else:
-						id = re.findall('thevideo\.me/(.*?)$', data)
-						if id:
-							link = "https://www.thevideo.me/embed-%s-640x360.html" % id[0]
-					getPage(link).addCallback(self.thevideo).addErrback(self.errorload)
+					self.only_premium()
 
 			elif re.search('exashare\.com', data, re.S):
 				if re.search('exashare\.com/embed-', data, re.S):

@@ -380,6 +380,8 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 					folgen = re.findall('picture class.*?data-srcset="(.*?)~.*?"teaser-label".*?</span>(.*?)<strong>.*?href="(.*?)".*?title="(.*?)".*?"actionDetail": "(.*?)"', data, re.S)
 					if folgen:
 						for (image,anzahl,url,title,info) in folgen:
+							if not url.startswith('http'):
+								url = BASE_URL + url
 							image += "~384x216"
 							info = decodeHtml(info)
 							info = info.split("Teaser:")[-1]

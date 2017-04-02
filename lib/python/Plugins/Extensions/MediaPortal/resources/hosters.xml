@@ -62,7 +62,7 @@
 <hoster>vivo</hoster><regex>vivo.sx</regex>
 <hoster>bestreams</hoster><regex>bestreams.net</regex>
 <hoster>fastvideo</hoster><regex>fastvideo.in</regex>
-<hoster>vidto</hoster><regex>vidto.me</regex>
+<hoster>vidto.me</hoster><regex>vidto.me</regex>
 <hoster>zettahost</hoster><regex>zettahost.tv</regex>
 <hoster>epornik</hoster><regex>epornik.com</regex>
 <hoster>vidspot</hoster><regex>vidspot.net</regex>

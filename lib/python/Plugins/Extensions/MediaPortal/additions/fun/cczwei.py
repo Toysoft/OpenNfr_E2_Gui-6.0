@@ -21,7 +21,7 @@ class cczwei(MPScreen):
 			"cancel" : self.keyCancel
 		}, -1)
 
-		self['title'] = Label("Cczwei.de")
+		self['title'] = Label("CC2.tv")
 		self['ContentTitle'] = Label("Folgen:")
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)

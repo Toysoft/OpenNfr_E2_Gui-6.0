@@ -52,7 +52,7 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 		if mp_globals.currentskin == "original":
 			self.DEFAULT_LM = 10	# default Left-Margin "original"
 		else:
-			self.DEFAULT_LM = 0		# default Left-Margin
+			self.DEFAULT_LM = 0	# default Left-Margin
 		self.ml2 = MenuList([], enableWrapAround=False, content=eListboxPythonMultiContent)
 		self["suggestionlist"] = self.ml2
 		self.suggestionsListEnabled = False
@@ -176,6 +176,9 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 		self.lang = self.nextLang
 		self.setLang()
 		self.buildVirtualKeyBoard()
+		if not self.selectedKey <= self.max_key:
+			self.selectedKey = self.max_key
+		self.showActiveKey()
 
 	def setLang(self):
 		if self.lang == 'de_DE':
@@ -259,9 +262,9 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 				u"EXIT", u"!", u'"', u"§", u"$", u"%", u"&", u"/", u"(", u")", u"=", u"BACKSPACE",
 				u"Q", u"W", u"E", u"R", u"T", u"Z", u"U", u"I", u"O", u"P", u"ť", u"*",
 				u"A", u"S", u"D", u"F", u"G", u"H", u"J", u"K", u"L", u"ň", u"ď", u"'",
-				u"Á", u"É", u"Ď", u"Í", u"Ý", u"Ó", u"Ú", u"Ž", u"Š", u"Č", u"Ť", u"Ň",
 				u">", u"Y", u"X", u"C", u"V", u"B", u"N", u"M", u";", u":", u"_", u"CLEAR",
-				u"SHIFT", u"SPACE", u"?", u"\\", u"ä", u"ö", u"ü", u"ô", u"ŕ", u"ĺ", u"OK"]
+				u"SHIFT", u"SPACE", u"?", u"\\", u"ä", u"ö", u"ü", u"ô", u"ŕ", u"ĺ", u"Á", u"OK",
+				u"É", u"Ď", u"Í", u"Ý", u"Ó", u"Ú", u"Ž", u"Š", u"Č", u"Ť", u"Ň"]
 			self.nextLang = 'cs_CZ'
 		elif self.lang == 'cs_CZ':
 			self.keys_list = [
@@ -487,6 +490,7 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 		self.got_sms_key(txt)
 		txt = self.sms_txt.replace(self.cursor, "|")
 		self["text"].setText(txt)
+		self.help_window.update(self)
 
 	def nextFunc(self):
 		if self.sms_txt:
@@ -494,6 +498,7 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 		self.sms_txt = None
 		self.set_GUI_Text()
 		self.cursorTimer.start(self.cursor_time, True)
+		self.help_window.update(self)
 
 	def okClicked(self):
 		if self.suggestionsListEnabled:

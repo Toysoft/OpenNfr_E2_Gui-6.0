@@ -1,43 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
-import Queue
-import threading
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 from Plugins.Extensions.MediaPortal.resources import fusion
-
-if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/TMDb/plugin.pyo'):
-	from Plugins.Extensions.TMDb.plugin import *
-	TMDbPresent = True
-elif fileExists('/usr/lib/enigma2/python/Plugins/Extensions/IMDb/plugin.pyo'):
-	TMDbPresent = False
-	IMDbPresent = True
-	from Plugins.Extensions.IMDb.plugin import *
-else:
-	IMDbPresent = False
-	TMDbPresent = False
-
-DMAX_Version = " v0.93"
-
-DMAX_siteEncoding = 'utf-8'
-
-
-"""
-Sondertastenbelegung:
-
-Genre Auswahl:
-	KeyCancel		: Menu Up / Exit
-	KeyOK			: Menu Down / Select
-
-Doku Auswahl:
-	Bouquet +/-				: Seitenweise blättern in 1er Schritten Up/Down
-	'1', '4', '7',
-	'3', 6', '9'			: blättern in 2er, 5er, 10er Schritten Down/Up
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-
-Stream Auswahl:
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-"""
 
 glob_portal_nm = None
 glob_fusion_client = None
@@ -64,7 +29,7 @@ class show_DMAX_Genre(MenuHelper):
 			"yellow" :  self.keyTxtPageUp
 		}, -1)
 
-		self['title'] = Label(glob_portal_nm + DMAX_Version)
+		self['title'] = Label(glob_portal_nm)
 		self['ContentTitle'] = Label(self.genre_title)
 		self['F3'] = Label('Text-')
 		self['F4'] = Label('Text+')

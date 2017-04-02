@@ -13,6 +13,10 @@ https://live2weltcms-lh.akamaihd.net/i/Live2WeltCMS_1@444563/master.m3u8
 http://edge-h.daf.tmt.de/ios-live/daf-ios-live-livetv.stream/master.m3u8
 #EXTINF:-1,Bibel TV
 http://mf.bibeltv.c.nmdn.net/bibeltv_live/BIBEL_TV_HQ-480p.stream/master.m3u8
+#EXTINF:-1,Nickelodeon
+http://unilivemtveu-lh.akamaihd.net/i/nickde_1@448749/master.m3u8
+#EXTINF:-1,Parlamentsfernsehen
+http://c13014-l.u.core.cdn.streamfarm.net/13014bundestag/live/3777parlamentsfernsehen/live.isml/manifest.m3u8
 #EXTINF:-1,OKTO TV
 http://d2jk87psbjrjdz.cloudfront.net/livehttporigin/okto/playlist.m3u8
 #EXTINF:-1,tv.berlin
@@ -131,3 +135,5 @@ http://rtmp.infomaniak.ch/livecast/telebielinguech/master.m3u8
 http://klive-a.akamaihd.net/dc-1/live/hls/p/1719221/e/1_hoislpiz/t/Bnhb6PI9GIjiKE7UgQC_qg/master.m3u8
 #EXTINF:-1,TeleBasel
 http://xapp510394368c1000199.f.l.z.lb.core-cdn.net/10096xtelebase/live_de_1500/master.m3u8
+#EXTINF:-1,OE24
+http://apasfoe24l.sf.apa.at/ipad/oe24-live1/oe24.sdp/playlist.m3u8
