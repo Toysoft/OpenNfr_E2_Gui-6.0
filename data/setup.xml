@@ -271,10 +271,10 @@
 		<!--<item level="0" text="Channel +/- button mode" description="Select what you want the Channel +/- button to activate:">config.usage.channelbutton_mode</item>
 		<item level="0" text="Use ViX coloured Buttons *" description="Select if you want to use the ViX coloured Buttons (set to 'no' if you want to use (Multi) Quick Button).">config.vixsettings.ColouredButtons</item>-->
 	</setup>
-	<setup key="softcamsetup" title="Softcam settings">
+	<!--setup key="softcamsetup" title="Softcam settings">
 		<item level="2" text="Show CCcam Info in extensions?" description="Allows you to show/hide CCcam Info in extensions (blue button).">config.cccaminfo.showInExtensions</item>
 		<item level="2" text="Show OScam Info in extensions?" description="Allows you to show/hide OScam Info in extensions (blue button).">config.oscaminfo.showInExtensions</item>
-	</setup>
+	</setup>-->
 	<setup key="logs" title="Logs settings">
 		<item level="2" text="Logs location" description="Choose the location for crash and debug logs.">config.crash.debug_path</item>
 		<item level="2" text="Create more detailed crash log" description="Allows more detailed information to be in the crash log">config.crash.details</item>

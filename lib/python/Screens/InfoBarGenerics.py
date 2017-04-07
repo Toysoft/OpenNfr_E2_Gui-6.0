@@ -2200,8 +2200,8 @@ class InfoBarExtensions:
 			}, 1) # lower priority
 
 		self.addExtension(extension = self.getOsd3DSetup, type = InfoBarExtensions.EXTENSION_LIST)
-		self.addExtension(extension = self.getCCcamInfo, type = InfoBarExtensions.EXTENSION_LIST)
-		self.addExtension(extension = self.getOScamInfo, type = InfoBarExtensions.EXTENSION_LIST)
+		#self.addExtension(extension = self.getCCcamInfo, type = InfoBarExtensions.EXTENSION_LIST)
+		#self.addExtension(extension = self.getOScamInfo, type = InfoBarExtensions.EXTENSION_LIST)
 
 	def get3DSetupname(self):
 		return _("OSD 3D Setup")
@@ -2212,29 +2212,29 @@ class InfoBarExtensions:
 		else:
 			return []
 
-	def getCCname(self):
-		return _("CCcam Info")
+	#def getCCname(self):
+	#	return _("CCcam Info")
 
-	def getCCcamInfo(self):
-		if pathExists('/usr/emu/'):
-			softcams = os.listdir('/usr/emu/')
-		for softcam in softcams:
-			if softcam.lower().startswith('cccam') and config.cccaminfo.showInExtensions.value:
-				return [((boundFunction(self.getCCname), boundFunction(self.openCCcamInfo), lambda: True), None)] or []
-		else:
-			return []
+	#def getCCcamInfo(self):
+	#	if pathExists('/usr/emu/'):
+	#		softcams = os.listdir('/usr/emu/')
+	#	for softcam in softcams:
+	#		if softcam.lower().startswith('cccam') and config.cccaminfo.showInExtensions.value:
+	#			return [((boundFunction(self.getCCname), boundFunction(self.openCCcamInfo), lambda: True), None)] or []
+	#	else:
+	#		return []
 
-	def getOSname(self):
-		return _("OScam Info")
+	#def getOSname(self):
+	#	return _("OScam Info")
 
-	def getOScamInfo(self):
-		if pathExists('/usr/emu/'):
-			softcams = os.listdir('/usr/emu/')
-		for softcam in softcams:
-			if softcam.lower().startswith('oscam') and config.oscaminfo.showInExtensions.value:
-				return [((boundFunction(self.getOSname), boundFunction(self.openOScamInfo), lambda: True), None)] or []
-		else:
-			return []
+	#def getOScamInfo(self):
+	#	if pathExists('/usr/emu/'):
+	#		softcams = os.listdir('/usr/emu/')
+	#	for softcam in softcams:
+	#		if softcam.lower().startswith('oscam') and config.oscaminfo.showInExtensions.value:
+	#			return [((boundFunction(self.getOSname), boundFunction(self.openOScamInfo), lambda: True), None)] or []
+	#	else:
+	#		return []
 
 	def addExtension(self, extension, key = None, type = EXTENSION_SINGLE):
 		self.list.append((type, extension, key))
@@ -2295,13 +2295,13 @@ class InfoBarExtensions:
 		from Screens.PluginBrowser import PluginBrowser
 		self.session.open(PluginBrowser)
 
-	def openCCcamInfo(self):
-		from Screens.CCcamInfo import CCcamInfoMain
-		self.session.open(CCcamInfoMain)
+	#def openCCcamInfo(self):
+	#	from Screens.CCcamInfo import CCcamInfoMain
+	#	self.session.open(CCcamInfoMain)
 
-	def openOScamInfo(self):
-		from Screens.OScamInfo import OscamInfoMenu
-		self.session.open(OscamInfoMenu)
+	#def openOScamInfo(self):
+	#	from Screens.OScamInfo import OscamInfoMenu
+	#	self.session.open(OscamInfoMenu)
 
 	def open3DSetup(self):
 		from Screens.UserInterfacePositioner import OSD3DSetupScreen
