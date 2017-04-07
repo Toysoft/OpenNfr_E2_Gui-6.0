@@ -266,8 +266,7 @@ class QuickMenu(Screen):
 		if not self.activeInterface == None: # show only if there is already a adapter up
 			self.sublist.append(QuickSubMenuEntryComponent("Network Interface",_("Setup interface"),_("Setup network. Here you can setup DHCP, IP, DNS")))
 		self.sublist.append(QuickSubMenuEntryComponent("Network Restart",_("Restart network to with current setup"),_("Restart network and remount connections")))
-		self.sublist.append(QuickSubMenuEntryComponent("Network Services",_("Setup Network Services"),_("Setup Network Services (Samba, Ftp, NFS, ...)")))
-		self.sublist.append(QuickSubMenuEntryComponent("iperf Net_test",_("Downloadgeschwindigkeit_test"),_("zusaetzlich die iperf.7z aus Extensions/Infopanel/data auf Pc kopieren und mit iperf.exe -s aus Dos fenster starten")))		
+		self.sublist.append(QuickSubMenuEntryComponent("Network Services",_("Setup Network Services"),_("Setup Network Services (Samba, Ftp, NFS, ...)")))	
 		self.sublist.append(QuickSubMenuEntryComponent("Telnet Command",_("Telnet in Screen"),_("Try Telnet Commands in Gui")))
 		self["sublist"].l.setList(self.sublist)
 
@@ -527,8 +526,6 @@ class QuickMenu(Screen):
 		elif item[0] == _("Network Services"):
 			self.Qnetworkservices()
 			self["sublist"].moveToIndex(0)
-		elif item[0] == _("iperf Net_test"):
-			self.session.open(Net_test)
 		elif item[0] == _("Telnet Command"):
 			self.session.open(TelnetCommand)                        			
 		elif item[0] == _("Samba"):

@@ -2,7 +2,6 @@ installdir = $(pkglibdir)/python/Plugins/Extensions/Infopanel/data
 
 
 dist_install_DATA = \
-	iperf.7z \
 	screenshot.sh  \
 	PluginHDDi.sh \
 	PluginHDDu.sh  \
