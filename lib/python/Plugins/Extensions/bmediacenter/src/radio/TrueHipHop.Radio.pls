@@ -1,1 +1,0 @@
-http://truehiphop.dyndns.org:9020
