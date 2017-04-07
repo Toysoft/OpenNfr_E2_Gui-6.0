@@ -40,7 +40,6 @@ from Plugins.SystemPlugins.SoftwareManager.plugin import UpdatePlugin, SoftwareM
 from Plugins.SystemPlugins.SoftwareManager.BackupRestore import BackupScreen, RestoreScreen, BackupSelection, getBackupPath, getBackupFilename
 from Plugins.Extensions.Infopanel.SoftwarePanel import SoftwarePanel
 from Plugins.Extensions.Infopanel.e2log import E2log
-from Plugins.Extensions.Infopanel.Net_test import Net_test
 from Plugins.Extensions.Infopanel.Softcamedit import vEditor
 from Plugins.Extensions.Infopanel.Satloader import Satloader
 from Plugins.Extensions.Infopanel.InstallTarGZ import InfopanelManagerScreen
