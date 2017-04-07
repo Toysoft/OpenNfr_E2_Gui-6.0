@@ -19,27 +19,6 @@ from enigma import ePicLoad
 from Tools.Directories import fileExists, resolveFilename, SCOPE_LANGUAGE, SCOPE_PLUGINS
 from Plugins.Extensions.Infopanel.Manager import NFRCamManager
 
-#############################################################
-
-lang = language.getLanguage()
-environ["LANGUAGE"] = lang[:2]
-gettext.bindtextdomain("enigma2", resolveFilename(SCOPE_LANGUAGE))
-gettext.textdomain("enigma2")
-gettext.bindtextdomain("OscamSmartcard", "%s%s" % (resolveFilename(SCOPE_PLUGINS), "Extensions/Infopanel/data/locale/"))
-
-def _(txt):
-	t = gettext.dgettext("OscamSmartcard", txt)
-	if t == txt:
-		t = gettext.gettext(txt)
-	return t
-
-def translateBlock(block):
-	for x in TranslationHelper:
-		if block.__contains__(x[0]):
-			block = block.replace(x[0], x[1])
-	return block
-
-#############################################################
 emuactive = 0
 
 config.plugins.OscamSmartcard = ConfigSubsection()
