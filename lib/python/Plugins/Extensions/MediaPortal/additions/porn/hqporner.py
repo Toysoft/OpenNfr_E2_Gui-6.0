@@ -225,10 +225,11 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 		else:
 			self.getLastPage(data, 'pagination">(.*?)</ul>')
 			parse = re.search('<div\sclass="box\spage-content">\s+(.*?)pagination', data, re.S)
-			raw = re.findall('section\sclass="box\sfeature">\s+<a href="(.*?)".*?\ssrc="(.*?)"\salt="(.*?)".*?calendar meta-data">(.*?)<', parse.group(1), re.S)
+			raw = re.findall('section\sclass="box\sfeature">\s+<a href="(.*?)".*?\ssrc="(.*?)"\salt="(.*?)".*?fa-clock-o meta-data">(.*?)<', parse.group(1), re.S)
 			if raw:
 				for (link, image, title, age) in raw:
 					link = "http://hqporner.com" + link
+					title = title.title()
 					self.filmliste.append((decodeHtml(title), link, image, age))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
@@ -241,7 +242,7 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(title)
 		coverUrl = self['liste'].getCurrent()[0][2]
 		age = self['liste'].getCurrent()[0][3]
-		self['handlung'].setText("\n\nDate: %s" % age)
+		self['handlung'].setText("Date: %s" % age)
 		CoverHelper(self['coverArt']).getCover(coverUrl)
 
 	def keyOK(self):

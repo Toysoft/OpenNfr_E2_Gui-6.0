@@ -48,6 +48,7 @@ config.mediaportal.pornhub_password = ConfigPassword(default="pornhubPassword", 
 ck = {}
 phLoggedIn = False
 phAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+phAgentUrl = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; Xbox)"
 json_headers = {
 	'Accept':'application/json',
 	'Accept-Language':'en,en-US;q=0.7,en;q=0.3',
@@ -1108,7 +1109,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper):
 			return
 		self.url = self['liste'].getCurrent()[0][1]
 		if self.url:
-			getPage(self.url, agent=phAgent, cookies=ck).addCallback(self.parseData).addErrback(self.dataError)
+			getPage(self.url, agent=phAgentUrl).addCallback(self.parseData).addErrback(self.dataError)
 
 	def keyFavourite(self):
 		if self.keyLocked:
@@ -1174,17 +1175,15 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper):
 				self.session.open(MessageBoxExt, _("Unknown error."), MessageBoxExt.TYPE_INFO)
 
 	def parseData(self, data):
-		import js2py
-		js = re.findall('(var flashvars_(?:\d+).*?)loadScriptUniqueId', data, re.S)
-		urls = str(js2py.eval_js(js[0]))
-		if urls.startswith('http'):
-			playurl = urls
-		else:
-			playurl = re.findall('\'(http[s]?://cdn.*?\.mp4.*?)\'', urls, re.S)
-			playurl = playurl[-1]
+		match = re.findall('quality_720p.[=|:].\'{0,1}(.*?)["|\';]', data, re.S)
+		if not match:
+			match = re.findall('quality_480p.[=|:].\'{0,1}(.*?)["|\';]', data, re.S)
+		if not match:
+			match = re.findall('quality_240p.[=|:].\'{0,1}(.*?)["|\';]', data, re.S)
+		fetchurl = urllib2.unquote(match[0]).replace('\/','/')
 		Title = self['liste'].getCurrent()[0][0]
 		mp_globals.player_agent = phAgent
-		self.session.open(SimplePlayer, [(Title, playurl)], showPlaylist=False, ltype='pornhub')
+		self.session.open(SimplePlayer, [(Title, fetchurl)], showPlaylist=False, ltype='pornhub')
 
 	def ok(self, data):
 		#print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

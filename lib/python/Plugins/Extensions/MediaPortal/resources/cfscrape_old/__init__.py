@@ -1,12 +1,10 @@
+from time import sleep
 import logging
 import random
 import re
 from requests.sessions import Session
+import js2py
 from copy import deepcopy
-from time import sleep
-
-import execjs
-node = execjs.get("Node")
 
 try:
     from urlparse import urlparse
@@ -22,9 +20,6 @@ DEFAULT_USER_AGENTS = [
 ]
 
 DEFAULT_USER_AGENT = random.choice(DEFAULT_USER_AGENTS)
-
-BUG_REPORT = ("Cloudflare may have changed their technique, or there may be a bug in the script.\n\nPlease read " "https://github.com/Anorov/cloudflare-scrape#updates, then file a "
-"bug report at https://github.com/Anorov/cloudflare-scrape/issues.")
 
 
 class CloudflareScraper(Session):
@@ -66,15 +61,23 @@ class CloudflareScraper(Session):
             params["jschl_vc"] = re.search(r'name="jschl_vc" value="(\w+)"', body).group(1)
             params["pass"] = re.search(r'name="pass" value="(.+?)"', body).group(1)
 
-        except Exception as e:
+            # Extract the arithmetic operation
+            js = self.extract_js(body)
+
+        except Exception:
             # Something is wrong with the page.
             # This may indicate Cloudflare has changed their anti-bot
             # technique. If you see this and are running the latest version,
             # please open a GitHub issue so I can update the code accordingly.
-            raise ValueError("Unable to parse Cloudflare anti-bots page: %s %s" % (e.message, BUG_REPORT))
+            logging.error("[!] Unable to parse Cloudflare anti-bots page. "
+                          "Try upgrading cloudflare-scrape, or submit a bug report "
+                          "if you are running the latest version. Please read "
+                          "https://github.com/Anorov/cloudflare-scrape#updates "
+                          "before submitting a bug report.")
+            raise
 
-        # Solve the Javascript challenge
-        params["jschl_answer"] = str(self.solve_challenge(body) + len(domain))
+        # Safely evaluate the Javascript expression
+        params["jschl_answer"] = str(int(js2py.eval_js(js)) + len(domain))
 
         # Requests transforms any request into a GET after a redirect,
         # so the redirect has to be handled manually here to allow for
@@ -84,13 +87,9 @@ class CloudflareScraper(Session):
         redirect = self.request(method, submit_url, **cloudflare_kwargs)
         return self.request(method, redirect.headers["Location"], **original_kwargs)
 
-    def solve_challenge(self, body):
-        try:
-           js = re.search(r"setTimeout\(function\(\){\s+(var "
+    def extract_js(self, body):
+        js = re.search(r"setTimeout\(function\(\){\s+(var "
                         "s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n", body).group(1)
-        except Exception:
-           raise ValueError("Unable to identify Cloudflare IUAM Javascript on website. %s" % BUG_REPORT)
-
         js = re.sub(r"a\.value = (parseInt\(.+?\)).+", r"\1", js)
         js = re.sub(r"\s{3,}[a-z](?: = |\.).+", "", js)
 
@@ -98,25 +97,7 @@ class CloudflareScraper(Session):
         # These characters are not currently used in Cloudflare's arithmetic snippet
         js = re.sub(r"[\n\\']", "", js)
 
-        if "parseInt" not in js:
-            raise ValueError("Error parsing Cloudflare IUAM Javascript challenge. %s" % BUG_REPORT)
-
-        # Use vm.runInNewContext to safely evaluate code
-        # The sandboxed code cannot use the Node.js standard library
-        js = "return require('vm').runInNewContext('%s');" % js
-
-        try:
-            result = node.exec_(js)
-        except Exception:
-            logging.error("Error executing Cloudflare IUAM Javascript. %s" % BUG_REPORT)
-            raise
-
-        try:
-            result = int(result)
-        except Exception:
-            raise ValueError("Cloudflare IUAM challenge returned unexpected value. %s" % BUG_REPORT)
-
-        return result
+        return js
 
     @classmethod
     def create_scraper(cls, sess=None, **kwargs):
@@ -145,7 +126,7 @@ class CloudflareScraper(Session):
 
         try:
             # Modified for MediaPortal
-            resp = scraper.get(url, allow_redirects=False, **kwargs)
+            resp = scraper.get(url, allow_redirects=False)
             resp.raise_for_status()
         except Exception as e:
             logging.error("'%s' returned an error. Could not collect tokens." % url)
@@ -173,7 +154,7 @@ class CloudflareScraper(Session):
         """
         Convenience function for building a Cookie HTTP header value.
         """
-        tokens, user_agent = cls.get_tokens(url, user_agent=user_agent, **kwargs)
+        tokens, user_agent = cls.get_tokens(url, user_agent=user_agent)
         return "; ".join("=".join(pair) for pair in tokens.items()), user_agent
 
 create_scraper = CloudflareScraper.create_scraper

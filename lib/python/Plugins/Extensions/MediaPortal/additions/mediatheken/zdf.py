@@ -30,6 +30,11 @@ def soap(data,flag):
 	data = data.split("</article>")
 	y = 0
 	for x in data:
+		x = x.split("<article")
+		if len(x) == 2:
+			x = "<article"+x[1]
+		else:
+			x = "<article"+x[0]
 		z = ("%03d") % y
 		with open(config.mediaportal.storagepath.value + "zdf"+z+".soap", "w") as f:
 			f.write(x+"</article>")
@@ -60,7 +65,8 @@ class ZDFGenreScreen(MPScreen):
 		}, -1)
 
 		self['title'] = Label("ZDF Mediathek")
-		self['ContentTitle'] = Label("Genre auswählen")
+		self['ContentTitle'] = Label("Genre")
+		self['name'].setText("Auswahl")
 
 		self.genreliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -69,6 +75,12 @@ class ZDFGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		from os import listdir											# If crashed before...
+		if fileExists(config.mediaportal.storagepath.value):			# ...clean up...
+			for i in listdir(config.mediaportal.storagepath.value):		# ...to prevent...
+				if "zdf" in i and ".soap" in i:							# ...the next...
+					os.remove(config.mediaportal.storagepath.value+i)	# ...crash...
+
 		self.keyLocked = True
 		self.loadPageData()
 
@@ -90,7 +102,6 @@ class ZDFGenreScreen(MPScreen):
 	def showInfos(self):
 		cur = self['liste'].getCurrent()[0][1]
 		streamPic = self['liste'].getCurrent()[0][2]
-		self['name'].setText(self['liste'].getCurrent()[0][0])
 		if self.prev == "/" and streamPic == "/":
 			return
 		else:
@@ -103,7 +114,10 @@ class ZDFGenreScreen(MPScreen):
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		genreName = self['liste'].getCurrent()[0][0]
+		if " (alle Kanäle)" in self['liste'].getCurrent()[0][0]:
+			genreName = self['liste'].getCurrent()[0][0].split(" (alle Kanäle)")[0]
+		else:
+			genreName = self['liste'].getCurrent()[0][0]
 		genreFlag = self['liste'].getCurrent()[0][1]
 		streamPic = self['liste'].getCurrent()[0][2]
 		if genreFlag == "1": # Suche
@@ -184,13 +198,13 @@ class ZDFPreSelect(MPScreen):
 
 		self.genreliste = []
 		if self.gF == "2":	# A-Z
-			self['name'].setText("Buchstaben auswählen")
+			self['name'].setText("Buchstabe")
 			self['ContentTitle'].setText(self.gN)
 			for c in xrange(26):
 				self.genreliste.append((chr(ord('A') + c)," "," ",self.pP,AdT))
 			self.genreliste.insert(0, ('0-9'," "," ",self.pP,AdT))
 		elif self.gF == "3":	# Sendung verpasst?
-			self['name'].setText("Sendetag auswählen")
+			self['name'].setText("Sendetag")
 			self['ContentTitle'].setText(self.gN)
 			for q in range (0,60,1):
 				if q == 0:
@@ -208,7 +222,7 @@ class ZDFPreSelect(MPScreen):
 			if folgen:
 				for (title,info,assetId) in folgen:
 					title = decodeHtml(title)
-					self['name'].setText("Podcast")
+					self['name'].setText("Auswahl")
 					handlung = "Media"+":\t"+info
 					self.genreliste.append((title,assetId,handlung,bildchen,"-"))
 		elif self.gF == "5":	# Rubriken
@@ -233,7 +247,7 @@ class ZDFPreSelect(MPScreen):
 		if self.gF == "4":
 			self['handlung'].setText(self['liste'].getCurrent()[0][2])
 		if self.gF == "5":
-			self['name'].setText("Rubrik auswählen")
+			self['name'].setText("Auswahl")
 			CoverHelper(self['coverArt']).getCover(self['liste'].getCurrent()[0][2])
 		if self.PLS == False:
 			self.PLS = True
@@ -250,12 +264,21 @@ class ZDFPreSelect(MPScreen):
 				streamLink = "%s/sendungen-a-z?group=0+-+9" % BASE_URL
 			else:
 				streamLink = "%s/sendungen-a-z?group=%s" % (BASE_URL,auswahl.lower())
+			if "(" in self.gN:
+				self.gN = self.gN.split(" (")[0]
+			self.gN = self.gN+" ( '"+auswahl+"' )"
 		elif self.gF == "3":	# Sendung verpasst?
 			streamLink = "%s/sendung-verpasst?airtimeDate=%s" % (BASE_URL,extra)
 			passThru = 1
+			if "(" in self.gN:
+				self.gN = self.gN.split(" (")[0]
+			self.gN = self.gN+" ("+auswahl+")"
 			self.session.open(ZDFStreamScreen,streamLink,self.gN,self.gF,AdT,self.pP)
 		elif self.gF == "4":	# Podcast
 			passThru = 1
+			if "(" in self.gN:
+				self.gN = self.gN.split(" (")[0]
+			self.gN = self.gN+" ('"+auswahl+"')"
 			self.session.open(ZDFStreamScreen,extra,self.gN,self.gF,AdT,self.pP)
 		elif self.gF == "5":	# Rubriken
 			passThru = 1
@@ -284,6 +307,9 @@ class ZDFPreSelect(MPScreen):
 				streamLink = "%s/sport" % BASE_URL
 			if extra == "12":
 				streamLink = "%s/verbraucher" % BASE_URL
+			if "(" in self.gN:
+				self.gN = self.gN.split(" (")[0]
+			self.gN = self.gN+" ("+auswahl+")"
 			self.session.open(ZDFStreamScreen,streamLink,self.gN,self.gF,AdT,self.pP)
 		else:
 			return
@@ -297,6 +323,11 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 	def __init__(self,session,genreName,genreFlag,prePic,streamLink,anzahl):
 		self.keyLocked = True
 		self.gN = genreName
+		self.gN = self.gN.split("(")
+		if len(self.gN) == 3 or len(self.gN) == 2:
+			self.gN = self.gN[0]+"("+self.gN[1]
+		else:
+			self.gN = self.gN[0]
 		self.gF = genreFlag
 		self.pP = prePic
 		self.anzahl = anzahl
@@ -325,7 +356,7 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 		}, -1)
 
 		self['title'] = Label("ZDF Mediathek")
-		self['ContentTitle'] = Label("Sendung auswählen")
+		self['ContentTitle'] = Label("Sendung")
 		self['name'] = Label(_("Please wait..."))
 
 		self.genreliste = []
@@ -342,7 +373,7 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 	def loadPageData(self, data):
 		if self.gF != "9":
 			soap(data,"Post")
-		if int(self.gF) > 5 and int(self.gF) != 9:	# ZDFneo, ZDFinfo, ZDF.kultur,3sat
+		if int(self.gF) > 5 and int(self.gF) != 9:	# ZDF, ZDFneo, ZDFinfo, ZDF.kultur
 			self.genreliste = []
 			treffer = re.findall('<div class="image">.*?<img src="(.*?)" title="(.*?)".*?<div class="text">.*?<a href=".*?<a href=".*?">(.*?)<.*?a href=".*?">(.*?) B.*?</div>', data, re.S)
 			for (image,info,title,anzahl) in treffer:
@@ -377,19 +408,19 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 					with open(x, 'r') as f:
 						data = f.read()
 					os.remove(x)
-					folgen = re.findall('picture class.*?data-srcset="(.*?)~.*?"teaser-label".*?</span>(.*?)<strong>.*?href="(.*?)".*?title="(.*?)".*?"actionDetail": "(.*?)"', data, re.S)
+					folgen = re.findall('picture class.*?data-srcset="(.*?)~.*?itemprop=\"genre\">(.*?)<.*?m-border\">(.*?) .*?data-plusbar-title=\"(.*?)\".*?data-plusbar-url=\"(.*?)\"', data, re.S)
 					if folgen:
-						for (image,anzahl,url,title,info) in folgen:
-							if not url.startswith('http'):
-								url = BASE_URL + url
+						for (image,genre,anzahl,title,url) in folgen:
 							image += "~384x216"
-							info = decodeHtml(info)
-							info = info.split("Teaser:")[-1]
+							genre = decodeHtml(genre).strip().split("|")[0].strip()
 							title = decodeHtml(title)
-							handlung = "Clips:\t"+anzahl+"\n"+info
+							handlung = "Clips:\t"+anzahl
+							if genre:
+								if genre != "":
+									handlung = handlung + "\nKontext:\t"+genre
 							self.genreliste.append((title,url,handlung,image,anzahl))
 			else:
-				self.genreliste.append((NoC,None,None,bildchen,None))
+				self.genreliste.append((NoC,None,"",bildchen,None))
 		self.ml.setList(map(self._defaultlistleft, self.genreliste))
 		self.keyLocked = False
 		self.th_ThumbsQuery(self.genreliste, 0, 1, 3, None, None, 1, 1, mode=1)
@@ -397,10 +428,13 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 
 	def showInfos(self):
 		self['handlung'].setText(self['liste'].getCurrent()[0][2])
-		if self.gF == "1":
-			self['name'].setText("' "+suchCache+" '")
+		if "(" in self.gN:
+			self.gN = self.gN.split(" (")
+			name = self.gN[0]+"\n\n("+self.gN[1]
+			self['name'].setText(name)
+			self.gN = self.gN[0]+" ("+self.gN[1]
 		else:
-			self['name'].setText(self['liste'].getCurrent()[0][0])
+			self['name'].setText(self.gN)
 		if self.PLS == False and self.gF != "9" and self.gF != "2" and self.gF != "4":
 			self.PLS = True
 			CoverHelper(self['coverArt']).getCover(bildchen)
@@ -458,7 +492,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 			}, -1)
 
 		self['title'] = Label("ZDF Mediathek")
-		self['ContentTitle'] = Label("Clip auswählen")
+		self['ContentTitle'] = Label("Clip")
 		self['name'] = Label(_("Please wait..."))
 
 		self['Page'] = Label(_("Page:"))
@@ -498,25 +532,44 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		typ,image,title,info,assetId,sender,sendung,dur = "","","","","","","",""
 		if self.gF == "3": # Sendung verpasst?
 			self['page'].setText('1 / 1')
+			genre = ""
 			tmp = sorted(glob.glob(config.mediaportal.storagepath.value + "*.soap"))
 			for x in tmp:
 				with open(x, 'r') as f:
 					data = f.read()
 				os.remove(x)
-				treffer = re.findall('<article.*?itemprop="image" content="(.*?)".*?"teaser-label".*?</span>(.*?)<strong>(.*?)<.*?title="(.*?)".*?video-duration.*?>(.*?)<.*?data-plusbar-id="(.*?)"', data, re.S)
+				treffer = re.findall('<article.*?itemprop=\"image\" content=\"(.*?)\".*?\"teaser-label\".*?</span>(.*?)<strong>(.*?)<.*?title=\"(.*?)\".*?teaser-info.*?>(.*?)<.*?data-plusbar-id=\"(.*?)\"', data, re.S)
 				if treffer:
 					for (image,airtime,clock,title,dur,assetId) in treffer:
 						if "/static" in image:
-							image = "ToBeParsed~xyz"
-						image = image.split("~")[0]
+							try:
+								if "m-16-9" in data:
+									image = re.search('<source class=\"m-16-9\".*?data-srcset=\"(.*?)\"',data)
+								if image:
+									image = image.group(1)
+							except:
+								image = "ToBeParsed~xyz"
+						if "?layout" in image:
+							image = image.split("=")[0]+"="
+						else:
+							image = image.split("~")[0]
 						if image == "ToBeParsed":
 							image = self.image
+						elif image[-1] == "=":
+							image += "384x216"
 						else:
 							image += "~384x216"
 						title = decodeHtml(title)
 						handlung = "Clip-Datum"+":\t"+airtime+clock+NL+"Dauer"+":\t"+dur
 						self.dur = dur
 						assetId = "https://api.zdf.de/content/documents/"+assetId+".json?profile=player"
+						if 'itemprop="genre"' in data:
+							try:
+								genre = re.search("itemprop=\"genre\">(.*?)<",data,re.S).group(1).strip()
+							except:
+								pass
+							if genre != "":
+									handlung = handlung + "\nKontext:\t"+genre
 						self.filmliste.append((title,assetId,handlung,image,title))
 		elif self.gF == "4": # Podcast
 			self['page'].setText("1 / 1")
@@ -573,22 +626,19 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 				title = ""
 				image = ""
 				info = ""
-				if "<time datetime" in data and not "video-duration" in data and not "teaser-length" in data:
+				genre = ""
+				if "<time datetime" in data and not "m-border" in data:
 					continue
 				if "Beiträge" in data:
 					continue
-				elif "data-newest" in data and ("video-duration" in data or "teaser-length" in data):
-					airtime = (datetime.datetime.fromtimestamp(int(re.search('data-newest="-(.*?)"',data).group(1))).strftime('%d.%m.%Y %H:%M:%S'))	# Unixtime
-				elif "video-airing" in data:
-					airtime = re.search('video-airing">(.*?)<',data).group(1)
-				elif "<time datetime" in data and ("video-duration" in data or "teaser-length" in data):
-					airtime = re.search('<time datetime=".*?">(.*?)<',data).group(1)
+				elif "m-border\">" in data:
+					airtime = re.search('time datetime=.*?>(.*?)<',data)
+				if airtime != "":
+					airtime = airtime.group(1)
 				if airtime == "":
 					continue
-				if "video-duration" in data:
-					dur = re.search('video-duration.*?>(.*?)<',data).group(1)
-				elif "teaser-length" in data:
-					dur = re.search('teaser-length.*?>(.*?)<',data).group(1)
+				if "m-border\">" in data:
+					dur = re.search('m-border\">(.*?)<',data).group(1)
 				else:
 					continue
 				if "data-station" in data:
@@ -600,20 +650,43 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 				else:
 					assetId = re.search('data-plusbar-id="(.*?)"',data).group(1)
 				if '<source class="m-16-9"' in data:
-					if "?layout" in data:
-						image = re.search('<source class="m-16-9".*?data-srcset="(.*?)=',data).group(1)+"="
-					else:
-						image = re.search('<source class="m-16-9".*?data-srcset="(.*?)~',data).group(1)
+					image = re.search('<source class=\"m-16-9\".*?data-srcset=\"(.*?)[,\"]',data)
+					if image:
+						image = image.group(1)
+						if "?layout" in image:
+							image = image.split("=")[0]+"="
+						else:
+							image = image.split("~")[0]
 				if image != "":
 					if "/static" in image:
-						image = "ToBeParsed~xyz"
-					image = image.split("~")[0]
+						try:
+							if "https:\/\/www.zdf.de\/assets\/" in data:
+								image = re.search('https:\\\/\\\/www.zdf.de\\\/assets\\\/(.*?)~',data)
+							if image:
+								image = image.group(1)
+								image = "https://www.zdf.de/assets/"+image
+						except:
+							image = "ToBeParsed~xyz"
+							image = image.split("~")[0]
+							try:
+								image = re.search("data-zdfplayer-teaser-image-overwrite=\'\{(.*?)\&#",data)
+								if image:
+									image = image.group(1)+"="
+									image = image.replace("\/","/")
+									image = "https"+image.split("https")[1]
+							except:
+								image = "ToBeParsed"
+								pass
+					if image == None:
+						image = "ToBeParsed"
 					if image == "ToBeParsed":
 						image = bildchen
 					elif image[-1] == "=":
 						image += "384x216"
 					else:
 						image += "~384x216"
+				else:
+					image = bildchen
 				if not 'data-plusbar-title=' in data or "Aktuell im EPG" in data:
 					continue
 				else:
@@ -629,11 +702,16 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 					sendung = "---"
 				if self.gF != "1" and sendung == "---":
 					sendung = self.sendung
-				handlung = "Sendung"+":\t"+sendung+NL+"Clip-Datum"+":\t"+airtime+NL+"Dauer"+":\t"+dur+"\n"+info
+				if 'itemprop="genre"' in data:
+					try:
+						genre = " ("+re.search("itemprop=\"genre\">(.*?)<",data,re.S).group(1).strip().split("|")[0].strip()+")"
+					except:
+						pass
+				handlung = "Sendung"+":\t"+sendung+genre+NL+"Clip-Datum"+":\t"+airtime+NL+"Dauer"+":\t"+dur+"\n"+info
 				assetId = "https://api.zdf.de/content/documents/"+assetId+".json?profile=player"
 				self.filmliste.append((decodeHtml(title),assetId,handlung,image,sendung))
 			if self.filmliste == []:
-				self.filmliste.append((NoC,None,None,self.image,None))
+				self.filmliste.append((NoC,None,"",self.image,None))
 
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
@@ -650,15 +728,19 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		else:
 			self.streamPic = self['liste'].getCurrent()[0][3]
 			if self.gF == "1":	# Suche
-				self['name'].setText("Suche"+ "' "+suchCache+" '\n"+"Sendung / Thema"+"\n' "+self['liste'].getCurrent()[0][4]+" '")
-			elif self.gF == "3":	# Verpasst?
-				self['name'].setText("Sendung verpasst? (alle Kanäle)")
+				self['name'].setText("Suche"+ "' "+suchCache+" '")
 			elif self.gF == "9":	# tivi
 				self['name'].setText("Sendung / Thema"+"\n' "+self.gN+" '")
 			elif NoC in self['liste'].getCurrent()[0][0]:	# Nichts gefunden
 				self['name'].setText(NoC)
 			else:
-				self['name'].setText("Sendung / Thema"+"\n' "+self['liste'].getCurrent()[0][4]+" '")
+				if "(" in self.gN:
+					self.gN = self.gN.split(" (")
+					name = self.gN[0]+"\n\n("+self.gN[1]
+					self['name'].setText(name)
+					self.gN = self.gN[0]+" ("+self.gN[1]
+				else:
+					self['name'].setText(self.gN)
 			self['handlung'].setText(self['liste'].getCurrent()[0][2])
 			if self.PLS == False:
 				CoverHelper(self['coverArt']).getCover(self.streamPic)
@@ -678,7 +760,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 			playlist = []
 			playlist.append((streamName, streamLink))
 			self.session.open(SimplePlayer, playlist, showPlaylist=False, ltype='zdf')
-			self['name'].setText("Sendung / Thema"+"\n' "+self['liste'].getCurrent()[0][4]+" '")
+			self['name'].setText(self['liste'].getCurrent()[0][4])
 		else:
 			if self.gF == "9":	# tivi
 				url = self['liste'].getCurrent()[0][1]
@@ -710,16 +792,22 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		c = c.replace("1496k","3296k")
 		c = c.replace("p13v13","p15v13")
 		playlist = []
-		playlist.append((streamName, str(c)))
+		playlist.append((streamName, str(c).replace("https","http")))
 		try:
 			self.session.open(SimplePlayer, playlist, showPlaylist=False, ltype='zdf')
 		except Exception,e:
 			print str(e)
 			self.keyCancel()
 		if self.gF == "1":
-			self['name'].setText("Sendung / Thema"+" ("+suchCache+")"+NL+"' "+self['liste'].getCurrent()[0][4]+" '")
+			self['name'].setText("Suche"+ "' "+suchCache+" '")
 		else:
-			self['name'].setText("Sendung / Thema"+NL+"' "+self['liste'].getCurrent()[0][4]+" '")
+			if "(" in self.gN:
+				self.gN = self.gN.split(" (")
+				name = self.gN[0]+"\n\n("+self.gN[1]
+				self['name'].setText(name)
+				self.gN = self.gN[0]+" ("+self.gN[1]
+			else:
+				self['name'].setText(self.gN)
 
 	def getTivi(self, data):
 		self.keyLocked = True

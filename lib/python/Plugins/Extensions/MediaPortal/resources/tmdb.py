@@ -62,22 +62,28 @@ class MediaPortalTmdbScreen(Screen):
 		getPage(url).addCallback(self.getResults).addErrback(self.dataError)
 
 	def getResults(self, data):
-		list = re.findall('"id":(.*?),.*?original_title":"(.*?)".*?"poster_path":"(.*?)".*?title":"(.*?)"', data, re.S)
+		list = re.findall('poster_path":(.*?),(?:"adult|"popu).*?"id":(.*?),.*?original_(?:title|name)":"(.*?)".*?(?:title|name)":"(.*?)"', data, re.S)
 		if list:
-			for id,otitle,coverPath,title in list:
-				url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/')
-				url = "http://api.themoviedb.org/3/movie/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (api_key, id, "de")
+			for coverPath,id,otitle,title in list:
+				if coverPath == "null":
+					url_cover = None
+				else:
+					url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/').strip('"')
+				url = "http://api.themoviedb.org/3/movie/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (id, api_key, "de")
 				type = _("Movie")
 				self.filmliste.append((title, url_cover, url, id, type, 'movie'))
 		url = "http://api.themoviedb.org/3/search/tv?api_key=%s&query=%s&language=%s" % (api_key, self.movie_title.replace(' ','%20'), "de")
 		getPage(url).addCallback(self.getResults2).addErrback(self.dataError)
 
 	def getResults2(self, data):
-		list = re.findall('"id":(.*?),.*?original_name":"(.*?)".*?"poster_path":"(.*?)".*?name":"(.*?)"', data, re.S)
+		list = re.findall('poster_path":(.*?),(?:"adult|"popu).*?"id":(.*?),.*?(?:title|name)":"(.*?)".*?original_(?:title|name)":"(.*?)"', data, re.S)
 		if list:
-			for id,otitle,coverPath,title in list:
-				url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/')
-				url = "http://api.themoviedb.org/3/tv/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (api_key, id, "de")
+			for coverPath,id,title,otitle in list:
+				if coverPath == "null":
+					url_cover = None
+				else:
+					url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/').strip('"')
+				url = "http://api.themoviedb.org/3/tv/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (id, api_key, "de")
 				type = _("TV Show")
 				self.filmliste.append((title, url_cover, url, id, type, 'tv'))
 		self.ml.setList(map(self.movielist, self.filmliste))
@@ -233,14 +239,14 @@ class MediaPortaltmdbScreenMovie(Screen):
 
 	def onFinish(self):
 		self['rating10'].setValue(0)
-		self.urlfsk = "https://fsk.blacksn0w.de/api/tmdb_id/"+str(self.id)
+		self.urlfsk = "https://altersfreigaben.de/api/tmdb_id/"+str(self.id)
 		getPage(self.urlfsk).addCallback(self.getDataFSK).addErrback(self.dataError)
 		self['searchinfo'].setText(_('Loading information for "%s"') % self.mname)
 		getPage(self.url).addCallback(self.getData).addErrback(self.dataError)
 		CoverHelper(self['coverArt']).getCover(self.cover)
 
 	def getDataFSK(self, data):
-		# https://fsk.blacksn0w.de/api/tmdb_id/000(Die Nullen sind durch die enstprechende ID zu ersetzen)
+		# https://altersfreigaben.de/api/tmdb_id/000(Die Nullen sind durch die enstprechende ID zu ersetzen)
 		# Antwort:
 		# 0 - Freigegeben ab 0
 		# 6 - Freigegeben ab 6
@@ -251,18 +257,35 @@ class MediaPortaltmdbScreenMovie(Screen):
 		# 200 - Der Film wurde (noch) nicht von der FSK eingestuft
 		# 300 - Falsches Format der übergebenen ID
 		json_data = json.loads(data)
-		if json_data <=99:
-			self['fsk'].setText(str(json_data))
-		else:
+		try:
+			if json_data <=99:
+				self['fsk'].setText(str(json_data))
+			else:
+				self['fsk'].setText("-")
+		except:
 			self['fsk'].setText("-")
 
 	def getData(self, data):
 		json_data = json.loads(data)
 
-		if json_data['release_date']:
-			year = json_data['release_date'][:+4]
-			self['searchinfo'].setText("%s" % self.mname)
-			self['year'].setText("%s" % str(year))
+		try:
+			if json_data['release_date']:
+				year = json_data['release_date'][:+4]
+				self['searchinfo'].setText("%s" % self.mname)
+				self['year'].setText("%s" % str(year))
+		except:
+			try:
+				if json_data['first_air_date']:
+					year = json_data['first_air_date'][:+4]
+					self['year'].setText("%s" % str(year))
+				if json_data['last_air_date']:
+					lastyear = json_data['last_air_date'][:+4]
+					if lastyear != year:
+						year = "%s-%s" % (str(year), str(lastyear))
+						self['year'].setText(year)
+				self['searchinfo'].setText("%s" % self.mname)
+			except:
+				pass
 
 		vote_average = ""
 		if json_data['vote_average']:
@@ -278,18 +301,33 @@ class MediaPortaltmdbScreenMovie(Screen):
 			vote_count = json_data['vote_count']
 			self['votes'].setText("%s" % str(vote_count))
 
-		runtime = ""
-		if json_data['runtime']:
-			runtime = json_data['runtime']
-			self['runtime'].setText("%s min." % str(runtime))
-			runtime = ", " + str(runtime) + " min."
+		try:
+			runtime = ""
+			if json_data['runtime']:
+				runtime = json_data['runtime']
+				self['runtime'].setText("%s min." % str(runtime))
+				runtime = ", " + str(runtime) + " min."
+		except:
+			runtime = ""
+			if json_data['episode_run_time']:
+				runtime = json_data['episode_run_time'][0]
+				self['runtime'].setText("%s min." % str(runtime))
+				runtime = ", " + str(runtime) + " min."
 
-		country_string = ""
-		if json_data['production_countries']:
-			for country in json_data['production_countries']:
-				country_string += country['iso_3166_1']+"/"
-			country_string = country_string[:-1]
-			self['country'].setText("%s" % str(country_string))
+		try:
+			country_string = ""
+			if json_data['production_countries']:
+				for country in json_data['production_countries']:
+					country_string += country['iso_3166_1']+"/"
+				country_string = country_string[:-1]
+				self['country'].setText("%s" % str(country_string))
+		except:
+			country_string = ""
+			if json_data['origin_country']:
+				for country in json_data['origin_country']:
+					country_string += country+"/"
+				country_string = country_string[:-1]
+				self['country'].setText("%s" % str(country_string))
 
 		genre_string = ""
 		if json_data['genres']:
@@ -298,54 +336,57 @@ class MediaPortaltmdbScreenMovie(Screen):
 				genre_string += genre['name']+", "
 			self['genre'].setText("%s" % str(genre_string[:-2]))
 
-		subtitle = ""
-		if json_data['tagline']:
-			subtitle = json_data['tagline']
-			self['subtitle'].setText("%s" % str(subtitle))
-			subtitle = str(subtitle) + "\n"
+		try:
+			subtitle = ""
+			if json_data['tagline']:
+				subtitle = json_data['tagline']
+				self['subtitle'].setText("%s" % str(subtitle))
+				subtitle = str(subtitle) + "\n"
+		except:
+			pass
 
-		cast_string = ""
-		if json_data['casts']['cast']:
-			for cast in json_data['casts']['cast']:
-				cast_string += cast['name']+" ("+ cast['character'] + ")\n"
+		try:
+			cast_string = ""
+			if json_data['casts']['cast']:
+				for cast in json_data['casts']['cast']:
+					cast_string += cast['name']+" ("+ cast['character'] + ")\n"
+		except:
+			pass
 
-		crew_string = ""
-		director = ""
-		author = ""
-		if json_data['casts']['crew']:
-			for crew in json_data['casts']['crew']:
+		try:
+			crew_string = ""
+			director = ""
+			author = ""
+			if json_data['casts']['crew']:
+				for crew in json_data['casts']['crew']:
+					crew_string += crew['name']+" ("+ crew['job'] + ")\n"
 
-# Translation of Jobs???
-#				if crew['job'] == "Author":
-#					crew_string += crew['name']+" ("+ _("Author") + ")\n"
-#				elif crew['job'] == "Director":
-#					crew_string += crew['name']+" ("+ _("Director") + ")\n"
-#				elif crew['job'] == "Music":
-#					crew_string += crew['name']+" ("+ _("Music") + ")\n"
-#				elif crew['job'] == "Producer":
-#					crew_string += crew['name']+" ("+ _("Producer") + ")\n"
-#				else:
-#					crew_string += crew['name']+" ("+ crew['job'] + ")\n"
-#				elif crew['job'] == "Screenplay":
-#					crew_string += crew['name']+" ("+ _("Screenplay") + ")\n"
-
-				crew_string += crew['name']+" ("+ crew['job'] + ")\n"
-
-				if crew['job'] == "Director":
-					director += crew['name']+", "
-				if crew['job'] == "Screenplay" or crew['job'] == "Writer":
-					author += crew['name']+", "
-			director = director[:-2]
-			author = author[:-2]
-			self['director'].setText("%s" % str(director))
-			self['author'].setText("%s" % str(author))
-
-		studio_string = ""
-		if json_data['production_companies']:
-			for studio in json_data['production_companies']:
-				studio_string += studio['name'] +", "
-			studio_string = studio_string[:-2]
-			self['studio'].setText("%s" % str(studio_string))
+					if crew['job'] == "Director":
+						director += crew['name']+", "
+					if crew['job'] == "Screenplay" or crew['job'] == "Writer":
+						author += crew['name']+", "
+				director = director[:-2]
+				author = author[:-2]
+				self['director'].setText("%s" % str(director))
+				self['author'].setText("%s" % str(author))
+		except:
+			try:
+				if json_data['created_by']:
+					for crew in json_data['created_by']:
+						author += crew['name']+", "
+					author = author[:-2]
+					self['author'].setText("%s" % str(author))
+			except:
+				pass
+		try:
+			studio_string = ""
+			if json_data['production_companies']:
+				for studio in json_data['production_companies']:
+					studio_string += studio['name'] +", "
+				studio_string = studio_string[:-2]
+				self['studio'].setText("%s" % str(studio_string))
+		except:
+			pass
 
 		description = ""
 		if json_data['overview']:
@@ -355,14 +396,17 @@ class MediaPortaltmdbScreenMovie(Screen):
 			fulldescription = movieinfo + "\n\n" + description
 			self['fulldescription'].setText("%s" % fulldescription.encode('utf_8','ignore'))
 
-		if json_data['trailers']['youtube']:
-			for trailer in json_data['trailers']['youtube']:
-				y_url = str(trailer['source'])
-				self['F3'].setText("Trailer")
-				self.trailer = y_url
-				break
-		else:
-			print "[TMDb] no trailer found !"
+		try:
+			if json_data['trailers']['youtube']:
+				for trailer in json_data['trailers']['youtube']:
+					y_url = str(trailer['source'])
+					self['F3'].setText("Trailer")
+					self.trailer = y_url
+					break
+			else:
+				print "[TMDb] no trailer found !"
+		except:
+			pass
 
 	def dataError(self, error):
 		from debuglog import printlog as printl

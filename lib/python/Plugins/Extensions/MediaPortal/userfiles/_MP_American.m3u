@@ -31,3 +31,7 @@ http://aztecalive-lh.akamaihd.net/i/0oxnvzh8a_1@175671/master.m3u8
 http://urtmpkal-f.akamaihd.net/i/077zoqxzy_1@130091/master.m3u8
 #EXTINF:-1,Anime TV (Mexico)
 http://video7.stream.mx:1935/raxatv/raxatv/master.m3u8
+#EXTINF:-1,NASA TV Public
+https://nasa-i.akamaihd.net/hls/live/253565/NTV-Public1/master.m3u8
+#EXTINF:-1,NASA TV Media
+https://nasa-i.akamaihd.net/hls/live/253566/NTV-Media/master.m3u8

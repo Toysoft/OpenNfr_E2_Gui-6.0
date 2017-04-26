@@ -173,8 +173,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="808"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.8"))
+config.mediaportal.version = NoSave(ConfigText(default="809"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.9"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -225,8 +225,8 @@ config.mediaportal.storagepath = ConfigText(default="/tmp/mediaportal/tmp/", fix
 config.mediaportal.iconcachepath = ConfigText(default="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/", fixed_size=False)
 config.mediaportal.autoplayThreshold = ConfigInteger(default = 50, limits = (1,100))
 config.mediaportal.filter = ConfigSelection(default = "ALL", choices = ["ALL", "Mediathek", "Grauzone", "Fun", "Sport", "Music", "Porn"])
-config.mediaportal.youtubeprio = ConfigSelection(default = "1", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
-config.mediaportal.videoquali_others = ConfigSelection(default = "1", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
+config.mediaportal.youtubeprio = ConfigSelection(default = "2", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
+config.mediaportal.videoquali_others = ConfigSelection(default = "2", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
 config.mediaportal.youtube_max_items_pp = ConfigInteger(default = 19, limits = (10,50))
 config.mediaportal.pornpin = ConfigYesNo(default = True)
 config.mediaportal.pornpin_cache = ConfigSelection(default = "0", choices = [("0", _("never")), ("5", _("5 minutes")), ("15", _("15 minutes")), ("30", _("30 minutes")), ("60", _("60 minutes"))])

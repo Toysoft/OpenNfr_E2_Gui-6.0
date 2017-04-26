@@ -43,7 +43,12 @@ from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 try:
 	from Plugins.Extensions.MediaPortal.resources import cfscrape
 except:
-	cfscrapeModule = False
+	try:
+		from Plugins.Extensions.MediaPortal.resources import cfscrape_old as cfscrape
+	except:
+		cfscrapeModule = False
+	else:
+		cfscrapeModule = True
 else:
 	cfscrapeModule = True
 

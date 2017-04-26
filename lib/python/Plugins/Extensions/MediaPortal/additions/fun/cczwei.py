@@ -35,11 +35,12 @@ class cczwei(MPScreen):
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
+		data = re.sub('(<a href="http[s]?://[www.youtu|youtu.be].*?">Youtube, HD 1080p</a>)','', data, re.S)
 		parse = re.search('class="block"><h4>Videosendungen(.*)', data, re.S)
-		videos = re.findall('Folge\s(\d+).*?<a href="(.*?.mp4)">.*?</a>(.*?)(?:<br></ul><br>|<br>\d+\.)', parse.group(1), re.S)
+		videos = re.findall('Folge\s(\d+).*?<a href="(.*?.mp4)">.*?(?:</a>|</a><br>)(.*?)(?:<br>\d{2,4}|<br></ul><br>)', parse.group(1), re.S)
 		if videos:
 			for (folge, url, title) in videos:
-				title = title.replace('\r\n<br>',', ')
+				title = title.replace('\r\n<br>',', ').replace('   ','')
 				title = "Folge %s - %s" % (folge, stripAllTags(title.replace(', , ','')))
 				self.streamList.append((decodeHtml(title), folge))
 			self.ml.setList(map(self._defaultlistleft, self.streamList))

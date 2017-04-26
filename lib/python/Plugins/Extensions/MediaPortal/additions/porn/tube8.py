@@ -246,7 +246,7 @@ class tube8FilmScreen(MPScreen, ThumbsHelper):
 					Views = str(node["attributes"]["stats"]["views"])
 					self.filmliste.append((Title, Url, Image, Runtime, Views))
 		else:
-			Movies = re.findall('id="video_.*?a\shref="(.*?)".*?src="(http://.*?\.jpg)".*?title="(.*?)".*?video_duration">(.*?)</div>.*?video_views">(.*?)\sviews', data, re.S)
+			Movies = re.findall('id="video_.*?a\shref="(.*?)".*?src="(http[s]?://.*?\.jpg)".*?title="(.*?)".*?video_duration">(.*?)</div>.*?video_views">(.*?)\sviews', data, re.S)
 			if Movies:
 				for (Url, Image, Title, Runtime, Views) in Movies:
 					self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views.strip()))
