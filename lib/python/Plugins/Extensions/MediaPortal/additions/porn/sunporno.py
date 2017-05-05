@@ -212,5 +212,6 @@ class sunpornoFilmScreen(MPScreen, ThumbsHelper):
 			title = self['liste'].getCurrent()[0][0]
 		video = re.findall('video\ssrc="(.*?)"', data, re.S)
 		if video:
+			url = video[0].replace('https','http')
 			self.keyLocked = False
-			self.session.open(SimplePlayer, [(title, video[0])], showPlaylist=False, ltype='sunporno')
+			self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='sunporno')

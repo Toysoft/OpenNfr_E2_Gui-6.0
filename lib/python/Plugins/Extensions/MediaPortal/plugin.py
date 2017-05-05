@@ -173,8 +173,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="809"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.0.9"))
+config.mediaportal.version = NoSave(ConfigText(default="810"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.1.0"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -358,8 +358,15 @@ class CheckPathes:
 			config.mediaportal.iconcachepath.value = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/"
 			config.mediaportal.iconcachepath.save()
 			configfile.save()
-
-		if "/tmp/" in config.mediaportal.iconcachepath.value:
+		elif "/tmp/" in config.mediaportal.iconcachepath.value:
+			config.mediaportal.iconcachepath.value = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/"
+			config.mediaportal.iconcachepath.save()
+			configfile.save()
+		elif "/usr/lib/enigma2/" in config.mediaportal.iconcachepath.value:
+			config.mediaportal.iconcachepath.value = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/"
+			config.mediaportal.iconcachepath.save()
+			configfile.save()
+		elif "/var/share/" in config.mediaportal.iconcachepath.value:
 			config.mediaportal.iconcachepath.value = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/"
 			config.mediaportal.iconcachepath.save()
 			configfile.save()

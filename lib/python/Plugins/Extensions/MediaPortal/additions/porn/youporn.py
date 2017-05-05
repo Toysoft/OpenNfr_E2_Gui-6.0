@@ -103,7 +103,7 @@ class youpornGenreScreen(MPScreen):
 			self.onLayoutFinish.append(self.layoutFinished)
 
 	def Login(self):
-		loginUrl = "http://www.youporn.com/login/"
+		loginUrl = "https://www.youporn.com/login/"
 		loginData = {
 			'login[username]' : self.username,
 			'login[password]' : self.password
@@ -111,7 +111,7 @@ class youpornGenreScreen(MPScreen):
 		twAgentGetPage(loginUrl, agent=ypAgent, method='POST', postdata=urlencode(loginData), cookieJar=ck, headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.Login2).addErrback(self.dataError)
 
 	def Login2(self, data):
-		url = "http://www.youporn.com/login/"
+		url = "https://www.youporn.com/login/"
 		twAgentGetPage(url, agent=ypAgent, cookieJar=ck).addCallback(self.Login3).addErrback(self.dataError)
 
 	def Login3(self, data):
@@ -131,7 +131,7 @@ class youpornGenreScreen(MPScreen):
 		self.genreliste = []
 		preparse = re.search('categoryListWrapper"(.*?)name="countryFlags"', data, re.S)
 		if preparse:
-			Cats = re.findall('<a\shref="(.*?)".*?img\ssrc.*?alt="(.*?)".*?data-original="(.*?)"', preparse.group(1), re.S)
+			Cats = re.findall('<a\shref="((?:/category|https://www.youporn.com).*?)".*?img\ssrc.*?alt="(.*?)".*?data-original="(.*?)"', preparse.group(1), re.S)
 		if Cats:
 			for (Url, Title, Image) in Cats:
 				Url = "http://www.youporn.com" + Url + '?page='
@@ -142,7 +142,6 @@ class youpornGenreScreen(MPScreen):
 		if ypLoggedIn:
 			self.genreliste.insert(0, (400 * "—", None, default_cover))
 			self.genreliste.insert(0, ("Recommended", "http://www.youporn.com/recommended/?page=", default_cover))
-			self.genreliste.insert(0, ("Favourite Collections", "http://www.youporn.com/favorites/collections/?page=", default_cover))
 			self.genreliste.insert(0, ("Favourite Videos", "http://www.youporn.com/favorites/?page=", default_cover))
 		self.genreliste.insert(0, (400 * "—", None, default_cover))
 		self.genreliste.insert(0, ("Channels", "http://www.youporn.com/channels/most_subscribed/?page=", default_cover))
@@ -172,13 +171,16 @@ class youpornGenreScreen(MPScreen):
 			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
 		elif Name == "Channels":
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(youpornChannelScreen, Link, Name)
+			if Link:
+				self.session.open(youpornChannelScreen, Link, Name)
 		elif Name == "Popular by Country":
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(youpornCountryScreen, Link, Name)
+			if Link:
+				self.session.open(youpornCountryScreen, Link, Name)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(youpornFilmScreen, Link, Name)
+			if Link:
+				self.session.open(youpornFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
@@ -369,7 +371,7 @@ class youpornChannelScreen(MPScreen, ThumbsHelper):
 		twAgentGetPage(url, agent=ypAgent, cookieJar=ck).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		self.getLastPage(data, 'id="pagination">(.*?)</ul>', '.*>(\d+)<')
+		self.getLastPage(data, 'objectPagination =.*?total: (\d+),', '(\d+)')
 		Cats = re.findall('channel-box-image.*?<img\ssrc="(.*?)".*?channel-box-title">.*?href="(.*?)">(.*?)</', data, re.S)
 		if Cats:
 			for (Image, Url, Title) in Cats:
@@ -448,7 +450,7 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 		twAgentGetPage(url, agent=ypAgent, cookieJar=ck).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'id="pagination">(.*?)</ul>', '.*>(\d+)<')
+		self.getLastPage(data, 'objectPagination =.*?total: (\d+),', '(\d+)')
 		parse = re.search('My Favorited Videos(.*?)class=\'ad-bottom-text', data, re.S)
 		if not parse:
 			parse = re.search('eight-column\sheading4\'>Videos from(.*?)class=\'ad-bottom-text', data, re.S)
@@ -490,7 +492,8 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 
 	def getVideoPage(self, data):
 		Title = self['liste'].getCurrent()[0][0]
-		videoPage = re.findall("\d\d\d:\s'(http.*?)'", data, re.S)
+		parse = re.search('sources: {(.*?)1440:', data, re.S)
+		videoPage = re.findall("\d+:\s'(http.*?)'", parse.group(1), re.S)
 		if videoPage:
 			self.keyLocked = False
 			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='youporn')

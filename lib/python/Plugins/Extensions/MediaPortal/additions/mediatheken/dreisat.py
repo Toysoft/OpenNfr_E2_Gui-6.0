@@ -53,6 +53,8 @@ class dreisatGenreScreen(MPScreen, ThumbsHelper):
 		if raw:
 			for (Url, Title, Image) in raw:
 				Image = dreiurl + "%s" % Image
+				if not Url.startswith('http'):
+					Url = 'http:' + Url
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 		url = baseurl + "?mode=sendungenaz1"
 		getPage(url).addCallback(self.parseData2).addErrback(self.dataError)
@@ -62,6 +64,8 @@ class dreisatGenreScreen(MPScreen, ThumbsHelper):
 		if raw:
 			for (Url, Title, Image) in raw:
 				Image = dreiurl + "%s" % Image
+				if not Url.startswith('http'):
+					Url = 'http:' + Url
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 				self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 		self.keyLocked = False

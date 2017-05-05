@@ -292,7 +292,7 @@ class CVevoSignAlgoExtractor:
 		self._cleanTmpVariables()
 
 		id_m = re.match(
-			r'.*?-(?P<id>[a-zA-Z0-9_-]+)(?:/watch_as3|/html5player(?:-new)?|/base)?\.(?P<ext>[a-z]+)$',
+			r'.*?-(?P<id>[a-zA-Z0-9_-]+)(?:/watch_as3|/html5player(?:-new)?|(?:/[a-z]{2}_[A-Z]{2})?/base)?\.(?P<ext>[a-z]+)$',
 			playerUrl)
 		if not id_m:
 			raise extractorError('Cannot identify player %r' % playerUrl)

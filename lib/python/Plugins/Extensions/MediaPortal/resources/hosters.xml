@@ -22,12 +22,13 @@
 <hoster>uploadrocket</hoster><regex>uploadrocket.net</regex>
 <hoster>oboom</hoster><regex>oboom.com</regex>
 <hoster>extmatrix</hoster><regex>extmatrix.com</regex>
-<hoster>hugefiles</hoster><regex>hugefiles.net</regex>
+<hoster>mediafire</hoster><regex>mediafire.com</regex>
 <hoster>gigapeta</hoster><regex>gigapeta.com</regex>
 <hoster>salefiles</hoster><regex>salefiles.com</regex>
 <hoster>depfile</hoster><regex>depfile.com</regex>
 <hoster>turbobit</hoster><regex>turbobit.net</regex>
-<hoster>2shared</hoster><regex>2shared.com</regex>
+<hoster>uplea</hoster><regex>uplea.com</regex>
+<hoster>vimeo</hoster><regex>vimeo.com</regex>
 <hoster>4shared</hoster><regex>4shared.com</regex>
 <hoster>uptobox</hoster><regex>uptobox.com</regex>
 <hoster>filerio</hoster><regex>filerio.com</regex>
@@ -76,6 +77,7 @@
 <hoster>thevideo</hoster><regex>thevideo.me</regex>
 <hoster>exashare</hoster><regex>exashare.com</regex>
 <hoster>letwatch</hoster><regex>letwatch.us</regex>
+<hoster>vidoza</hoster><regex>vidoza.net</regex>
 <hoster>openload</hoster><regex>openload.co</regex>
 <hoster>filehoot</hoster><regex>filehoot.com</regex>
 <hoster>powvideo</hoster><regex>powvideo.net</regex>

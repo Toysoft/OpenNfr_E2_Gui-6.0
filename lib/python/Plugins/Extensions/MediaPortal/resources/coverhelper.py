@@ -47,7 +47,7 @@ class CoverHelper:
 		else:
 			return data
 
-	def getCover(self, url, download_cb=None, agent=None, cookieJar=None, req=False):
+	def getCover(self, url, download_cb=None, agent=None, cookieJar=None, req=False, mdh=False):
 		global glob_icon_num
 		global glob_last_cover
 		global cookies
@@ -63,7 +63,7 @@ class CoverHelper:
 					glob_last_cover[0] = url
 					glob_last_cover[1] = None
 					self.downloadPath = self.COVER_PIC_PATH % glob_icon_num
-					if req and mp_globals.requests:
+					if (req and mp_globals.requests) or mdh:
 						try:
 							import requests
 							headers = {'User-Agent': agent}

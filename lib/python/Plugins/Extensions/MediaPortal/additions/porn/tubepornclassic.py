@@ -40,6 +40,8 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
+tcAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+
 class tubepornclassicGenreScreen(MPScreen):
 
 	def __init__(self, session):
@@ -74,13 +76,15 @@ class tubepornclassicGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.keyLocked = True
 		url = "http://www.tubepornclassic.com/categories/"
-		getPage(url, headers={'Cookie': 'language=en'}).addCallback(self.genreData).addErrback(self.dataError)
+		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('id="filter-categories(.*?)</html>', data, re.S)
 		Cats = re.findall(' class="list-item__link" href="(.*?)" title=".*?">(.*?)</a>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
+				Url = Url.replace('ru.tubepornclassic.com','www.tubepornclassic.com')
+				Url = Url.replace('de.tubepornclassic.com','www.tubepornclassic.com')
 				self.genreliste.append((Title, Url))
 			self.genreliste.sort()
 			self.genreliste.insert(0, ("Most Popular", "http://www.tubepornclassic.com/most-popular/"))
@@ -160,13 +164,15 @@ class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 			url = "%s%s/" % (self.Link, str(self.page))
 		else:
 			url = "http://www.tubepornclassic.com/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (self.Link, self.page)
-		getPage(url, headers={'Cookie': 'language=en'}).addCallback(self.loadData).addErrback(self.dataError)
+		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination"(.*?)</div>', '.*>\s{0,80}(\d+)\s{0,80}<')
 		Movies = re.findall('class="item.*?<a\shref="(http://[a-z]{2,3}.tubepornclassic.com/videos/.*?)"\stitle="(.*?)".*?class="thumb.*?data-original="(.*?)".*?class="duration">(.*?)</div.*?class="added">(.*?)</div.*?class="views ico ico-eye">(.*?)</div', data, re.S)
 		if Movies:
 			for (Url, Title, Image, Runtime, Added, Views) in Movies:
+				Url = Url.replace('ru.tubepornclassic.com','de.tubepornclassic.com')
+				Url = Url.replace('www.tubepornclassic.com','de.tubepornclassic.com')
 				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views.replace(' ',''), stripAllTags(Added)))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No movies found!'), None, None, None, None, None))
@@ -196,11 +202,13 @@ class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 		if Link == None:
 			return
 		self.keyLocked = True
-		getPage(Link, headers={'Cookie': 'language=en'}).addCallback(self.getVideoPage).addErrback(self.dataError)
+		getPage(Link, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall("video_url:\s'(.*?)'", data, re.S)
+		videoPage = re.findall("'file':\s[\"|'](.*?)(?:&f=video.m3u8|)[\"|']", data, re.S)
 		if videoPage:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='tubepornclassics')
+			mp_globals.player_agent = tcAgent
+			url = videoPage[-1]
+			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='tubepornclassics')

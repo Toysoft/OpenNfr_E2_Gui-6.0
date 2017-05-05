@@ -111,6 +111,7 @@ class get_stream_link:
 	from hosters.vidwoot import vidwoot
 	from hosters.vivo import vivo
 	from hosters.vkme import vkme, vkmeHash, vkmeHashGet, vkmeHashData, vkPrivat, vkPrivatData
+	from hosters.vidoza import vidoza
 	from hosters.vidto import vidto
 	from hosters.vidzi import vidzi
 	from hosters.watchers import watchers
@@ -244,20 +245,29 @@ class get_stream_link:
 				else:
 					self.only_premium()
 
-			elif re.search('2shared.com', data, re.S):
+			elif re.search('4shared.com', data, re.S):
 				link = data
-				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
+				if config.mediaportal.realdebrid_use.value and not self.fallback:
 					self.rdb = 1
 					self.prz = 0
 					self.callPremium(link)
 				else:
 					self.only_premium()
 
-			elif re.search('4shared.com', data, re.S):
+			elif re.search('uplea.com', data, re.S):
 				link = data
-				if config.mediaportal.realdebrid_use.value and not self.fallback:
+				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
 					self.rdb = 1
-					self.prz = 0
+					self.prz = 1
+					self.callPremium(link)
+				else:
+					self.only_premium()
+
+			elif re.search('vimeo.com', data, re.S):
+				link = data
+				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
+					self.rdb = 1
+					self.prz = 1
 					self.callPremium(link)
 				else:
 					self.only_premium()
@@ -307,10 +317,10 @@ class get_stream_link:
 				else:
 					self.only_premium()
 
-			elif re.search('hugefiles.net', data, re.S):
+			elif re.search('mediafire.com', data, re.S):
 				link = data
-				if config.mediaportal.premiumize_use.value and not self.fallback:
-					self.rdb = 0
+				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
+					self.rdb = 1
 					self.prz = 1
 					self.callPremium(link)
 				else:
@@ -544,9 +554,9 @@ class get_stream_link:
 
 			elif re.search('(divxstage|cloudtime)', data, re.S):
 				link = data
-				if config.mediaportal.realdebrid_use.value and not self.fallback:
+				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
 					self.rdb = 1
-					self.prz = 0
+					self.prz = 1
 					self.callPremium(link)
 				else:
 					getPage(link).addCallback(self.movshare, link, "cloudtime").addErrback(self.errorload)
@@ -589,7 +599,7 @@ class get_stream_link:
 				link = data
 				if (config.mediaportal.premiumize_use.value or config.mediaportal.realdebrid_use.value) and not self.fallback:
 					self.rdb = 1
-					self.prz = 1
+					self.prz = 0
 					self.callPremium(link)
 				else:
 					id = link.split('org/')
@@ -718,6 +728,11 @@ class get_stream_link:
 				else:
 					ck.update({'referer':'%s' % link })
 					getPage(link, cookies=ck).addCallback(self.vidto).addErrback(self.errorload)
+
+
+			elif re.search('vidoza\.net/', data, re.S):
+				link = data.replace('https','http')
+				getPage(link).addCallback(self.vidoza).addErrback(self.errorload)
 
 			elif re.search('vidspot\.net/', data, re.S):
 				if re.search('vidspot\.net/embed', data, re.S):
