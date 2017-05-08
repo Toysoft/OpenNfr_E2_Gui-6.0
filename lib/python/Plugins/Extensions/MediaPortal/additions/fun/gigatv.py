@@ -155,7 +155,7 @@ class gigatvFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall('file:\s"(http://lx\d+.spieletips.de/\d+(?:_v\d+)/\d+p.mp4)"', data, re.S)
+		videoPage = re.findall('file:\s"(http://lx\d+.spieletips.de/\d+(?:_v\d+|)/\d+p.mp4)"', data, re.S)
 		if videoPage:
 			url = videoPage[0]
 			self.play(url)

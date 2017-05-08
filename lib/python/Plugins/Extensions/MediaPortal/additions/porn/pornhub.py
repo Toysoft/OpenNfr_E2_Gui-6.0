@@ -1054,9 +1054,9 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 								parse = re.search('id="lrelateRecommendedItems"(.*?)</ul>', data, re.S)
 
 			if parse:
-				Movies = re.findall('class="videoblock.*?<a\shref="(.*?)".*?title="(.*?)".*?class="duration">(.*?)</var>.*?data-mediumthumb="(.*?)".*?<span\sclass="views"><var>(.*?)<.*?<var\sclass="added">(.*?)</var>', parse.group(1), re.S)
+				Movies = re.findall('class="videoblock.*?<a\shref="(.*?)".*?title="(.*?)".*?data-mediumthumb="(.*?)".*?class="duration">(.*?)</var>.*?<span\sclass="views"><var>(.*?)<.*?<var\sclass="added">(.*?)</var>', parse.group(1), re.S)
 			if Movies:
-				for (Url, Title, Runtime, Image, Views, Added) in Movies:
+				for (Url, Title, Image, Runtime, Views, Added) in Movies:
 					Url = 'http://www.pornhub.com' + Url
 					Title = Title.replace('&amp;amp;','&')
 					self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views, Added))

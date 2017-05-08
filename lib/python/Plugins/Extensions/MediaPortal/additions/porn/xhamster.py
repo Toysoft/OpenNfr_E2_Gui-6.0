@@ -76,11 +76,12 @@ class xhamsterGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://xhamster.com/channels.php"
+		url = "http://xhamster.com/categories"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('<a\s\shref="(http[s]?://xhamster.com/[channels\/|categories\/|tags\/].*?)(?:-1.html|)">(.*?)<', data, re.S)
+		parse = re.search('class="alphabet-block"(.*?)</div></div></div>', data, re.S)
+		Cats = re.findall('<a\shref="(http[s]?://xhamster.com/[channels\/|categories\/|tags\/].*?)(?:-1.html|)">(?:<span >|)(.*?)<', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
 				Title = Title.strip(' ')

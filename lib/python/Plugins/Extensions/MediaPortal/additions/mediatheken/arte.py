@@ -59,7 +59,7 @@ class arteFirstScreen(MPScreen):
 		}, -1)
 
 		self['title'] = Label("arte Mediathek")
-		self['ContentTitle'] = Label("Genre:")
+		self['ContentTitle'] = Label(_("Genre:"))
 		self['name'] = Label(_("Selection:"))
 
 		self.keyLocked = True
@@ -69,10 +69,11 @@ class arteFirstScreen(MPScreen):
 
 		self.onLayoutFinish.append(self.genreData)
 
+
 	def genreData(self):
-		self.filmliste.append(("Neueste Videos", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/AIRDATE_DESC/0/0/DE_FR.json"))
-		self.filmliste.append(("Meistgesehen Videos", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/VIEWS/0/0/DE_FR.json"))
-		self.filmliste.append(("Letzte Change Videos", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/LAST_CHANCE/0/0/DE_FR.json"))
+		self.filmliste.append(("Neueste", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/AIRDATE_DESC/0/0/DE_FR.json"))
+		self.filmliste.append(("Meistgesehen", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/VIEWS/0/0/DE_FR.json"))
+		self.filmliste.append(("Letzte Chance", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/LAST_CHANCE/0/0/DE_FR.json"))
 		self.filmliste.append(("Themen", "by_channel"))
 		self.filmliste.append(("Datum", "by_date"))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))
@@ -83,7 +84,7 @@ class arteFirstScreen(MPScreen):
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		Link = self['liste'].getCurrent()[0][1]
-		if ' Videos' in Name:
+		if 'http://' in Link:
 			self.session.open(arteSecondScreen, Link, Name)
 		else:
 			self.session.open(arteSubGenreScreen, Link, Name)
@@ -110,7 +111,7 @@ class arteSubGenreScreen(MPScreen):
 		}, -1)
 
 		self['title'] = Label("arte Mediathek")
-		self['ContentTitle'] = Label("Genre: %s" % Name)
+		self['ContentTitle'] = Label(_("Genre:") + " %s" % Name)
 		self['name'] = Label(_("Selection:"))
 
 		self.keyLocked = True
@@ -123,21 +124,21 @@ class arteSubGenreScreen(MPScreen):
 	def loadPage(self):
 		if self.Name == "Datum":
 			today = datetime.date.today()
-			for daynr in range(0,31):
+			for daynr in range(0,7):
 				day1 = today -datetime.timedelta(days=daynr)
 				dateselect =  day1.strftime('%Y-%m-%d')
-				link = 'http://www.arte.tv/guide/de/plus7/videos?day=-%s' % str(daynr)
-				self.filmliste.append((dateselect, link, ''))
+				link = 'http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/AIRDATE_DESC/0/0/DE_FR/%s.json' % dateselect
+				self.filmliste.append((dateselect, link))
 		elif self.Name == "Themen":
-			link = 'http://www.arte.tv/guide/de/plus7/videos?category=%s'
-			self.filmliste.append(('Aktuelles & Gesellschaft', link % 'ACT', ''))
-			self.filmliste.append(('Fernsehfilme & Serien', link % 'FIC', ''))
-			self.filmliste.append(('Kino', link % 'CIN', ''))
-			self.filmliste.append(('Kunst & Kultur', link % 'ART', ''))
-			self.filmliste.append(('Popkultur & Alternativ', link % 'CUL', ''))
-			self.filmliste.append(('Entdeckung', link % 'DEC', ''))
-			self.filmliste.append(('Geschichte', link % 'HIS', ''))
-			self.filmliste.append(('Junior', link % 'JUN', ''))
+			link = 'http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/%s/ALL/-1/AIRDATE_DESC/0/0/DE_FR.json'
+			self.filmliste.append(('Aktuelles & Gesellschaft', link % 'ACT'))
+			self.filmliste.append(('Fernsehfilme & Serien', link % 'FIC'))
+			self.filmliste.append(('Kino', link % 'CIN'))
+			self.filmliste.append(('Kunst & Kultur', link % 'ART'))
+			self.filmliste.append(('Popkultur & Alternativ', link % 'CUL'))
+			self.filmliste.append(('Entdeckung', link % 'DEC'))
+			self.filmliste.append(('Geschichte', link % 'HIS'))
+			self.filmliste.append(('Junior', link % 'JUN'))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 		self.keyLocked = False
 
@@ -174,15 +175,14 @@ class arteSecondScreen(MPScreen, ThumbsHelper):
 			"down" : self.keyDown,
 			"right" : self.keyRight,
 			"left" : self.keyLeft,
-			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown,
-			"green" : self.keyPageNumber
+			"blue" :  self.keyTxtPageDown,
+			"red" :  self.keyTxtPageUp
 		}, -1)
 
 		self['title'] = Label("arte Mediathek")
-		self['ContentTitle'] = Label("Auswahl: %s" % self.Name)
-		self['Page'] = Label(_("Page:"))
-		self['F2'] = Label(_("Page"))
+		self['ContentTitle'] = Label(_("Selection:") + " %s" % self.Name)
+		self['F1'] = Label(_("Text-"))
+		self['F4'] = Label(_("Text+"))
 
 		self.page = 1
 		self.lastpage = 1
@@ -194,47 +194,24 @@ class arteSecondScreen(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self['name'].setText(_('Please wait...'))
-		if ' Videos' in self.Name:
-			url = self.Link
-		else:
-			url = "%s&page=%s&limit=24&sort=newest" % (self.Link, self.page)
+		url = self.Link
 		getPage(url, agent=std_headers, headers={'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Referer': self.Link}).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		try:
 			player = json.loads(data)
-			getLastpage = player.get('total_count')
-			if getLastpage:
-				if int(getLastpage) >= 24:
-					self.lastpage = int(getLastpage) / 24
-			self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-			if player.has_key('videos'):
-				try:
-					for node in player["videos"]:
-						subtitle = node.get('subtitle', '')
+			try:
+				if player.has_key('programDEList'):
+					for node in player["programDEList"]:
+						subtitle = node.get('STL', '')
 						if subtitle:
-							title = "%s - %s" % (node.get('title'), subtitle)
+							title = "%s - %s" % (node.get('TIT'), node.get('STL', ''))
 						else:
-							title = node.get('title')
-						handlung = "Sendedatum: %s - %s min \n%s" % (node.get('scheduled_on', ''), str(int(node.get('duration', ''))/60), node.get('teaser', ''))
-						link = "http://arte.tv/papi/tvguide/videos/stream/D/%s_PLUS7-D/ALL/ALL.json" % node.get('id')
-						link = link.replace('-A_PLUS7-D','_PLUS7-D')
-						self.filmliste.append((title.encode('utf-8'), link.encode('utf-8'), node.get('thumbnail_url', '').encode('utf-8'), handlung.encode('utf-8').encode('utf-8')))
-				except:
-					pass
-			else:
-				try:
-					if player.has_key('programDEList'):
-						for node in player["programDEList"]:
-							subtitle = node.get('STL', '')
-							if subtitle:
-								title = "%s - %s" % (node.get('TIT'), node.get('STL', ''))
-							else:
-								title = node.get('TIT')
-							handlung = "%s min\n%s" % (str(int(node['VDO'].get('videoDurationSeconds', ''))/60), node.get('DTW', ''))
-							self.filmliste.append((title.encode('utf-8'),node['VDO'].get('videoStreamUrl', '').encode('utf-8'),node['VDO'].get('programImage', '').encode('utf-8'),handlung.encode('utf-8')))
-				except:
-					pass
+							title = node.get('TIT')
+						handlung = "%s min\n%s" % (str(int(node['VDO'].get('videoDurationSeconds', ''))/60), node.get('DTW', ''))
+						self.filmliste.append((title.encode('utf-8'),node['VDO'].get('videoStreamUrl', '').encode('utf-8'),node['VDO'].get('programImage', '').encode('utf-8'),handlung.encode('utf-8')))
+			except:
+				pass
 		except:
 			pass
 		if len(self.filmliste) == 0:

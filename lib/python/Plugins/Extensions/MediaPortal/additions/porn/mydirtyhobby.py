@@ -233,11 +233,15 @@ class MDHFilmScreen(MPScreen, ThumbsHelper):
 		url = re.findall("iframe\ssrc='(.*?)'", data, re.S|re.I)
 		if url:
 			getPage(url[0], agent=myagent, cookies=ck).addCallback(self.getVideoUrl2).addErrback(self.dataError)
+		else:
+			self.keyLocked = False
 
 	def getVideoUrl2(self, data):
 		url = re.findall('iframe\ssrc="(.*?)"', data, re.S|re.I)
 		if url:
 			get_stream_link(self.session).check_link(url[0], self.got_link)
+		else:
+			self.keyLocked = False
 
 	def got_link(self, url):
 		self.keyLocked = False

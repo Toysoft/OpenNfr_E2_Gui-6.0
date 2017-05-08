@@ -85,7 +85,6 @@ class chefkochGenreScreen(MPScreen):
 		if raw:
 			parse = re.findall('<li\sclass="navigation.*?<a href="(.*?)"\sclass="link.*?>(.*?)</a>', raw[0], re.S)
 			for (url, title) in parse:
-				url = baseurl + url
 				title = decodeHtml(title).strip()
 				if title != "Club of Cooks":
 					self.genreliste.append((title,url))
@@ -144,7 +143,7 @@ class chefvids(MPScreen):
 
 	def loadPageData(self, data):
 		self.filmliste = []
-		parse = re.findall('class="teaser-box.*?href="/video/artikel/(.*?)".*?img\ssrc="(.*?)".*?data-teaser-customer-id="\d+".*?>(.*?)</a>.</h2>', data, re.S)
+		parse = re.findall('class="teaser-box.*?href="/video/artikel/(.*?)".*?img\ssrc="(.*?)".*?<h2>(.*?)</h2>', data, re.S)
 		if parse:
 			for (url,pic,title) in parse:
 				self.filmliste.append((decodeHtml(title).strip(),url,pic))

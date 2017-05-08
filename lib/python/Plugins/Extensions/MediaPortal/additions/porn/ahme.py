@@ -137,7 +137,7 @@ class ahmeFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pages-nav">(.*?)</div>')
-		Movies = re.findall('class="moviec">.*?href="(.*?)">.*?src="(.*?)".*?alt="(.*?)".*?class="time">(.*?)</span>', data, re.S)
+		Movies = re.findall('class="moviec.*?href="(.*?)">.*?src="(.*?)".*?alt="(.*?)".*?class="time">(.*?)</span>', data, re.S)
 		if Movies:
 			for (Url, Pic, Title, Runtime) in Movies:
 				self.filmliste.append((decodeHtml(Title), Url, Pic, Runtime))
