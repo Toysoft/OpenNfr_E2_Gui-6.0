@@ -44,6 +44,7 @@ PKG_CHECK_MODULES(BASE, [freetype2 fribidi gstreamer-$GST_MAJORMINOR gstreamer-p
 PKG_CHECK_MODULES(LIBDDVD, libdreamdvd, HAVE_LIBDDVD="yes", HAVE_LIBDDVD="no")
 AM_CONDITIONAL(HAVE_LIBDDVD, test "$HAVE_LIBDDVD" = "yes")
 
+AC_CHECK_LIB([udfread], [udfread_init])
 AC_CHECK_LIB([dl], [dlopen], [LIBDL_LIBS="-ldl"], [AC_MSG_ERROR([Could not find libdl])])
 AC_SUBST(LIBDL_LIBS)
 AC_CHECK_LIB([jpeg], [jpeg_set_defaults], [LIBJPEG_LIBS="-ljpeg"], [AC_MSG_ERROR([Could not find libjpeg])])
@@ -109,6 +110,7 @@ AM_CONDITIONAL(EVO, test `echo "$BOXTYPE" | cut -b 1-4` == "enfi")
 AM_CONDITIONAL(MIRACLEBOX, test `echo "$BOXTYPE" | cut -b 1-2` == "mb")
 AM_CONDITIONAL(WETEKPLAY, test "$BOXTYPE" == wetekplay)
 AM_CONDITIONAL(WETEKPLAY2, test "$BOXTYPE" == wetekplay2)
+AM_CONDITIONAL(WETEKHUB, test "$BOXTYPE" == wetekhub)
 AM_CONDITIONAL(AZBOXME, test "$BOXTYPE" == azboxme)
 AM_CONDITIONAL(AZBOXMINIME, test "$BOXTYPE" == azboxminime)
 AM_CONDITIONAL(AZBOXHD, test "$BOXTYPE" == azboxhd)
@@ -330,6 +332,17 @@ if test x"$withcolorlcd720" != xno ; then
 fi
 
 AM_CONDITIONAL(HAVE_COLORLCD720, test x"$withcolorlcd720" != xno)
+
+AC_ARG_WITH(colorlcd800,
+	AC_HELP_STRING([--with-colorlcd800], [use 800x480 16bpp color display, yes or no]),
+	[[withcolorlcd800=$withval]],
+	[[withcolorlcd800=no]]
+)
+if test x"$withcolorlcd800" != xno ; then
+	AC_DEFINE(HAVE_COLORLCD800, 1,[Define when using a 800x480 color display device])
+fi
+
+AM_CONDITIONAL(HAVE_COLORLCD800, test x"$withcolorlcd800" != xno)
 
 AC_ARG_WITH(bwlcd255,
 	AC_HELP_STRING([--with-bwlcd255], [use 255x64 1bpp black and white display, yes or no]),
@@ -802,6 +815,7 @@ lib/python/Plugins/Extensions/MediaPortal/resources/hosters/Makefile
 lib/python/Plugins/Extensions/MediaPortal/resources/tx/Makefile
 lib/python/Plugins/Extensions/MediaPortal/resources/sepg/Makefile
 lib/python/Plugins/Extensions/MediaPortal/resources/cfscrape/Makefile
+lib/python/Plugins/Extensions/MediaPortal/resources/cfscrape_old/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/liquidblue/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/liquidblue/images/Makefile
