@@ -39,7 +39,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-baseurl = "http://tinklepad.ag/"
+baseurl = "http://5movies.to/"
 
 class tinklepadGenreScreen(MPScreen):
 
@@ -61,7 +61,7 @@ class tinklepadGenreScreen(MPScreen):
 		}, -1)
 
 		self.keyLocked = True
-		self['title'] = Label("TinklePad")
+		self['title'] = Label("5movies")
 		self['ContentTitle'] = Label("Genre:")
 
 		self.genreliste = []
@@ -72,13 +72,13 @@ class tinklepadGenreScreen(MPScreen):
 
 	def loadPage(self):
 		self.genreliste = [ ('New Releases',baseurl + "new-releases/"),
-		                    ('Last Added',baseurl + "latest-added/"),
-		                    ('Featured Movies',baseurl + "featured-movies/"),
-		                    ('Latest HQ Movies',baseurl + "latest-hd-movies/"),
-		                    ('Most Popular',baseurl + "most-popular/"),
-		                    ('Most Voted',baseurl + "most-voted/"),
-		                    ('Popular Today',baseurl + "popular-today/"),
-		                    ('Top Rated Movies',baseurl + "top-rated/"),
+	                    ('Last Added',baseurl + "latest-added/"),
+	                    ('Featured Movies',baseurl + "featured-movies/"),
+	                    ('Latest HQ Movies',baseurl + "latest-hd-movies/"),
+	                    ('Most Popular',baseurl + "most-popular/"),
+	                    ('Most Voted',baseurl + "most-voted/"),
+	                    ('Popular Today',baseurl + "popular-today/"),
+	                    ('Top Rated Movies',baseurl + "top-rated/"),
                             ('Action',baseurl + "action/"),
                             ('Adventure',baseurl + "adventure/"),
                             ('Animation',baseurl + "animation/"),
@@ -168,7 +168,7 @@ class tinklepadFilmeListeScreen(MPScreen, ThumbsHelper):
 			"prevBouquet" : self.keyPageDown
 		}, -1)
 
-		self['title'] = Label("TinklePad")
+		self['title'] = Label("5movies")
 		self['ContentTitle'] = Label("%s:" % self.streamGenreName)
 
 		self.keyLocked = True
@@ -183,22 +183,24 @@ class tinklepadFilmeListeScreen(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		url = "%s%s" % (self.streamGenreLink, str(self.page))
+		self.filmliste = []
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		self.getLastPage(data, '<div\sclass="count">(.*?)</div>', '.*[\/|>](\d+)[\/|<]')
-		data=data.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
-		movies = re.findall('<div\sclass="movie_pic"><a\shref="(.*?)".*?src="(.*?)".*?alt="(.*?)"', data, re.S)
+		self.getLastPage(data, 'class="pagination">(.*?)</div>', '.*[\/|>](\d+)[\/|<]')
+		movies = re.findall('<div class="ml-img"><a href="(.*?)" target="_self" title=".*?">.*?<img src="(.*?)" alt="(.*?)">', data, re.S)
 		if movies:
-			self.filmliste = []
 			for (link,image,title) in movies:
 				if link.startswith('//'):
 					link = 'http:' + link
+					image = 'http:' + image
 				self.filmliste.append((decodeHtml(title),link,image))
-			self.ml.setList(map(self._defaultlistleft, self.filmliste))
-			self.keyLocked = False
-			self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage)
-			self.showInfos()
+		if len(self.filmliste) == 0:
+			self.filmliste.append((_('No movies found!'), None))
+		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+		self.keyLocked = False
+		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage)
+		self.showInfos()
 
 	def showInfos(self):
 		Image = self['liste'].getCurrent()[0][2]
@@ -232,7 +234,7 @@ class tinklepadStreamListeScreen(MPScreen):
 			"cancel": self.keyCancel
 		}, -1)
 
-		self['title'] = Label("TinklePad")
+		self['title'] = Label("5movies")
 		self['ContentTitle'] = Label("Streams for %s:" % self.streamGenreName)
 
 		self.keyLocked = True
@@ -246,25 +248,25 @@ class tinklepadStreamListeScreen(MPScreen):
 		getPage(self.streamGenreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		streams = re.findall('<li id="link_name">(.*?)</li>.*?<li id="playing_button"><a href=".*?play/(.*?)" target', data, re.S)
+		streams = re.findall('<li class="link-name">\n(.*?)\s</li>.*?<li class="link-button"><a href=".*?/play/(.*?)"', data, re.S)
 		if streams:
-			self.filmliste = []
 			for (name, link) in streams:
 				name = name.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
 				if isSupportedHoster(name, True):
 					import base64
 					link = base64.b64decode(link).split('&&')[-1]
 					self.filmliste.append((decodeHtml(name.strip()),link))
-			if len(self.filmliste) == 0:
-				self.filmliste.append((_('No supported streams found!'), None))
-			self.ml.setList(map(self._defaultlisthoster, self.filmliste))
-			self.keyLocked = False
+		if len(self.filmliste) == 0:
+			self.filmliste.append((_('No supported streams found!'), None))
+		self.ml.setList(map(self._defaultlisthoster, self.filmliste))
+		self.keyLocked = False
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
 		streamLink = self['liste'].getCurrent()[0][1]
-		get_stream_link(self.session).check_link(streamLink, self.got_link)
+		if streamLink:
+			get_stream_link(self.session).check_link(streamLink, self.got_link)
 
 	def got_link(self, stream_url):
-		self.session.open(SimplePlayer, [(self.streamGenreName, stream_url)], showPlaylist=False, ltype='tinklepad')
+		self.session.open(SimplePlayer, [(self.streamGenreName, stream_url)], showPlaylist=False, ltype='5movies')

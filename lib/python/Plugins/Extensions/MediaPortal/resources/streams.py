@@ -96,11 +96,13 @@ class get_stream_link:
 	from hosters.mega3x import mega3x
 	from hosters.movshare import movshare, movshare_code1, movshare_base36decode, movshare_xml
 	from hosters.mp4upload import mp4upload
+	from hosters.nowvideo import nowvideo, nowvideo_postData
 	from hosters.okru import okru
 	from hosters.openload import openloadApi
 	from hosters.powvideo import powvideo
 	from hosters.promptfile import promptfile, promptfilePost
 	from hosters.rapidvideo import rapidvideo
+	from hosters.streamango import streamango
 	from hosters.streamin import streamin
 	from hosters.trollvid import trollvid
 	from hosters.uptostream import uptostream
@@ -401,6 +403,15 @@ class get_stream_link:
 				else:
 					self.only_premium()
 
+			elif re.search('bangbrothers.net', data, re.S):
+				link = data
+				if config.mediaportal.premiumize_use.value and not self.fallback:
+					self.rdb = 0
+					self.prz = 1
+					self.callPremium(link)
+				else:
+					self.only_premium()
+
 			elif re.search('brazzers.com', data, re.S):
 				link = data
 				if config.mediaportal.premiumize_use.value and not self.fallback:
@@ -484,7 +495,8 @@ class get_stream_link:
 					self.prz = 1
 					self.callPremium(link)
 				else:
-					self.only_premium()
+					spezialagent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+					getPage(link, agent=spezialagent, cookies=ck).addCallback(self.nowvideo, link, ck).addErrback(self.errorload)
 
 			elif re.search('videoweed.es', data, re.S):
 				link = data
@@ -715,6 +727,7 @@ class get_stream_link:
 				getPage(link, cookies=ck, headers={'Accept-Language': 'en-US,en;q=0.5'}).addCallback(self.bestreams, link, ck).addErrback(self.errorload)
 
 			elif re.search('vidto\.me/', data, re.S):
+				# http://vidto.me/embed-u1etw7z2o50u-640x360.html
 				if re.search('vidto\.me/embed-', data, re.S):
 					link = data
 				else:
@@ -749,8 +762,9 @@ class get_stream_link:
 
 			elif re.search('(docs|drive)\.google\.com/', data, re.S):
 				link = data
-				mp_globals.player_agent = 'Enigma2 Mediaplayer'
-				getPage(link).addCallback(self.google).addErrback(self.errorload)
+				mp_globals.player_agent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+				self.google_ck = {}
+				getPage(link, agent=mp_globals.player_agent, cookies=self.google_ck).addCallback(self.google).addErrback(self.errorload)
 
 			elif re.search('rapidvideo\.ws', data, re.S):
 				if re.search('rapidvideo\.ws/embed', data, re.S):
@@ -845,9 +859,10 @@ class get_stream_link:
 
 			elif re.search('ok\.ru', data, re.S):
 				id = data.split('/')[-1]
-				url = "http://ok.ru/dk?cmd=videoPlayerMetadata&mid="+str(id)
-				spezialagent = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0"
-				getPage(url, agent=spezialagent).addCallback(self.okru).addErrback(self.errorload)
+				url = "http://www.ok.ru/dk"
+				mp_globals.player_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36 OPR/34.0.2036.50'
+				dataPost = {'cmd': 'videoPlayerMetadata', 'mid': str(id)}
+				getPage(url, method='POST', agent=mp_globals.player_agent, cookies=ck, postdata=urlencode(dataPost), headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.okru).addErrback(self.errorload)
 
 			elif re.search('zstream\.to', data, re.S):
 				link = data
@@ -888,6 +903,11 @@ class get_stream_link:
 						message = self.session.open(MessageBoxExt, _("Some mandatory Python modules are missing!"), MessageBoxExt.TYPE_ERROR)
 					else:
 						self.vidlox(data)
+
+			elif re.search('streamango\.com', data, re.S):
+				link = data.replace('https','http')
+				getPage(link).addCallback(self.streamango).addErrback(self.errorload)
+
 			else:
 				message = self.session.open(MessageBoxExt, _("No supported Stream Hoster, try another one!"), MessageBoxExt.TYPE_INFO, timeout=5)
 		else:

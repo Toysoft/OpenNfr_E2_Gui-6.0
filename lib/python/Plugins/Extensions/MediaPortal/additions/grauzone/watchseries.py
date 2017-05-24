@@ -32,8 +32,8 @@ class watchseriesGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		self.genreliste = [('Series',"https://watchseriesfree.to/letters/"),
-							('Newest Episodes Added',"https://watchseriesfree.to/latest"),
+		# ('Series',"https://watchseriesfree.to/letters/"),
+		self.genreliste = [('Newest Episodes Added',"https://watchseriesfree.to/latest"),
 							('Popular Episodes Added This Week',"https://watchseriesfree.to/new"),
 							('TV Schedule',"https://watchseriesfree.to/tvschedule/-1")]
 
@@ -86,11 +86,12 @@ class watchseriesNewSeriesScreen(MPScreen):
 		twAgentGetPage(self.streamGenreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		eps = re.findall('class="uFollow.*?title=".*?"\shref="(/episode/.*?)"><span.*?</span>(.*?)</a></li>', data, re.S)
+		eps = re.findall('<a itemprop="url" href="(/episode/.*?)".*?<span itemprop="seasonNumber">(.*?)</span></span>.*?<span itemprop="episodeNumber">(.*?)</span>.*?<span itemprop="name">(.*?)</span></span><em> - <span itemprop="name">(.*?)</span>', data, re.S)
 		if eps:
-			for link,title in eps:
-				title = title.replace('Seas. ','- S').replace('Ep. ','E')
+			# /episode/Lucifer_s2_e14.html', '2', '14', 'Lucifer', 'Candy Morningstar
+			for (link, episode, season, serie, title) in eps:
 				url = "https://watchseriesfree.to%s" % link
+				title = "%s - S%sE%s - %s" % (serie, episode, season, title)
 				self.genreliste.append((title, url))
 			self.ml.setList(map(self._defaultlistleft, self.genreliste))
 			self.keyLocked = False
@@ -332,7 +333,7 @@ class watchseriesStreamListeScreen(MPScreen):
 			self.filmliste = []
 			self.filmliste.append(("There are no links available for this episode", None))
 		else:
-			streams = re.findall('<tr\s{0,1}><td.*?><span.*?>(.*?)<\/span><\/td><td\s{0,1}>.<a\starget="_blank"\shref="(.*?)"', data, re.S)
+			streams = re.findall('<td><i class="fa fa-youtube link-logo"></i>(.*?)<.*?<td><a target="_blank" href="(/open/cale/.*?)"', data, re.S)
 			if streams:
 				self.filmliste = []
 				for (hostername,url) in streams:
@@ -356,7 +357,7 @@ class watchseriesStreamListeScreen(MPScreen):
 		twAgentGetPage(streamLink).addCallback(self.getLink).addErrback(self.dataError)
 
 	def getLink(self, data):
-		link = re.findall('<a.*?class="myButton.*?href="(.*?)">Click\sHere\sto\sPlay<\/a>', data, re.S)
+		link = re.findall('<a href="(.*?)" class="action-btn txt-ell W btn btn-success btn-3d".*?">Click Here To Play</a>', data)
 		if link:
 			get_stream_link(self.session).check_link(link[0], self.got_link)
 		else:

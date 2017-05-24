@@ -91,6 +91,9 @@ class mofosGenreScreen(MPScreen):
 				Url = 'http://www.mofos.com%s' % Url
 				self.genreliste.append((decodeHtml(Title), Url, Image))
 			self.genreliste.sort()
+		self.genreliste.insert(0, ("Series", 'http://www.mofos.com/tour/series/', default_cover))
+		self.genreliste.insert(0, ("Sites", 'http://www.mofos.com/tour/sites/', default_cover))
+		self.genreliste.insert(0, ("Girls", 'http://www.mofos.com/tour/girls/all-videos/all-models/all-categories/thismonth/toprated/', default_cover))
 		self.genreliste.insert(0, ("Most Commented", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/comments/', default_cover))
 		self.genreliste.insert(0, ("Most Viewed", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/mostviewed/', default_cover))
 		self.genreliste.insert(0, ("Top Rated", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/toprated/', default_cover))
@@ -116,6 +119,15 @@ class mofosGenreScreen(MPScreen):
 		Name = self['liste'].getCurrent()[0][0]
 		if Name == "--- Search ---":
 			self.suchen()
+		elif Name == "Sites":
+			Link = self['liste'].getCurrent()[0][1]
+			self.session.open(mofosSitesScreen, Link, Name)
+		elif Name == "Series":
+			Link = self['liste'].getCurrent()[0][1]
+			self.session.open(mofosSitesScreen, Link, Name)
+		elif Name == "Girls":
+			Link = self['liste'].getCurrent()[0][1]
+			self.session.open(mofosGirlsScreen, Link, Name)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
 			self.session.open(mofosFilmScreen, Link, Name)
@@ -126,6 +138,177 @@ class mofosGenreScreen(MPScreen):
 			Name = "--- Search ---"
 			Link = self.suchString.replace(' ', '+')
 			self.session.open(mofosFilmScreen, Link, Name)
+
+class mofosSitesScreen(MPScreen, ThumbsHelper):
+
+	def __init__(self, session, Link, Name):
+		self.Link = Link
+		self.Name = Name
+		self.plugin_path = mp_globals.pluginPath
+		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
+		if not fileExists(path):
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
+		with open(path, "r") as f:
+			self.skin = f.read()
+			f.close()
+
+		MPScreen.__init__(self, session)
+		ThumbsHelper.__init__(self)
+
+		self["actions"] = ActionMap(["MP_Actions"], {
+			"ok" : self.keyOK,
+			"0" : self.closeAll,
+			"cancel" : self.keyCancel,
+			"5" : self.keyShowThumb,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft,
+			"nextBouquet" : self.keyPageUp,
+			"prevBouquet" : self.keyPageDown
+		}, -1)
+
+		self['title'] = Label(BASE_NAME)
+		self['ContentTitle'] = Label("Genre: %s" % self.Name)
+
+		self.keyLocked = True
+
+		self.filmliste = []
+		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self['liste'] = self.ml
+
+		self.onLayoutFinish.append(self.loadPage)
+
+	def loadPage(self):
+		self.keyLocked = True
+		self['name'].setText(_('Please wait...'))
+		self.filmliste = []
+		getPage(self.Link, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
+
+	def loadData(self, data):
+		Sites = re.findall('collection-[card|box].*?href="(.*?)".*?img\ssrc="(.*?)".*?alt="(.*?)(?: - Mofos|)".*?scene-count">(.*?)<var', data, re.S)
+		if Sites:
+			for (Url, Image, Title, Scenes) in Sites:
+				Url = "http://www.mofos.com" + Url.replace('/toprated/','/bydate/')
+				if Title == "Mofos World Wide":
+					Url = Url.replace('/mofos-vault/','/mofos-world-wide/')
+				elif Title == "Milfs Like It Black":
+					Url = Url.replace('/mofos-vault/','/milfs-like-it-black/')
+				elif Title == "Mofos Old School":
+					Url = Url.replace('/mofos-vault/','/mofos-old-school/')
+				elif Title == "Teens At Work":
+					Url = Url.replace('/mofos-vault/','/teens-at-work/')
+				elif Title == "In Gang We Bang":
+					Url = Url.replace('/mofos-vault/','/in-gang-we-bang/')
+				elif Title == "Can She Take It":
+					Url = Url.replace('/mofos-vault/','/can-she-take-it/')
+				elif Title == "Liveshows":
+					Url = "http://www.mofos.com/tour/live/"
+				Title = Title + " - %s Scenes" % Scenes.strip()
+				self.filmliste.append((decodeHtml(Title), Url, Image))
+		if len(self.filmliste) == 0:
+			self.filmliste.append((_('No sites/series found!'), None, None))
+		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, 1, 1, mode=1)
+		self.showInfos()
+
+	def showInfos(self):
+		title = self['liste'].getCurrent()[0][0]
+		pic = self['liste'].getCurrent()[0][2]
+		self['name'].setText(title)
+		CoverHelper(self['coverArt']).getCover(pic)
+
+	def keyOK(self):
+		if self.keyLocked:
+			return
+		Name = self['liste'].getCurrent()[0][0]
+		Link = self['liste'].getCurrent()[0][1]
+		self.session.open(mofosFilmScreen, Link, Name)
+
+class mofosGirlsScreen(MPScreen, ThumbsHelper):
+
+	def __init__(self, session, Link, Name):
+		self.Link = Link
+		self.Name = Name
+		self.plugin_path = mp_globals.pluginPath
+		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
+		if not fileExists(path):
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
+		with open(path, "r") as f:
+			self.skin = f.read()
+			f.close()
+
+		MPScreen.__init__(self, session)
+		ThumbsHelper.__init__(self)
+
+		self["actions"] = ActionMap(["MP_Actions"], {
+			"ok" : self.keyOK,
+			"0" : self.closeAll,
+			"cancel" : self.keyCancel,
+			"5" : self.keyShowThumb,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft,
+			"nextBouquet" : self.keyPageUp,
+			"prevBouquet" : self.keyPageDown,
+			"green" : self.keyPageNumber
+		}, -1)
+
+		self['title'] = Label(BASE_NAME)
+		self['ContentTitle'] = Label("Genre: %s" % self.Name)
+		self['F2'] = Label(_("Page"))
+
+		self['Page'] = Label(_("Page:"))
+		self.keyLocked = True
+		self.page = 1
+		self.lastpage = 1
+
+		self.filmliste = []
+		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self['liste'] = self.ml
+
+		self.onLayoutFinish.append(self.loadPage)
+
+	def loadPage(self):
+		self.keyLocked = True
+		self['name'].setText(_('Please wait...'))
+		self.filmliste = []
+		url = "%s%s/" % (self.Link, str(self.page))
+		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
+
+	def loadData(self, data):
+		self.getLastPage(data, 'class="pagination">(.*?)</nav>', '.*title="\d+">(\d+)</a>')
+		Girls = re.findall('class="list-model-card.*?href="(.*?)"\stitle="(.*?)".*?src="(.*?.jpg)"', data, re.S)
+		if Girls:
+			for (Url, Title, Image) in Girls:
+				Url = "http://www.mofos.com" + Url
+				Title = Title.lower().title()
+				self.filmliste.append((decodeHtml(Title), Url, Image))
+		if len(self.filmliste) == 0:
+			self.filmliste.append((_('No pornstars found!'), None, None))
+		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, self.page, int(self.lastpage), 1, 1, mode=1)
+		self.showInfos()
+
+	def showInfos(self):
+		title = self['liste'].getCurrent()[0][0]
+		pic = self['liste'].getCurrent()[0][2]
+		self['name'].setText(title)
+		CoverHelper(self['coverArt']).getCover(pic)
+
+	def keyOK(self):
+		if self.keyLocked:
+			return
+		Name = self['liste'].getCurrent()[0][0]
+		Link = self['liste'].getCurrent()[0][1]
+		self.session.open(mofosFilmScreen, Link, Name)
 
 class mofosFilmScreen(MPScreen, ThumbsHelper):
 
@@ -191,7 +374,7 @@ class mofosFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination">(.*?)</nav>')
-		Movies = re.findall('widget-release-card".*?href="(.*?").*?src="(.*?jpg).*?alt="(.*?)".*?class="site-name".*?>(.*?)</a>.*?class="rating">(\d+)\s{1,20}%</span.*?views-count":\s"(.*?)".*?date-added">(.*?)\s{0,2}</span', data, re.S)
+		Movies = re.findall('widget-release-card.*?href="(.*?)".*?src="(.*?jpg).*?alt="(.*?)".*?class="site-name".*?>(.*?)</.*?class="rating">(\d+)\s{0,20}%{0,1}</span.*?views-count":\s"(.*?)".*?date-added">(.*?)\s{0,2}</span', data, re.S)
 		if Movies:
 			for (Url, Image, Title, Collection, Rating, Views, Date) in Movies:
 				Url = "http://www.mofos.com" + Url

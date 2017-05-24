@@ -180,7 +180,7 @@ class ssSerien(MPScreen, SearchHelper):
 		MPScreen.__init__(self, session)
 		SearchHelper.__init__(self)
 
-		self["actions"] = ActionMap(["MP_Actions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"0" : self.closeAll,
 			"ok" : self.keyOK,
 			"cancel": self.keyCancel,
@@ -188,7 +188,15 @@ class ssSerien(MPScreen, SearchHelper):
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft
+			"left" : self.keyLeft,
+			"upUp" : self.key_repeatedUp,
+			"rightUp" : self.key_repeatedUp,
+			"leftUp" : self.key_repeatedUp,
+			"downUp" : self.key_repeatedUp,
+			"upRepeated" : self.keyUpRepeated,
+			"downRepeated" : self.keyDownRepeated,
+			"rightRepeated" : self.keyRightRepeated,
+			"leftRepeated" : self.keyLeftRepeated
 		}, -1)
 
 		self['title'] = Label("Serienstream.to")
@@ -212,13 +220,22 @@ class ssSerien(MPScreen, SearchHelper):
 
 	def loadPage(self):
 		url = BASE_URL + "/serien"
+		self.filmQ.put(url)
+		if not self.eventL.is_set():
+			self.eventL.set()
+			self.loadPageQueued()
+
+	def loadPageQueued(self, headers={}):
+		self['name'].setText(_('Please wait...'))
+		while not self.filmQ.empty():
+			url = self.filmQ.get_nowait()
 		if not mp_globals.requests:
-			twAgentGetPage(url, agent=ss_agent, cookieJar=ss_cookies).addCallback(self.parseData).addErrback(self.dataError)
+			twAgentGetPage(url, agent=ss_agent, cookieJar=ss_cookies).addCallback(self.loadPageData).addErrback(self.dataError)
 		else:
 			data = ss_grabpage(url)
-			self.parseData(data)
+			self.loadPageData(data)
 
-	def parseData(self, data):
+	def loadPageData(self, data):
 		serien = re.findall('<li>.*?<a href="/serie/stream/(.*?)".*?title=".*?Stream anschauen">(.*?)</a>.*?</li>', data, re.S)
 		if serien:
 			for (id, serie) in serien:
@@ -231,7 +248,7 @@ class ssSerien(MPScreen, SearchHelper):
 			self.streamList.sort(key=lambda t : t[0].lower())
 		self.ml.setList(map(self._defaultlistleft, self.streamList))
 		self.keyLocked = False
-		self.showInfos()
+		self.loadPicQueued()
 
 	def showInfos(self):
 		exist = self['liste'].getCurrent()
@@ -239,9 +256,17 @@ class ssSerien(MPScreen, SearchHelper):
 			return
 		title = self['liste'].getCurrent()[0][0]
 		self['name'].setText(title)
-		self.getCover()
 
-	def getCover(self):
+	def loadPic(self):
+		if self.picQ.empty():
+			self.eventP.clear()
+			return
+		while not self.picQ.empty():
+			self.picQ.get_nowait()
+		streamName = self['liste'].getCurrent()[0][0]
+		self['name'].setText(streamName)
+		self.showInfos()
+		self.updateP = 1
 		url = self['liste'].getCurrent()[0][1]
 		if not mp_globals.requests:
 			twAgentGetPage(url, agent=ss_agent, cookieJar=ss_cookies).addCallback(self.setCoverUrl).addErrback(self.dataError)
@@ -293,14 +318,22 @@ class ssNeueEpisoden(MPScreen):
 			f.close()
 		MPScreen.__init__(self, session)
 
-		self["actions"] = ActionMap(["MP_Actions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"0" : self.closeAll,
 			"ok" : self.keyOK,
 			"cancel": self.keyCancel,
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft
+			"left" : self.keyLeft,
+			"upUp" : self.key_repeatedUp,
+			"rightUp" : self.key_repeatedUp,
+			"leftUp" : self.key_repeatedUp,
+			"downUp" : self.key_repeatedUp,
+			"upRepeated" : self.keyUpRepeated,
+			"downRepeated" : self.keyDownRepeated,
+			"rightRepeated" : self.keyRightRepeated,
+			"leftRepeated" : self.keyLeftRepeated
 		}, -1)
 
 		self['title'] = Label("Serienstream.to")
@@ -317,6 +350,15 @@ class ssNeueEpisoden(MPScreen):
 	def loadPage(self):
 		self.streamList = []
 		url = BASE_URL
+		self.filmQ.put(url)
+		if not self.eventL.is_set():
+			self.eventL.set()
+			self.loadPageQueued()
+
+	def loadPageQueued(self, headers={}):
+		self['name'].setText(_('Please wait...'))
+		while not self.filmQ.empty():
+			url = self.filmQ.get_nowait()
 		if not mp_globals.requests:
 			twAgentGetPage(url, agent=ss_agent, cookieJar=ss_cookies).addCallback(self.parseData).addErrback(self.dataError)
 		else:
@@ -344,7 +386,7 @@ class ssNeueEpisoden(MPScreen):
 		else:
 			self.keyLocked = False
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
-		self.showInfos()
+		self.loadPicQueued()
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -360,9 +402,17 @@ class ssNeueEpisoden(MPScreen):
 			return
 		episodenName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(episodenName)
-		self.getCover()
 
-	def getCover(self):
+	def loadPic(self):
+		if self.picQ.empty():
+			self.eventP.clear()
+			return
+		while not self.picQ.empty():
+			self.picQ.get_nowait()
+		streamName = self['liste'].getCurrent()[0][0]
+		self['name'].setText(streamName)
+		self.showInfos()
+		self.updateP = 1
 		url = self['liste'].getCurrent()[0][1]
 		if not mp_globals.requests:
 			twAgentGetPage(url, agent=ss_agent, cookieJar=ss_cookies).addCallback(self.setCoverUrl).addErrback(self.dataError)

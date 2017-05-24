@@ -128,8 +128,9 @@ class youpornGenreScreen(MPScreen):
 		twAgentGetPage(url, agent=ypAgent, cookieJar=ck).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
+		Cats = None
 		self.genreliste = []
-		preparse = re.search('categoryListWrapper"(.*?)name="countryFlags"', data, re.S)
+		preparse = re.search('categoryListWrapper"(.*?)id="countryFlags"', data, re.S)
 		if preparse:
 			Cats = re.findall('<a\shref="((?:/category|https://www.youporn.com).*?)".*?img\ssrc.*?alt="(.*?)".*?data-original="(.*?)"', preparse.group(1), re.S)
 		if Cats:
@@ -492,8 +493,8 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 
 	def getVideoPage(self, data):
 		Title = self['liste'].getCurrent()[0][0]
-		parse = re.search('sources: {(.*?)1440:', data, re.S)
-		videoPage = re.findall("\d+:\s'(http.*?)'", parse.group(1), re.S)
+		parse = re.search('sources: {(.*?)},', data, re.S)
+		videoPage = re.findall("\d+:\s[\"|\'](http.*?)[\"|\']", parse.group(1), re.S)
 		if videoPage:
 			self.keyLocked = False
 			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='youporn')

@@ -15,4 +15,13 @@ def vidzi(self, data):
 				if stream_url:
 					self._callback(stream_url.group(1))
 					return
-		self.stream_not_found()
+				else:
+					self.stream_not_found()
+			else:
+				self.stream_not_found()
+		else:
+			stream_url = re.search('file:\s*"(.*?)"', data, re.S)
+			if stream_url:
+				self._callback(stream_url.group(1))
+			else:
+				self.stream_not_found()

@@ -115,7 +115,7 @@ class bsSerien(MPScreen, SearchHelper):
 		MPScreen.__init__(self, session)
 		SearchHelper.__init__(self)
 
-		self["actions"] = ActionMap(["MP_Actions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"0" : self.closeAll,
 			"ok" : self.keyOK,
 			"cancel": self.keyCancel,
@@ -123,7 +123,15 @@ class bsSerien(MPScreen, SearchHelper):
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft
+			"left" : self.keyLeft,
+			"upUp" : self.key_repeatedUp,
+			"rightUp" : self.key_repeatedUp,
+			"leftUp" : self.key_repeatedUp,
+			"downUp" : self.key_repeatedUp,
+			"upRepeated" : self.keyUpRepeated,
+			"downRepeated" : self.keyDownRepeated,
+			"rightRepeated" : self.keyRightRepeated,
+			"leftRepeated" : self.keyLeftRepeated
 		}, -1)
 
 		self['title'] = Label("Burning-Series")
@@ -147,9 +155,12 @@ class bsSerien(MPScreen, SearchHelper):
 	def loadPage(self):
 		url = BASE_URL + "/api/series/"
 		bstoken = bstkn(url)
-		getPage(url, headers={'User-Agent':'bs.android', 'BS-Token':bstoken}).addCallback(self.parseData).addErrback(self.dataError)
+		self.filmQ.put(url)
+		if not self.eventL.is_set():
+			self.eventL.set()
+			self.loadPageQueued(headers={'User-Agent':'bs.android', 'BS-Token':bstoken})
 
-	def parseData(self, data):
+	def loadPageData(self, data):
 		serien = re.findall('series":"(.*?)","id":"(.*?)"', data, re.S)
 		if serien:
 			for (Title, ID) in serien:
@@ -158,14 +169,12 @@ class bsSerien(MPScreen, SearchHelper):
 				self.streamList.append((decodeHtml(Title.replace('\/','/')),serie, cover, ID))
 			self.ml.setList(map(self._defaultlistleft, self.streamList))
 			self.keyLocked = False
-			self.showInfos()
+			self.loadPicQueued()
 
 	def showInfos(self):
 		exist = self['liste'].getCurrent()
 		if self.keyLocked or exist == None:
 			return
-		coverUrl = self['liste'].getCurrent()[0][2]
-		CoverHelper(self['coverArt']).getCover(coverUrl)
 		title = self['liste'].getCurrent()[0][0]
 		self['name'].setText(title)
 
@@ -532,7 +541,6 @@ class bsEpisoden(MPScreen):
 		finalcall = url + epiID
 		Cover = self.Cover
 		Staffel = self.Staffel
-		#self.addGlobalWatchtlist([self.Title+" "+episode, Cover, "bsStreams", finalcall, Cover, self.Title, episode, Staffel])
 		self.session.openWithCallback(self.reloadList, bsStreams, finalcall, Cover, self.Title, episode, Staffel)
 
 	def reloadList(self):

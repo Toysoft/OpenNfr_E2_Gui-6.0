@@ -196,7 +196,7 @@ class serieseverParsing(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.streamList = []
-		self.streamList.append(('Loading...', None))
+		self.streamList.append((_('Please wait...'), None))
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
 		self.streamList = []
 		getPage(self.url, agent=glob_agent).addCallback(self.parseData).addErrback(self.dataError)
@@ -210,7 +210,7 @@ class serieseverParsing(MPScreen, ThumbsHelper):
 					self.streamList.append((decodeHtml(Title), Url))
 
 			if len(self.streamList) == 0:
-				self.streamList.append(('Parsing Fehler !', None))
+				self.streamList.append((_('Parsing error!'), None))
 
 			self.ml.setList(map(self._defaultlistleft, self.streamList))
 			self.ml.moveToIndex(0)
@@ -470,7 +470,7 @@ class showStreams(MPScreen):
 	def loadPage(self):
 		CoverHelper(self['coverArt']).getCover(self.coverUrl)
 		self.streamList = []
-		self.streamList.append(('Loading...', None))
+		self.streamList.append((_('Please wait...'), None))
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
 		self.streamList = []
 		getPage(self.url, agent=glob_agent).addCallback(self.getVideoID).addErrback(self.dataError)
@@ -560,7 +560,6 @@ class showStreams(MPScreen):
 			self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
 
 	def got_link(self, stream_url):
-		mp_globals.player_agent = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0"
 		self.session.open(SimplePlayer, [(self.stream_name, stream_url, self.coverUrl)], cover=True, showPlaylist=False, ltype='seriesever')
 
 class serieseverSetupScreen(Screen, ConfigListScreenExt):

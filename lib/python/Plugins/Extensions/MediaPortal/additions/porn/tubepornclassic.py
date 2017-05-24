@@ -75,21 +75,21 @@ class tubepornclassicGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.tubepornclassic.com/categories/"
+		url = "http://tubepornclassic.com/categories/"
 		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('id="filter-categories(.*?)</html>', data, re.S)
 		Cats = re.findall(' class="list-item__link" href="(.*?)" title=".*?">(.*?)</a>', parse.group(1), re.S)
+		Country = re.findall('class="logo">.*?<a\shref="http[s]?://(.*?)\.tubepornclassic.com', data, re.S)
 		if Cats:
 			for (Url, Title) in Cats:
-				Url = Url.replace('ru.tubepornclassic.com','www.tubepornclassic.com')
-				Url = Url.replace('de.tubepornclassic.com','www.tubepornclassic.com')
 				self.genreliste.append((Title, Url))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Popular", "http://www.tubepornclassic.com/most-popular/"))
-			self.genreliste.insert(0, ("Top Rated", "http://www.tubepornclassic.com/top-rated/"))
-			self.genreliste.insert(0, ("Most Recent", "http://www.tubepornclassic.com/latest-updates/"))
+			if Country:
+				self.genreliste.insert(0, ("Most Popular", "http://%s.tubepornclassic.com/most-popular/" % Country[0]))
+				self.genreliste.insert(0, ("Top Rated", "http://%s.tubepornclassic.com/top-rated/" % Country[0]))
+				self.genreliste.insert(0, ("Most Recent", "http://%s.tubepornclassic.com/latest-updates/" % Country[0]))
 			self.genreliste.insert(0, ("--- Search ---", ""))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
@@ -163,7 +163,7 @@ class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 		if not re.search('Search', self.Name):
 			url = "%s%s/" % (self.Link, str(self.page))
 		else:
-			url = "http://www.tubepornclassic.com/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (self.Link, self.page)
+			url = "http://tubepornclassic.com/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (self.Link, self.page)
 		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
@@ -171,8 +171,6 @@ class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 		Movies = re.findall('class="item.*?<a\shref="(http://[a-z]{2,3}.tubepornclassic.com/videos/.*?)"\stitle="(.*?)".*?class="thumb.*?data-original="(.*?)".*?class="duration">(.*?)</div.*?class="added">(.*?)</div.*?class="views ico ico-eye">(.*?)</div', data, re.S)
 		if Movies:
 			for (Url, Title, Image, Runtime, Added, Views) in Movies:
-				Url = Url.replace('ru.tubepornclassic.com','de.tubepornclassic.com')
-				Url = Url.replace('www.tubepornclassic.com','de.tubepornclassic.com')
 				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views.replace(' ',''), stripAllTags(Added)))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No movies found!'), None, None, None, None, None))

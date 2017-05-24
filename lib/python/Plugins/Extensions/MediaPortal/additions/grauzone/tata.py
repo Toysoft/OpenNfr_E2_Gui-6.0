@@ -158,7 +158,7 @@ class tataMain(MPScreen):
 					url = url + '/'
 					self.streamList.append((name, url))
 		self.streamList.sort(key=lambda t : t[0].lower())
-		self.streamList.insert(0, ("Serien","%s/tv/" % BASE_URL))
+		#self.streamList.insert(0, ("Serien","%s/tv/" % BASE_URL))
 		self.streamList.insert(0, ("Filme","%s/filme/" % BASE_URL))
 		self.streamList.insert(0, ("--- Search ---", None))
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))

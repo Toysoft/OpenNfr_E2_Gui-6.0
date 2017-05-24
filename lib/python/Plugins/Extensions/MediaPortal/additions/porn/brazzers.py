@@ -90,6 +90,8 @@ class brazzersGenreScreen(MPScreen):
 		if Cats:
 			for (Url, Title, Image) in Cats:
 				Url = 'http://www.brazzers.com%s' % Url
+				if not Image.startswith('http'):
+					Image = 'http:' + Image
 				self.genreliste.append((decodeHtml(Title), Url, Image))
 			self.genreliste.sort()
 		self.genreliste.insert(0, ("Most Viewed", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostviewed/', default_cover))
@@ -189,6 +191,8 @@ class brazzersFilmScreen(MPScreen, ThumbsHelper):
 		if Movies:
 			for (Url, Title, Image, Pornstars, Date, Collection) in Movies:
 				SceneUrl = re.findall(".*?\/([0-9]+)\/([^\/]+)\/\"", Url , re.S)
+				if not Image.startswith('http'):
+					Image = 'http:' + Image
 				Url = "http://www.brazzers.com/scenes/view/id/%s/%s/" % (SceneUrl[0][0], SceneUrl[0][1])
 				Title = stripAllTags(Pornstars).replace('...','').strip() + " - " + Title
 				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection))

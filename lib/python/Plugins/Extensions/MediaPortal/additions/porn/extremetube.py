@@ -210,11 +210,16 @@ class extremetubeFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
+		data = data.replace('\/','/')
 		self.getLastPage(data, '', 'lastPage":(.*?),"')
-		Movies = re.findall('"id".*?real_times_viewed":(.*?),".*?specialchars_title":"(.*?)","duration":"(.*?)","video_link":"(.*?)","thumb_url":"(.*?)"', data, re.S)
+		Movies = re.findall('"id".*?real_times_viewed":(.*?),".*?specialchars_title":"(.*?)","duration":"(.*?)".*?"video_link":"(.*?)","thumb_url":"(.*?)"', data, re.S)
 		if Movies:
 			for (Views, Title, Runtime, Url, Image) in Movies:
-				self.filmliste.append((decodeHtml(Title), Url.replace('\/','/'), Image.replace('\/','/'), Runtime, Views.replace('"','')))
+				if Url.startswith('//'):
+					Url = 'http:' + Url
+				if Image.startswith('//'):
+					Image = 'http:' + Image
+				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views.replace('"','').replace(',','')))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

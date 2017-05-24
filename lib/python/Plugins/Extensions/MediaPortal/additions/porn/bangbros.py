@@ -40,10 +40,10 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
-BASE_NAME = "DigitalPlayground.com"
-default_cover = "http://staticwebp-hw-dp.dvdcdn.com/assetv3_files/DigitalPlayground/DigitalPlaygroundCom/Common/common/global/img/dp_new_main_logo_white.png"
+BASE_NAME = "Bangbros.com"
+default_cover = "http://pbs.twimg.com/profile_images/761292654575517696/Xb0I4R1m_400x400.jpg"
 
-class digitalplaygroundGenreScreen(MPScreen):
+class bangbrosGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -73,7 +73,6 @@ class digitalplaygroundGenreScreen(MPScreen):
 		self.suchString = ''
 
 		self.genreliste = []
-		self.cats = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
@@ -81,31 +80,19 @@ class digitalplaygroundGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.digitalplayground.com/tags/"
+		url = "http://bangbrothers.net/category"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('class="preview-image".*?<a\shref="(.*?)".*?title="(.*?)\svideos">.*?img\ssrc="(.*?)"', data, re.S)
+		Cats = re.findall('href="(/category/.*?)".*? class="thmb_pic"><img src="(.*?)".*?class="thmb_ttl">(.*?)</span', data, re.S)
 		if Cats:
-			for (Url, Title, Image) in Cats:
-				Url = 'http://www.digitalplayground.com%s' % Url
-				self.cats.append(Title)
-				if not Image.startswith('http'):
-					Image = 'http:' + Image
+			for (Url, Image, Title) in Cats:
+				Url = 'http://bangbrothers.net%s' % Url
 				self.genreliste.append((decodeHtml(Title), Url, Image))
-
-		parse = re.search('class="filter-options">(.*?)</section>', data, re.S)
-		if parse:
-			Cats = re.findall('data-trackId.*?href="(.*?)">(.*?)</a>', parse.group(1), re.S)
-			if Cats:
-				for (Url, Title) in Cats:
-					Url = 'http://www.digitalplayground.com%s' % Url
-					if Title not in self.cats:
-						self.genreliste.append((decodeHtml(Title), Url, default_cover))
-				self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Viewed", 'http://www.digitalplayground.com/videos/all-videos/all-pornstars/all-categories/alltime/mostviewed/', default_cover))
-		self.genreliste.insert(0, ("Top Rated", 'http://www.digitalplayground.com/videos/all-videos/all-pornstars/all-categories/alltime/toprated/', default_cover))
-		self.genreliste.insert(0, ("Release Date", 'http://www.digitalplayground.com/videos/all-videos/all-pornstars/all-categories/alltime/bydate/', default_cover))
+		self.genreliste.sort()
+		self.genreliste.insert(0, ("Most Viewed", 'http://bangbrothers.net/videos/views', default_cover))
+		self.genreliste.insert(0, ("Most Popular", 'http://bangbrothers.net/videos/popular', default_cover))
+		self.genreliste.insert(0, ("Newest", 'http://bangbrothers.net/videos', default_cover))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
@@ -129,16 +116,16 @@ class digitalplaygroundGenreScreen(MPScreen):
 			self.suchen()
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(digitalplaygroundFilmScreen, Link, Name)
+			self.session.open(bangbrosFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
 			self.suchString = callback
 			Name = "--- Search ---"
-			Link = self.suchString.replace(' ', '+')
-			self.session.open(digitalplaygroundFilmScreen, Link, Name)
+			Link = self.suchString.replace(' ', '-')
+			self.session.open(bangbrosFilmScreen, Link, Name)
 
-class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
+class bangbrosFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -189,23 +176,24 @@ class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://www.digitalplayground.com/search/videos/%s/date/desc/%s/" % (self.Link, str(self.page))
+			url = "http://bangbrothers.net/search/%s/%s" % (self.Link, str(self.page))
 		else:
 			if self.page == 1:
 				url = self.Link
 			else:
-				url = "%s%s/" % (self.Link, str(self.page))
+				url = "%s/%s" % (self.Link, str(self.page))
 		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'class="pagination(.*?)</nav>')
-		Movies = re.findall('box-card scene.*?<a\shref="(.*?)".*?img\ssrc="(.*?)".*?alt="(.*?)".*?class="subtitle">.*?>(.*?)</a>.*? <span class=""><span>(.*?)</span>.*?<span>(.*?)</span>.*?class="middle">(.*?)<', data, re.S)
+		self.getLastPage(data, 'class="pagi">(.*?)ePg_spn">Last', '.*\/(\d+)"')
+		Movies = re.findall('class="echThumb"><a title="(.*?)"\s+href="(.*?)".*?class="tTm">(.*?)</b.*?data-rollover-url="(.*?)".*?class="cast-wrapper">(.*?)</div>.*?fa-bus.*?class="faTxt">(.*?)</span.*?fa-calendar.*?class="faTxt">(.*?)</span', data, re.S)
 		if Movies:
-			for (Url, Image, Title, Collection, Runtime, Date, Views) in Movies:
-				Url = "http://www.digitalplayground.com" + Url
-				if not Image.startswith('http'):
-					Image = 'http:' + Image
-				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection, Runtime, Views))
+			for (Title, Url, Runtime, Image, Pornstars, Collection, Date) in Movies:
+				Image = Image + '1.jpg'
+				Url = "http://bangbrothers.net" + Url
+				if not Pornstars == '':
+					Title = stripAllTags(Pornstars.replace('</a><a',', </a><a')).strip() + " - " + Title
+				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection, Runtime))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None, ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -220,8 +208,7 @@ class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 		date = self['liste'].getCurrent()[0][3]
 		coll = self['liste'].getCurrent()[0][4]
 		runtime = self['liste'].getCurrent()[0][5]
-		views = self['liste'].getCurrent()[0][6]
-		self['handlung'].setText("Date: "+date+'\nSeries: '+coll.strip()+'\nViews: '+views+'\nRuntime: '+runtime)
+		self['handlung'].setText("Date: "+date+'\nSeries: '+coll.strip()+'\nRuntime: '+runtime)
 		self['name'].setText(title)
 		CoverHelper(self['coverArt']).getCover(pic)
 
@@ -235,4 +222,4 @@ class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 	def play(self, url):
 		self.keyLocked = False
 		title = self['liste'].getCurrent()[0][0]
-		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='digitalplayground')
+		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='bangbros')

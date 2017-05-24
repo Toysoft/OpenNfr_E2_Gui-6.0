@@ -347,7 +347,11 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 
 						if not rating: rating = "0"
 						imdb = "IMDb: %.1f / 10" % (float(rating) / 10)
-						self.filmListe.append((decodeHtml(name), BASE_URL+url, BASE_URL+imageurl, imdb, rating, hd))
+						if not url.startswith('http'):
+							url = BASE_URL + url
+						if not imageurl.startswith('http'):
+							imageurl = BASE_URL + imageurl
+						self.filmListe.append((decodeHtml(name), url, imageurl, imdb, rating, hd))
 				else:
 					a = l
 		elif self.seriesTag.startswith('Staf'):
@@ -355,7 +359,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 			if mg:
 				for m in re.finditer('<option value="(\d+)">(.*?)</option>', mg.group(1)):
 					season_num, season = m.groups()
-					md = re.search('(id="staffel%s".*?)</div>' % season_num, data)
+					md = re.search('(id="staffel%s".*?)</div>' % season_num, data, re.S)
 					if md:
 						mimdb = re.search("(var IMDB = '.*?';)", data)
 						if mimdb:

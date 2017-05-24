@@ -8,6 +8,7 @@ activeIcon = ""
 premiumize = False
 realdebrid = False
 isDreamOS = False
+isVTi = False
 animations = False
 fakeScale = False
 covercollection = False

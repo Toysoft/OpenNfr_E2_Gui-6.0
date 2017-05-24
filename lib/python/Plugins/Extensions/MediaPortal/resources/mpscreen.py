@@ -3,6 +3,9 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from imports import *
 from keyboardext import VirtualKeyBoardExt
 from Tools.BoundFunction import boundFunction
+import Queue
+import threading
+from coverhelper import CoverHelper
 
 screenList = []
 
@@ -143,6 +146,13 @@ class MPScreen(Screen):
 		self['page'] = Label("")
 		self['handlung'] = ScrollLabel("")
 
+		self.filmQ = Queue.Queue(0)
+		self.hanQ = Queue.Queue(0)
+		self.picQ = Queue.Queue(0)
+		self.updateP = 0
+		self.eventL = threading.Event()
+		self.eventP = threading.Event()
+
 		self.langoffset = 0
 		self.keyword = ''
 		self.keyLocked = False
@@ -202,6 +212,40 @@ class MPScreen(Screen):
 		except:
 			pass
 
+	def loadPageQueued(self, headers={}):
+		self['name'].setText(_('Please wait...'))
+		while not self.filmQ.empty():
+			url = self.filmQ.get_nowait()
+		getPage(url, headers=headers).addCallback(self.loadPageData).addErrback(self.dataError)
+
+	def loadPic(self):
+		if self.picQ.empty():
+			self.eventP.clear()
+			return
+		while not self.picQ.empty():
+			self.picQ.get_nowait()
+		streamName = self['liste'].getCurrent()[0][0]
+		self['name'].setText(streamName)
+		streamPic = self['liste'].getCurrent()[0][2]
+		self.showInfos()
+		self.updateP = 1
+		CoverHelper(self['coverArt'], self.ShowCoverFileExit).getCover(streamPic)
+
+	def ShowCoverFileExit(self):
+		self.updateP = 0;
+		self.keyLocked	= False
+		if not self.filmQ.empty():
+			self.loadPageQueued()
+		else:
+			self.eventL.clear()
+			self.loadPic()
+
+	def loadPicQueued(self):
+		self.picQ.put(None)
+		if not self.eventP.is_set():
+			self.eventP.set()
+		self.loadPic()
+
 	def getLastPage(self, data, paginationregex, pageregex='.*>(\d+)<'):
 		if paginationregex == '':
 			lastp = re.search(pageregex, data, re.S)
@@ -241,6 +285,31 @@ class MPScreen(Screen):
 
 	def suchen(self, auto_text_init=False, suggest_func=None):
 		self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=auto_text_init, suggest_func=suggest_func)
+
+	def keyUpRepeated(self):
+		if self.keyLocked:
+			return
+		self['liste'].up()
+
+	def keyDownRepeated(self):
+		if self.keyLocked:
+			return
+		self['liste'].down()
+
+	def keyLeftRepeated(self):
+		if self.keyLocked:
+			return
+		self['liste'].pageUp()
+
+	def keyRightRepeated(self):
+		if self.keyLocked:
+			return
+		self['liste'].pageDown()
+
+	def key_repeatedUp(self):
+		if self.keyLocked:
+			return
+		self.loadPicQueued()
 
 	def keyPageDown(self):
 		if self.keyLocked:

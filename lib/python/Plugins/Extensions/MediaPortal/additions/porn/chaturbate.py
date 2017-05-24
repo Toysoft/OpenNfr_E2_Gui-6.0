@@ -150,7 +150,7 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		MPScreen.__init__(self, session)
 		ThumbsHelper.__init__(self)
 
-		self["actions"] = ActionMap(["MP_Actions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
 			"cancel" : self.keyCancel,
@@ -159,6 +159,14 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 			"down" : self.keyDown,
 			"right" : self.keyRight,
 			"left" : self.keyLeft,
+			"upUp" : self.key_repeatedUp,
+			"rightUp" : self.key_repeatedUp,
+			"leftUp" : self.key_repeatedUp,
+			"downUp" : self.key_repeatedUp,
+			"upRepeated" : self.keyUpRepeated,
+			"downRepeated" : self.keyDownRepeated,
+			"rightRepeated" : self.keyRightRepeated,
+			"leftRepeated" : self.keyLeftRepeated,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
 			"blue" :  self.keyTxtPageDown,
@@ -194,35 +202,44 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 				url = BASEURL + "%s-cams/?page=%s" % (self.Link, self.page)
 			else:
 				url = BASEURL + "%s-cams/%s?page=%s" % (self.Link, self.filter, self.page)
-		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
+		self.filmQ.put(url)
+		if not self.eventL.is_set():
+			self.eventL.set()
+			self.loadPageQueued()
 
-	def loadData(self, data):
+	def loadPageData(self, data):
 		self.getLastPage(data, 'class="paging">(.*?)</ul>')
-		Movies = re.findall('<li>.<a\shref="(.*?)".*?<img\ssrc="(.*?)".*?gender(\w)">(\d+)</span>.*?<li\stitle="(.*?)">.*?location.*?>(.*?)</li>.*?class="cams">(.*?)</li>.*?</div>.*?</li>', data, re.S)
+		Movies = re.findall('<li>.<a\shref="(.*?)".*?<img\ssrc=".*?".*?gender(\w)">(\d+)</span>.*?<li\stitle="(.*?)">.*?location.*?>(.*?)</li>.*?class="cams">(.*?)</li>.*?</div>.*?</li>', data, re.S)
 		if Movies:
-			for (Url, Image, Gender, Age, Description, Location, Viewers) in Movies:
-				self.filmliste.append((Url.strip('\/'), Url, Image, decodeHtml(Description), Gender, Age, decodeHtml(Location), Viewers))
-		if len(self.filmliste) == 0:
+			for (Url, Gender, Age, Description, Location, Viewers) in Movies:
+				Title = Url.strip('\/')
+				Image = "https://cbjpeg.stream.highwebmedia.com/stream?room=" + Url.strip('\/') + "&f=" + str(random.random())
+				self.filmliste.append((Title, Url, Image, decodeHtml(Description), Gender, Age, decodeHtml(Location), Viewers))
+		if len(self.filmliste):
+			self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
+			self.ml.setList(map(self._defaultlistleft, self.filmliste))
+			self.loadPicQueued()
+		else:
 			self.filmliste.append((_('No livestreams found!'), None, None, None, None, None, None, None))
-		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+			self.ml.setList(map(self._defaultlistleft, self.filmliste))
+			if self.filmQ.empty():
+				self.eventL.clear()
+			else:
+				self.loadPageQueued()
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
-		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
-		self.showInfos()
 
 	def showInfos(self):
 		Url = self['liste'].getCurrent()[0][1]
 		if Url == None:
 			return
 		title = self['liste'].getCurrent()[0][0]
-		pic = self['liste'].getCurrent()[0][2]
 		desc = self['liste'].getCurrent()[0][3]
 		gender = self['liste'].getCurrent()[0][4]
 		age = self['liste'].getCurrent()[0][5]
 		location = self['liste'].getCurrent()[0][6]
 		viewers = self['liste'].getCurrent()[0][7]
 		self['name'].setText(title)
-		CoverHelper(self['coverArt']).getCover(pic)
 		if gender == "f":
 			gender = "female"
 		elif gender == "m":
