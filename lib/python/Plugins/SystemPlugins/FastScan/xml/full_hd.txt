@@ -1,3 +1,19 @@
+ORF1 HD
+ORF2K HD
+ORF III HD
+ORF SPORT+ HD
+ATV HD
+PULS 4 HD Austria
+NICKELODEON HD
+ServusTV HD Oesterreich
+ORF2B HD
+ORF2S HD
+ORF2N HD
+ORF2St HD
+ORF2O HD
+ORF2T HD
+ORF2V HD
+ORF2W HD
 Sky Select HD
 Sky 3D
 Sky 1 HD
@@ -67,3 +83,41 @@ Eurosport360HD 7
 Eurosport360HD 8
 Eurosport360HD 9
 BLUE MOVIE HD
+Das Erste HD
+ZDF HD
+kabel eins HD
+RTL HD
+RTLNITRO HD
+RTLII HD
+ProSieben HD
+Pro7 MAXX HD
+SAT.1 HD
+SAT.1 Gold HD
+SIXX HD
+SUPER RTL HD
+TELE 5 HD
+TLC HD
+VOX HD
+arte HD
+Disney Channel HD
+DMAX HD
+N24 HD
+n-tv HD
+tagesschau24 HD
+3sat HD
+BR Fernsehen Nord HD
+BR Fernsehen Süd HD
+hr-fernsehen HD
+MDR S-Anhalt HD
+NDR FS NDS HD
+ONE HD
+PHOENIX HD
+rbb Berlin HD
+ServusTV HD Deutschland
+SR Fernsehen HD
+SWR BW HD
+SWR RP HD
+WDR HD Köln
+zdf_neo HD
+ZDFinfo HD
+ANIXE HD

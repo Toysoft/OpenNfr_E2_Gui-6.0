@@ -1,3 +1,39 @@
+ORF1
+ORF2
+ORF2 K
+ORF III
+ORF SPORT+
+oe24.TV
+ATV
+ATV2
+PULS 4 Austria
+RiC
+Comedy Central/VIVA
+Nickelodeon
+HITRADIO OE3
+ORF2 B
+ORF2 S
+ORF2 N
+ORF2 St
+ORF2 O
+ORF2 T
+ORF2 V
+ORF2 W
+SCHWEIZ 5
+DMAX Austria
+Kabel 1 Austria
+kabel1 Doku austria
+N24 Austria
+Pro7 MAXX Austria
+ProSieben Austria
+RTL Austria
+RTL2 Austria
+SAT.1 A
+SAT.1 Gold Österreich
+ServusTV Oesterreich
+sixx Austria
+SUPER RTL A
+VOX Austria
 Sky 1
 Sky Atlantic
 Sky Cinema
@@ -84,3 +120,49 @@ Sky Select 8
 Sky Select 9
 Sky Select Event A
 Sky Select Event B
+Das Erste
+ZDF
+kabel eins
+RTL Television
+RTLNITRO
+RTLplus
+RTL2
+ProSieben
+Pro7 MAXX
+SAT.1
+SAT.1 Gold
+SIXX
+SUPER RTL
+TELE 5
+VOX
+Disney Channel
+ANIXE SD
+TOGGO plus
+DMAX
+kabel eins Doku
+N24
+N24 DOKU
+n-tv
+Welt der Wunder
+arte
+3sat
+BR Fernsehen Nord
+BR Fernsehen Süd
+Family TV
+hr-fernsehen
+MDR S-Anhalt
+NDR FS SH
+ONE
+PHOENIX
+rbb Berlin
+rbb Brandenburg
+ServusTV Deutschland
+SR Fernsehen
+SWR Fernsehen BW
+SWR Fernsehen RP
+tagesschau24
+WDR Bonn
+zdf_neo
+ZDFinfo
+Eurosport 1 Deutschland
+SPORT1
