@@ -1073,9 +1073,6 @@ msgstr "automatischer Standby"
 msgid "Auto chapter split every ? minutes (0=never)"
 msgstr "Automatische Kapitelwechsel alle ? Minuten (0=nie)"
 
-msgid "Auto flesh"
-msgstr "Auto flesh"
-
 msgid "Auto focus"
 msgstr "Autofokus"
 
@@ -12503,26 +12500,11 @@ msgstr ""
 msgid "Press OK to select satellites"
 msgstr "Drücken Sie OK, um den Satelliten auszuwählen"
 
-msgid "Extra motor options"
-msgstr "Spezielle Motoroptionen"
-
-msgid "Turning step size"
-msgstr "Dreh-Schrittweite"
-
-msgid "Max memory positions"
-msgstr "Max. Speicherpositionen"
-
 msgid "Reception settings"
 msgstr "Tuner-Einstellungen"
 
 msgid "Set default"
 msgstr "Standard"
-
-msgid "Loop through to"
-msgstr "Verbunden mit"
-
-msgid "Equal to"
-msgstr "Gleich wie"
 
 msgid "Second cable of motorized LNB"
 msgstr "Zweites Kabel vom Rotor"
@@ -12530,20 +12512,8 @@ msgstr "Zweites Kabel vom Rotor"
 msgid "simple"
 msgstr "Einfach"
 
-msgid "Sort by"
-msgstr "Sortieren nach"
-
-msgid "Advanced"
-msgstr "Erweitert"
-
-msgid "Positioner (selecting satellites)"
-msgstr "Positioner (Satelliten auswählen)"
-
 msgid "externally loopthrough to"
 msgstr "Extern Durchschleifen an Tuner"
-
-msgid "Show record indicator"
-msgstr "Zeige Aufnahmeindikator"
 
 msgid "Enable Autorecord"
 msgstr "Aktiviert automatische Aufnahme"
@@ -12618,20 +12588,8 @@ msgstr "echte Aufnahmen / Streaming"
 msgid "real or pseudo recordings"
 msgstr "echte/Pseudo-Aufnahmen"
 
-msgid "Ask user (with default as 'yes')"
-msgstr "Benutzer fragen (Standard vorbelegen mit 'Ja')"
-
-msgid "Ask user (with default as 'no')"
-msgstr "Benutzer fragen (Standard vorbelegen mit 'Nein')"
-
-msgid "Show blinking rec symbol on Display during recording"
-msgstr "Blinkendes REC-Symbol im Display während Aufnahmen"
-
 msgid "Enable blinking rec symbol on the LCD Display"
 msgstr "Hier können Sie das blinkende Record-Symbol in dem Display aktivieren."
-
-msgid "Show Covers in Movielist"
-msgstr "Zeige Covers in Filmliste"
 
 msgid "Recordings abort PIP"
 msgstr "Bild-in-Bild bei Aufnahmen beenden"
@@ -13015,12 +12973,6 @@ msgstr "PIN dauerhaft speichern"
 msgid "Enter persistent PIN code"
 msgstr "PIN eingeben"
 
-msgid "Reset persistent PIN code"
-msgstr "PIN zurücksetzen"
-
-msgid "Show CI messages"
-msgstr "CI Meldungen anzeigen"
-
 msgid "CIHelper Setup"
 msgstr "CIHelper Einstellungen"
 
@@ -13038,9 +12990,6 @@ msgstr "Aktiviere CIHelper für SLOT CI1"
 
 msgid "Sorry CIHelper Config is Missing"
 msgstr "CIHelper Konfiguration nicht vorhanden."
-
-msgid "Would you save the entered PIN %s persistent?"
-msgstr "Möchten Sie die PIN %s dauerhaft speichern?"
 
 msgid "Set CI assignment for detection of available services."
 msgstr "Ermittlung verf. Kanäle inkl. Berücksichtigung der CI-Zuweisung"
@@ -13074,9 +13023,6 @@ msgstr "%sAktualisierungsrate für FHD"
 
 msgid "Power On Display"
 msgstr "Display einschalten"
-
-msgid "Show HDD progress"
-msgstr "Zeige HDD Fortschritt"
 
 msgid "Backup current Channellist"
 msgstr "Aktuelle Senderliste sichern"
@@ -13206,3 +13152,382 @@ msgstr "Kommandozeilen Fehler!"
 
 msgid "Please remove CI+ Modul and click OK! \n\nThis restart Enigma2 and after restart move CI+ Modul back in Box! \n\nIf error 575, remove and move CI+ Modul again back in Box! \n\nAfter successful Init please reboot your Box."
 msgstr "Bitte das CI+ Modul herausziehen und OK klicken! \n\nEnigma2 startet neu, danach das CI+ Modul wieder einstecken! \n\nWenn Fehler 575 erscheint, das CI+ Modul aus- und wieder einstecken! \n\nNach erfolgreicher Initialisierung bitte die Box neu starten."
+
+msgid "one of Mounts not work, please set new Location!"
+msgstr "Einer der Mounts funktioniert nicht, wähle bitte eine andere Quelle aus!"
+
+msgid "Installation aborted !"
+msgstr "Installation abgebrochen!"
+
+msgid "To restore the image:"
+msgstr "Image wieder herstellen:"
+
+msgid "\nPlease wait...almost ready! "
+msgstr "\nBitte warten...fast fertig! "
+
+msgid "Use FlashLocal in Quickmenu"
+msgstr "Benutze Flash Lokal im Quickmenü"
+
+msgid "Image creation failed - "
+msgstr "Image Erstellung fehlgeschlagen - "
+
+msgid "Probable causes could be"
+msgstr "Mögliche Gründe könnten sein"
+
+msgid "     wrong back-up destination "
+msgstr "     falsches Medium ausgewählt"
+
+msgid "     no space left on back-up device"
+msgstr "     nicht genug Speicherplatz auf dem Medium"
+
+msgid "     no writing permission on back-up device"
+msgstr "     keine Schreibrechte für das Medium"
+
+msgid "Ask user (with default as 'yes')"
+msgstr "Frage Benutzer (als Standard 'ja')"
+
+msgid "Ask user (with default as 'no')"
+msgstr "Frage Benutzer (als Standard 'nein')"
+
+msgid "Reception lists"
+msgstr "Empfangslisten"
+
+msgid "Equal to Tuner B"
+msgstr "Gleich wie Tuner B"
+
+msgid "Equal to Tuner A"
+msgstr "Gleich wie Tuner A"
+
+msgid "Advanced"
+msgstr "Erweitert"
+
+msgid "Version unknown"
+msgstr "Version unbekannt"
+
+msgid "Reset persistent PIN code"
+msgstr "PIN zurücksetzen"
+
+msgid "Show CI messages"
+msgstr "Zeige CI Nachrichten"
+
+msgid "Show MiniTV in the Front Display"
+msgstr "Zeige MiniTV im Frontdisplay"
+
+msgid "Extended"
+msgstr "Erweitert"
+
+msgid "Reception Settings"
+msgstr "Empfangseinstellungen"
+
+msgid "Positioner (selecting satellites)"
+msgstr "Positioner (Satelliten auswählen)"
+
+msgid "Extra motor options"
+msgstr "Spezielle Motoroptionen"
+
+msgid "After Recording"
+msgstr "Nach der Aufnahme"
+
+msgid "Sort by..."
+msgstr "Sortieren nach"
+
+msgid "Sort by"
+msgstr "Sortieren nach"
+
+msgid "Use extended List"
+msgstr "Erweiterte Liste nutzen"
+
+msgid "Update delay for Events in List"
+msgstr "Aktualisierungs-Verzögerung für Events in der Liste"
+
+msgid "default"
+msgstr "Standard"
+
+msgid "alpha then oldest"
+msgstr "alpha dann älteste"
+
+msgid "alpharev then newest"
+msgstr "alpharev dann neueste"
+
+msgid "Stop service on return to movie list"
+msgstr "Bei Stopp zurück zur Filmliste"
+
+msgid "Green"
+msgstr "Grün"
+
+msgid "Green long"
+msgstr "Grün lang"
+
+msgid "Blue long"
+msgstr "Blau lang"
+
+msgid "Sort by default"
+msgstr "Sortiere nach Standard"
+
+msgid "On end of movie (as menu)"
+msgstr "Am Ende des Films (als Menü)"
+
+msgid "Mark service as dedicated 3D service"
+msgstr "Als 3D Kanal markieren"
+
+msgid "Multisat all select"
+msgstr "Multisat alle Satelliten"
+
+msgid "Auto flesh"
+msgstr "Automatische Hautfarbe"
+
+msgid "Show record indicator"
+msgstr "Zeige Aufnahme Anzeige"
+
+msgid "Red colored"
+msgstr "Sendername in rot"
+
+msgid "No timeout"
+msgstr "Kein Timeout"
+
+msgid "SoftCam path configuration"
+msgstr "Softcam-Pfad-Konfiguration"
+
+msgid "SoftCam config directory"
+msgstr "SoftCam-Config-Verzeichnis"
+
+msgid "SoftCam directory"
+msgstr "SoftCam-Verzeichnis"
+
+msgid "OscamInfoConfigScreen"
+msgstr "Oscam-Info Konfiguration"
+
+msgid "OscamInfoMenu"
+msgstr "Oscam Info - Hauptmenü"
+
+msgid "reliable"
+msgstr "zuverlässig"
+
+msgid "traditional (fast)"
+msgstr "traditionell (schnell)"
+
+msgid "Tuning algorithm"
+msgstr "Abstimmungsalgorithmus"
+
+msgid ""
+"GUI needs a restart to apply a new skin\n"
+"Do you want to Restart the GUI now?"
+msgstr ""
+"Die Benutzeroberfläche muss neu gestartet werden,\n"
+"um das neue Aussehen übernehmen zu können.\n"
+"Jetzt neu starten?"
+
+msgid "Show HDD progress"
+msgstr "Zeige HDD Fortschritt"
+
+msgid "Equal to"
+msgstr "Gleich wie"
+
+msgid "Loop through to"
+msgstr "Verbunden mit"
+
+msgid "Help..."
+msgstr "Hilfe..."
+
+msgid "open servicelist(up)"
+msgstr "Senderliste öffnen(nach oben)"
+
+msgid "next channel in history"
+msgstr "Nächster Sender im Verlauf"
+
+msgid "previous channel in history"
+msgstr "Vorheriger Sender im Verlauf"
+
+msgid "previous channel"
+msgstr "Vorheriger Sender"
+
+msgid "next channel"
+msgstr "Nächster Sender"
+
+msgid "open servicelist(down)"
+msgstr "Senderliste öffnen(nach unten)"
+
+msgid "open find service"
+msgstr "Suche Sendernamen beginnend mit..."
+
+msgid "Enter Easy menu..."
+msgstr "Öffne Easy-Menü"
+
+msgid "The Easy Menu plugin is not installed!\nPlease install it."
+msgstr "Plugin Easy Menu ist nicht installiert!\nBitte installieren."
+
+msgid "Instant Record..."
+msgstr "Sofortaufnahme"
+
+msgid "Switch to previous subservice"
+msgstr "Schalte zum vorhergehenden Unterkanal"
+
+msgid "Switch to next subservice"
+msgstr "Schalte zum nächsten Unterkanal"
+
+msgid "Feedcheck finished and log available."
+msgstr "Feedcheck abgeschlossen, Log ist verfügbar."
+
+msgid "Show blinking rec symbol on Display during recording"
+msgstr "Blinkendes Rec-Symbol im Display während einer Aufnahme"
+
+msgid "Set bluetooth audio delay."
+msgstr "Einstellung der Bluetooth Audioverzögerung"
+
+msgid "Show state message on non bluetooth setup screen."
+msgstr "Zeige Statusmeldungen im Bluetooth Menü an"
+
+msgid "Try connect to last audiodevice on start enable"
+msgstr "Verbindung zum letzten Audio-Gerät wieder herstellen"
+
+msgid "Set Framerate for MiniTV"
+msgstr "Bildfrequenzeinstellung für MiniTV"
+
+msgid "Fullscreen"
+msgstr "Vollbild"
+
+msgid "0 (disabled)"
+msgstr "0 (deaktiviert)"
+
+msgid "Turning step size"
+msgstr "Dreh-Schrittweite"
+
+msgid "Max memory positions"
+msgstr "Max. Speicherpositionen"
+
+msgid "All satellites 1 (USALS)"
+msgstr "Alle Satelliten 1 (USALS)"
+
+msgid "All satellites 2 (USALS)"
+msgstr "Alle Satelliten 2 (USALS)"
+
+msgid "All satellites 3 (USALS)"
+msgstr "Alle Satelliten 3 (USALS)"
+
+msgid "All satellites 4 (USALS)"
+msgstr "Alle Satelliten 4 (USALS)"
+
+msgid "Selecting satellites 1 (USALS)"
+msgstr "Wähle Satelliten 1 (USALS)"
+
+msgid "Selecting satellites 2 (USALS)"
+msgstr "Wähle Satelliten 2 (USALS)"
+
+msgid "Sorry you can install a max of 10 images."
+msgstr "Sorry, aber du kannst maximal 10 Images installieren."
+
+msgid "Install from Internet (OpenATV,OpenNFR,VIX4E2SH4)"
+msgstr "Installiere Online (OpenATV,OpenNFR,VIX4E2SH4)"
+
+msgid "Install from /media/nfr4xboot/NFR4XBootUpload"    
+msgstr "Installiere von /media/nfr4xboot/NFR4XBootUpload"
+    
+msgid "Install from Internet (OpenPLi,OpenVix,OpenATV,Egami,OpenNFR,OpenHDF)"    
+msgstr "Installiere Online (OpenPLi,OpenVix,OpenATV,Egami,OpenNFR,OpenHDF)"
+
+msgid "Change Boxmode to control Hardware Chip Modes*"
+msgstr "Boxmodus zur Hardwaresteuerung*"
+
+msgid "Switch Mode to enable HDR Modes or PIP Functions"
+msgstr "Wechselt den Boxmodus zur Aktivierung des HDR-Modus oder der PIP-Funktionen"
+
+msgid "enable PIP no HDR"
+msgstr "aktiviere PIP ohne HDR"
+
+msgid "12bit 4:2:0/4:2:2 no PIP"
+msgstr "12bit 4:2:0/4:2:2 ohne PIP"
+
+msgid "The PIN code has been saved successfully."
+msgstr "Der PIN wurde erfolgreich gespeichert"
+
+msgid "Would you save the entered PIN %s persistent?"
+msgstr "Möchten Sie die PIN %s dauerhaft speichern?"
+
+msgid "Please set up tuner A\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner A konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner B\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner B konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen" 
+
+msgid "Please set up tuner C\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner C konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner D\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner D konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner E\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner E konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner F\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner F konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen" 
+
+msgid "Please set up tuner G\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner G konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner H\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner H konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner I\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner I konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen"
+
+msgid "Please set up tuner J\nFor Hybrit Tuner Models switch Tuner Type with left and right keys"
+msgstr "Bitte Tuner J konfigurieren\nFür Receiver mit Hybrid Tuner den Tuner-Typ mit der linken und rechten Taste einstellen" 
+
+msgid ""
+"PowerOff while Recording in progress!\n"
+"Entering standby, after recording the box will shutdown."
+msgstr ""
+"Zurzeit sind Aufnahmen aktiv oder starten gleich!\n"
+"Der Receiver wird jetzt in den Standby versetzt und am Ende der Aufnahme heruntergefahren."
+
+msgid "Reboot with CI+ Driver"
+msgstr "Neustart mit CI+ Treiber"
+
+msgid "Reboot with Transcoding Driver"
+msgstr "Neustart mit Transcoding Treiber"
+
+msgid ""
+"\n"
+"Backup your %s %s Channellist."
+msgstr ""
+"\n"
+"Sichert die Kanalliste deiner %s %s"
+
+msgid "Press ok or green button to install satellites.xml"
+msgstr "Drücke OK oder die grüne Taste zum Installieren der satellites.xml"
+
+msgid "Play with ServiceExtEplayer3"
+msgstr "Abspielen mit ServiceExtEplayer3"
+
+msgid "Play with ServiceGstPlayer"
+msgstr "Abspielen mit ServiceGstPlayer"
+
+msgid "Show Covers in Movielist"
+msgstr "Zeige Cover in Filmliste"
+
+msgid "Upgrade with GUI"
+msgstr "Update mit Anzeige"
+
+msgid "Unattended upgrade without GUI"
+msgstr "Automatisches Update ohne Anzeige"
+
+msgid "Overwrite Setting Files ?"
+msgstr "Settings-Dateien überschreiben?"
+
+msgid "Overwrite Driver Files ?"
+msgstr "Treiber-Module überschreiben?"
+
+msgid "Overwrite Emu Files ?"
+msgstr "Emu-Dateien überschreiben?"
+
+msgid "Overwrite Picon Files ?"
+msgstr "Picons überschreiben?"
+
+msgid "Overwrite Bootlogo Files ?"
+msgstr "Bootlogos überschreiben?"
+
+msgid "Overwrite Spinner Files ?"
+msgstr "Spinner-Dateien überschreiben?"
+
+msgid "Select Software Update"
+msgstr "Auswahl Software Update"
