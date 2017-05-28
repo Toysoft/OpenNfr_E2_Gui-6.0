@@ -14210,3 +14210,6 @@ msgstr "Lautstärkeeinstellung schnell"
 
 msgid "Delivery system workaround"
 msgstr "Workaround für den alten Tuner-Treiber"
+
+msgid "Basic settings"
+msgstr "Grundeinstellungen"
