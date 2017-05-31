@@ -23,7 +23,7 @@ from Components.Label import Label
 from Components.ScrollLabel import ScrollLabel
 from Components.Pixmap import Pixmap
 from Components.config import ConfigSubsection, ConfigInteger, ConfigText, getConfigListEntry, ConfigSelection,  ConfigIP, ConfigYesNo, ConfigSequence, ConfigNumber, NoSave, ConfigEnableDisable, configfile
-from Components.ConfigList import ConfigListScreen
+from Components.ConfigList import ConfigListScreen, ConfigList
 from Components.Sources.StaticText import StaticText 
 from Components.Sources.Progress import Progress
 from Components.Button import Button
@@ -58,7 +58,7 @@ config.NFRSoftcam.actcam = ConfigText(visible_width = 200)
 config.NFRSoftcam.actCam2 = ConfigText(visible_width = 200)
 config.NFRSoftcam.waittime = ConfigSelection([('0',_("dont wait")),('1',_("1 second")), ('5',_("5 seconds")),('10',_("10 seconds")),('15',_("15 seconds")),('20',_("20 seconds")),('30',_("30 seconds"))], default='15')
 config.plugins.infopanel_redkey = ConfigSubsection()
-config.plugins.infopanel_redkey.list = ConfigSelection([('0',_("Default (Softcam Panel")),('1',_("Quickmenu")),('2',_("Infopanel"))])
+config.plugins.infopanel_redkey.list = ConfigSelection([('0',_("Default (Softcam Panel)")),('1',_("Quickmenu")),('2',_("Infopanel"))])
 config.plugins.infopanel_bluekey = ConfigSubsection()
 config.plugins.infopanel_bluekey.list = ConfigSelection([('1',_("Default (Quickmenu)")),('0',_("Softcam Panel")),('2',_("Infopanel"))])
 config.plugins.showinfopanelextensions = ConfigYesNo(default=False)
@@ -261,7 +261,7 @@ INFO_SKIN2 =  """<screen name="PANEL-Info2"  position="center,center" size="530,
 ###################  Max Test ###################
 class PanelList(MenuList):
         if (getDesktop(0).size().width() == 1920):
-	        def __init__(self, list, font0 = 32, font1 = 24, itemHeight = 50, enableWrapAround = True):
+	        def __init__(self, list, font0 = 38, font1 = 28, itemHeight = 60, enableWrapAround = True):
 		        MenuList.__init__(self, list, enableWrapAround, eListboxPythonMultiContent)
 		        self.l.setFont(0, gFont("Regular", font0))
 		        self.l.setFont(1, gFont("Regular", font1))
@@ -276,8 +276,8 @@ class PanelList(MenuList):
 def MenuEntryItem(entry):
         if (getDesktop(0).size().width() == 1920):
 	   res = [entry]
-	   res.append(MultiContentEntryPixmapAlphaTest(pos=(0, 5), size=(100, 40), png=entry[0]))  # png vorn
-	   res.append(MultiContentEntryText(pos=(110, 5), size=(690, 40), font=0, text=entry[1]))  # menupunkt
+	   res.append(MultiContentEntryPixmapAlphaTest(pos=(0, 10), size=(100, 50), png=entry[0]))  # png vorn
+	   res.append(MultiContentEntryText(pos=(110, 5), size=(690, 50), font=0, text=entry[1]))  # menupunkt
 	   return res
 	else:
 	   res = [entry]
@@ -309,7 +309,7 @@ class Infopanel(Screen, InfoBarPiP):
 		global check_update
 		check_update = 0
 		self.onShown.append(self.checkTraficLight)
-		self.onShown.append(self.setWindowTitle)		
+		self.onShown.append(self.setWindowTitle)
                 self.service = None
 		self['spaceused'] = ProgressBar()			
 		global pluginlist
@@ -353,10 +353,7 @@ class Infopanel(Screen, InfoBarPiP):
 		self.Mlist.append(MenuEntryItem((InfoEntryComponent('Infos'), _("Infos"), 'Infos')))
 
 		self.onChangedEntry = []
-		if (getDesktop(0).size().width() == 1920):
-			self["Mlist"] = PanelList([], font0=36, font1=28, itemHeight=50)
-		else:
-		        self["Mlist"] = PanelList([])
+		self["Mlist"] = PanelList([])
 		self["Mlist"].l.setList(self.Mlist)
 		menu = 0
 		self["Mlist"].onSelectionChanged.append(self.selectionChanged)
@@ -424,7 +421,8 @@ class Infopanel(Screen, InfoBarPiP):
 		 _('Free'),
 		 self.ConvertSize(int(diskSpace[0])),
 		 percFree))
-		self['spaceused'].setValue(percUsed)		
+		self['spaceused'].setValue(percUsed)
+
 		
 	def getCurrentEntry(self):
 		if self['Mlist'].l.getCurrentSelection():

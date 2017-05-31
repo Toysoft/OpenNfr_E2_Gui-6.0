@@ -323,9 +323,17 @@ class RestoreMenu(Screen):
 
 	def startRestore(self, ret = False):
 		if ret == True:
-			self.exe = True
-			self.session.open(Console, title = _("Restoring..."), cmdlist = ["rm -R /etc/enigma2", "tar -xzvf " + self.path + "/" + self.sel + " -C /", "killall -9 enigma2"])
+			self.session.openWithCallback(self.CB_startRestore, MessageBox, _("Do you want to delete the old settings in /etc/enigma2 first?"))
 
+	def CB_startRestore(self, ret = False):
+		self.exe = True
+		cmds = ["tar -xzvf " + self.path + "/" + self.sel + " -C /", "killall -9 enigma2"]
+		if ret == True:
+			cmds.insert(0, "rm -R /etc/enigma2")
+			self.session.open(Console, title = _("Restoring..."), cmdlist = cmds)
+		else:
+                        self.session.open(Console, title = _("Restoring..."), cmdlist = cmds)
+	
 	def deleteFile(self):
 		if (self.exe == False) and (self.entry == True):
 			self.sel = self["filelist"].getCurrent()
@@ -381,8 +389,9 @@ class RestoreScreen(Screen, ConfigListScreen):
 		self.setTitle(_("Restoring..."))
 
 	def doRestore(self):
+		restorecmdlist = ["rm -R /etc/enigma2", "tar -xzvf " + self.fullbackupfilename + " -C /"]
 		if path.exists("/proc/stb/vmpeg/0/dst_width"):
-			restorecmdlist = ["tar -xzvf " + self.fullbackupfilename + " -C /", "echo 0 > /proc/stb/vmpeg/0/dst_height", "echo 0 > /proc/stb/vmpeg/0/dst_left", "echo 0 > /proc/stb/vmpeg/0/dst_top", "echo 0 > /proc/stb/vmpeg/0/dst_width"]
+			restorecmdlist += ["echo 0 > /proc/stb/vmpeg/0/dst_height", "echo 0 > /proc/stb/vmpeg/0/dst_left", "echo 0 > /proc/stb/vmpeg/0/dst_top", "echo 0 > /proc/stb/vmpeg/0/dst_width"]
 		else:
 			restorecmdlist = ["tar -xzvf " + self.fullbackupfilename + " -C /"]
 		print"[SOFTWARE MANAGER] Restore Settings !!!!"
@@ -420,6 +429,15 @@ class RestoreScreen(Screen, ConfigListScreen):
 
 	def restartGUI(self, ret = None):
 		self.session.open(Console, title = _("Your %s %s will Reboot...")% (getMachineBrand(), getMachineName()), cmdlist = ["killall -9 enigma2"])
+
+	def rebootSYS(self, ret = None):
+		try:
+			f = open("/tmp/rebootSYS.sh","w")
+			f.write("#!/bin/bash\n\nkillall -9 enigma2\nreboot\n")
+			f.close()
+			self.session.open(Console, title = _("Your %s %s will Reboot...")% (getMachineBrand(), getMachineName()), cmdlist = ["chmod +x /tmp/rebootSYS.sh", "/tmp/rebootSYS.sh"])
+		except:
+			self.restartGUI()
 
 	def restoreMetrixSkin(self, ret = None):
 		try:

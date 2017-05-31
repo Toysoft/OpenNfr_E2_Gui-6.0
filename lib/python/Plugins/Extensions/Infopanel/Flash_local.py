@@ -111,7 +111,7 @@ class FlashOnline(Screen):
 		if os.path.exists("/media/nfr4xboot"):
 			message = _('NFR4XBoot is still installed!\nNow removing NFR4XBoot and reboot the box. After reboot FlashLocal is available.\nYour installed images are not deleted and available after re-installing NFR4XBoot again.')
 			ybox = self.session.openWithCallback(self.removenfrxboot, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_('Remove NFRXBoot'))
+			ybox.setTitle(_('Remove NFR4XBoot'))
 			return False
 		if not os.path.exists("/media/hdd"):
 			self.session.open(MessageBox, _("No /hdd found !!\nPlease make sure you have a HDD mounted.\n\nExit plugin."), type = MessageBox.TYPE_ERROR)
@@ -177,7 +177,7 @@ class FlashOnline(Screen):
 			self.multi = self.read_startup("/boot/" + self.list[self.selection]).split(".",1)[1].split(" ",1)[0]
 			self.multi = self.multi[-1:]
 			print "[Flash Online] MULTI:",self.multi
-			cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",1)[1].split(" ",1)[0]
+			cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
 			self.devrootfs = cmdline
 			print "[Flash Online] MULTI rootfs ", self.devrootfs
 
@@ -195,10 +195,10 @@ class FlashOnline(Screen):
 			for name in os.listdir(path):
 				if name != 'bootname' and os.path.isfile(os.path.join(path, name)):
 					try:
-						cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]
+						cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
 					except IndexError:
 						continue
-					cmdline_startup = self.read_startup("/boot/STARTUP").split("=",1)[1].split(" ",1)[0]
+					cmdline_startup = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
 					if (cmdline != cmdline_startup) and (name != "STARTUP"):
 						files.append(name)
 			files.insert(0,"STARTUP")

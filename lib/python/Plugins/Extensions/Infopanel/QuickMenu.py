@@ -41,6 +41,7 @@ from Plugins.SystemPlugins.SoftwareManager.BackupRestore import BackupScreen, Re
 from Plugins.Extensions.Infopanel.SoftwarePanel import SoftwarePanel
 from Plugins.Extensions.Infopanel.e2log import E2log
 from Plugins.Extensions.Infopanel.Softcamedit import vEditor
+from Plugins.Extensions.Infopanel.Softcamedit import cEditor
 from Plugins.Extensions.Infopanel.Satloader import Satloader
 from Plugins.Extensions.Infopanel.InstallTarGZ import InfopanelManagerScreen
 from Plugins.Extensions.Infopanel.Flash_local import FlashOnline
@@ -602,33 +603,33 @@ class QuickMenu(Screen):
 			self.QWicarddedit()
 			self["sublist"].moveToIndex(0)
 		elif item[0] == _("Oscam.server Edit"):
-			self.session.open(vEditor, "/usr/keys/oscam.server")	
+			self.session.open(cEditor, "/usr/keys/oscam.server")	
 		elif item[0] == _("Oscam.user Edit"):
-			self.session.open(vEditor, "/usr/keys/oscam.user")	
+			self.session.open(cEditor, "/usr/keys/oscam.user")	
 		elif item[0] == _("Oscam.conf Edit"):
-			self.session.open(vEditor, "/usr/keys/oscam.conf")	
+			self.session.open(cEditor, "/usr/keys/oscam.conf")	
 		elif item[0] == _("Oscam.dvbapi Edit"):
-			self.session.open(vEditor, "/usr/keys/oscam.dvbapi")	
+			self.session.open(cEditor, "/usr/keys/oscam.dvbapi")	
 		elif item[0] == _("CCcam.cfg Edit"):
-			self.session.open(vEditor, "/usr/keys/CCcam.cfg")	
+			self.session.open(cEditor, "/usr/keys/CCcam.cfg")	
 		elif item[0] == _("mg.cfg Edit"):
-			self.session.open(vEditor, "/usr/keys/mg_cfg")	
+			self.session.open(cEditor, "/usr/keys/mg_cfg")	
 		elif item[0] == _("Mgcamd cccamd.list Edit"):
-			self.session.open(vEditor, "/usr/keys/cccamd.list")	
+			self.session.open(cEditor, "/usr/keys/cccamd.list")	
 		elif item[0] == _("Mgcamd newcamd.list Edit"):
-			self.session.open(vEditor, "/usr/keys/newcamd.list")	
+			self.session.open(cEditor, "/usr/keys/newcamd.list")	
 		elif item[0] == _("camd3.config Edit"):
-			self.session.open(vEditor, "/usr/keys/camd3.config")	
+			self.session.open(cEditor, "/usr/keys/camd3.config")	
 		elif item[0] == _("camd3.users Edit"):
-			self.session.open(vEditor, "/usr/keys/camd3.users")	
+			self.session.open(cEditor, "/usr/keys/camd3.users")	
 		elif item[0] == _("camd3.servers Edit"):
-			self.session.open(vEditor, "/usr/keys/camd3.servers")	
+			self.session.open(cEditor, "/usr/keys/camd3.servers")	
 		elif item[0] == _("gbox.cfg Edit"):
-			self.session.open(vEditor, "/usr/keys/gbox_cfg")	
+			self.session.open(cEditor, "/usr/keys/gbox_cfg")	
 		elif item[0] == _("cwshare.cfg Edit"):
-			self.session.open(vEditor, "/usr/keys/cwshare.cfg")	
+			self.session.open(cEditor, "/usr/keys/cwshare.cfg")	
 		elif item[0] == _("wicardd.conf Edit"):
-			self.session.open(vEditor, "/usr/keys/wicardd.conf")				
+			self.session.open(cEditor, "/usr/keys/wicardd.conf")				
 ######## Select Screenshot Menu ##############################
 		elif item[0] == _("OSD"):
                         self.Console = Console()

@@ -18,6 +18,7 @@ from Components.Sources.List import List
 from Components.Sources.StaticText import StaticText
 from Plugins.Plugin import PluginDescriptor
 from Screens.SkinSelector import SkinSelector
+from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Screens.InputBox import InputBox
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
@@ -28,7 +29,7 @@ from Tools.WeatherID import get_woeid_from_yahoo
 from Tools import Notifications
 from os import listdir, remove, rename, system, path, symlink, chdir, makedirs
 import shutil
-from Screens.VirtualKeyBoard import VirtualKeyBoard 
+
 from __init__ import _
 
 
@@ -434,8 +435,6 @@ class NfrHD_About(Screen):
 	def __init__(self, session, args = 0):
 		self.session = session
 		Screen.__init__(self, session)
-        	self['label1'] = Label(_('SkalliHD-FullHD-openNFRmod Skin:	by Blasser'))
-        	self['label2'] = Label(_('Fenris-openNFRmod Skin:		by Blasser'))
 		self["setupActions"] = ActionMap(["SetupActions", "ColorActions"],
 			{
 				"cancel": self.cancel,
