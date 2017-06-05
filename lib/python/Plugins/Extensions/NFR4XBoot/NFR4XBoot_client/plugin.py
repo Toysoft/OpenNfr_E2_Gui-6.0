@@ -106,10 +106,13 @@ class NFR4XBootImageChoose(Screen):
         self['label7'].setText(def_free_space_percent)
         self['label8'].setText(dev_free_space[0:-3] + ' MB')
         mypath = '/media/nfr4xboot/NFR4XBootI/'
-        myimages = os.listdir(mypath)
-        for fil in myimages:
-            if os.path.isdir(os.path.join(mypath, fil)):
-                self.list.append(fil)
+        try:
+            myimages = os.listdir(mypath)
+            for fil in myimages:
+                if os.path.isdir(os.path.join(mypath, fil)):
+                    self.list.append(fil)
+        except:
+            print "no other Image found"
 
         self['label11'].setText(str(len(self.list) - 1))
         self['config'].setList(self.list)
@@ -197,4 +200,4 @@ def menu(menuid, **kwargs):
 from Plugins.Plugin import PluginDescriptor
 
 def Plugins(**kwargs):
-    return [PluginDescriptor(name='NFR4XBoot', description='NFR4X MultiBoot_Client', where=PluginDescriptor.WHERE_MENU, fnc=menu), PluginDescriptor(name='NFR4XBoot', description=_('E2 Light Multiboot'), icon='plugin_icon.png', where=PluginDescriptor.WHERE_PLUGINMENU, fnc=main)]
+    return [PluginDescriptor(name='NFR4XBoot', description='NFR4X MultiBoot_Client', where=PluginDescriptor.WHERE_MENU, fnc=menu), PluginDescriptor(name='NFR4XBoot', description=_('E2 Light Multiboot'), icon='NFR4XBootFHD.png', where=PluginDescriptor.WHERE_PLUGINMENU, fnc=main)]

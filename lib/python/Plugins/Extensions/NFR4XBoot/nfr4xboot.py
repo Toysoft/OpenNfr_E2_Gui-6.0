@@ -161,4 +161,4 @@ def NFR4XBootExtract(source, target, zipdelete, getimagefolder, getMachineRootFi
         os.system('cp -r -p ' + media_nf + '/ubi/rootfs/* ' + media_nf + '/NFR4XBootI/' + target)
         os.system('chmod -R +x ' + media_nf + '/NFR4XBootI/' + target)
         os.system('rm -rf ' + media_nf + '/ubi')
-    return 1
+    return 1 
