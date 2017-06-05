@@ -176,7 +176,7 @@ class DownloadOnLineImage(Screen):
             self.feedurl = 'http://image.egami-image.com'
         elif self.distro == 'opennfr':
             self.feed = 'opennfr'
-            self.feedurl = 'http://dev.nachtfalke.biz/nfr/feeds/%s/images' %ImageVersion
+            self.feedurl = 'http://dev.nachtfalke.biz/nfr/feeds/6.0/images'
         elif self.distro == 'openatv':
             self.feed = 'openatv'
             self.feedurl = 'http://images1.mynonpublic.com/openatv/4.2'
