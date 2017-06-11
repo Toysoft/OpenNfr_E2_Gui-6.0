@@ -751,7 +751,4 @@ def menu(menuid, **kwargs):
 from Plugins.Plugin import PluginDescriptor
 
 def Plugins(**kwargs):
-    if getDesktop(0).size().width() == 1920:
-    	return [PluginDescriptor(name='NFR4XBoot', description='NFR4X MultiBoot', where=PluginDescriptor.WHERE_MENU, fnc=menu), PluginDescriptor(name='NFR4XBoot', description=_('E2 Light Multiboot'), icon='NFR4XBootFHD.png', where=PluginDescriptor.WHERE_PLUGINMENU, fnc=main)] 
-    else:
     	return [PluginDescriptor(name='NFR4XBoot', description='NFR4X MultiBoot', where=PluginDescriptor.WHERE_MENU, fnc=menu), PluginDescriptor(name='NFR4XBoot', description=_('E2 Light Multiboot'), icon='NFR4XBoot.png', where=PluginDescriptor.WHERE_PLUGINMENU, fnc=main)] 
