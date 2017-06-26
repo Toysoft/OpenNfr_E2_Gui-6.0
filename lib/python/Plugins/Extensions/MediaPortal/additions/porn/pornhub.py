@@ -49,7 +49,6 @@ ck = {}
 ckUrl = {}
 phLoggedIn = False
 phAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
-phAgentUrl = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; Xbox)"
 json_headers = {
 	'Accept':'application/json',
 	'Accept-Language':'en,en-US;q=0.7,en;q=0.3',
@@ -1071,12 +1070,13 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			self.showInfos()
 
 	def loadFeedData(self, data):
+		self.filmliste = []
 		parse = re.findall('feedItemSection"(.*?)</section', data, re.S)
 		if parse:
 			for each in parse:
-				Movies = re.findall('class="videoblock.*?<a\shref="(.*?)".*?title="(.*?)".*?class="duration">(.*?)</var>.*?data-mediumthumb="(.*?)".*?<span\sclass="views"><var>(.*?)<.*?<var\sclass="added">(.*?)</var>', each, re.S)
+				Movies = re.findall('class="videoblock.*?<a\shref="(.*?)".*?title="(.*?)".*?data-mediumthumb="(.*?)".*?class="duration">(.*?)</var>.*?<span\sclass="views"><var>(.*?)<.*?<var\sclass="added">(.*?)</var>', each, re.S)
 				if Movies:
-					for (Url, Title, Runtime, Image, Views, Added) in Movies:
+					for (Url, Title, Image, Runtime, Views, Added) in Movies:
 						Url = 'http://www.pornhub.com' + Url
 						Title = Title.replace('&amp;amp;','&')
 						self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views, Added))
@@ -1118,11 +1118,11 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			self.suburl = ""
 			self.unsuburl = ""
 			self.subscribed = ""
-			favparse = re.findall('favouriteUrl.*?token.*?:\s\'(.*?)\',.*?itemId.*?:\s\'(\d+)\',.*?isFavourite.*?:\s(\d),', data, re.S)
+			favparse = re.findall('favouriteUrl.*?itemId":(\d+),.*?isFavourite":(\d),.*?token=(.*?)",', data, re.S)
 			if favparse:
-				self.favtoken = str(favparse[0][0])
-				self.id = str(favparse[0][1])
-				self.favourited = str(favparse[0][2])
+				self.favtoken = str(favparse[0][2])
+				self.id = str(favparse[0][0])
+				self.favourited = str(favparse[0][1])
 			userinfo = re.findall('From:.*?data-type="(.*?)".*?bolded">(.*?)</', data, re.S)
 			if userinfo:
 				usertype = userinfo[0][0].title()
@@ -1169,7 +1169,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			return
 		self.url = self['liste'].getCurrent()[0][1]
 		if self.url:
-			getPage(self.url, agent=phAgentUrl, cookies=ckUrl).addCallback(self.parseData).addErrback(self.dataError)
+			getPage(self.url, agent=phAgent, cookies=ckUrl).addCallback(self.parseData).addErrback(self.dataError)
 
 	def keyFavourite(self):
 		if self.keyLocked:
@@ -1238,11 +1238,11 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 		if "function leastFactor" in data and nodejs:
 			self.rncalc(data, self.keyOK)
 		else:
-			match = re.findall('quality_720p.[=|:].\'{0,1}(.*?)["|\';]', data, re.S)
+			match = re.findall('quality":"720","videoUrl"."(.*?)"', data, re.S)
 			if not match:
-				match = re.findall('quality_480p.[=|:].\'{0,1}(.*?)["|\';]', data, re.S)
+				match = re.findall('quality":"480","videoUrl"."(.*?)"', data, re.S)
 			if not match:
-				match = re.findall('quality_240p.[=|:].\'{0,1}(.*?)["|\';]', data, re.S)
+				match = re.findall('quality":"240","videoUrl"."(.*?)"', data, re.S)
 			fetchurl = urllib2.unquote(match[0]).replace('\/','/')
 			Title = self['liste'].getCurrent()[0][0]
 			mp_globals.player_agent = phAgent

@@ -407,7 +407,7 @@ class fourtubeFilmScreen(MPScreen, ThumbsHelper):
 			for x in videoID:
 				res += x[1] + "+"
 			res.strip('+')
-			posturl = "http://%s/%s/desktop/%s" % (self.baseurl.replace('www','tkn'), videoID[-1][0], res)
+			posturl = "https://tkn.kodicdn.com/%s/desktop/%s" % (videoID[-1][0], res)
 			getPage(posturl, agent=std_headers, method='POST', postdata=info, headers={'Origin':'%s' % self.baseurl, 'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.getVideoUrl).addErrback(self.dataError)
 
 	def getVideoUrl(self, data):

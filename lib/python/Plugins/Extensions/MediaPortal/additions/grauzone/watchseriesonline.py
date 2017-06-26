@@ -75,7 +75,7 @@ class wsoMain(MPScreen):
 
 	def layoutFinished(self):
 		self.streamList.append(('A-Z',"index"))
-		self.streamList.append(('Last 350 Episodes',"new"))
+		#self.streamList.append(('Last 350 Episodes',"new"))
 		self.streamList.append(("Watchlist","watchlist"))
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
 
@@ -146,7 +146,7 @@ class wsoIndex(MPScreen, SearchHelper):
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		parse = re.search('<div class="ddmcc"><ul>\s<p class="sep" id="goto\_\#">((.|\s)*?)<div style="clear:both;"><!-- --></div>', data, re.S)
+		parse = re.search('<div class="ddmcc"><ul><p class="sep" id="goto\_\#">((.|\s)*?)style="clear:both;"></div></div><span', data, re.S)
 		if parse:
 			series = re.findall('<li><a\shref="(https://(?:watchseries-online.pl|wseries.org)/category/.*?)">(.*?)</a></li>', parse.group(1), re.S)
 			if series:

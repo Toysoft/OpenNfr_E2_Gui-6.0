@@ -40,10 +40,11 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
-BASE_NAME = "Mofos.com"
-default_cover = "http://i3.mfspics.com/cdn_x/mf/tour/images/actions/disclaimer/mf-logo.png"
+BASE_NAME = "TeamSkeet.com"
+default_cover = "http://galleries.teamskeet.com/ts/3263/images/tslogo.png"
+ck = {}
 
-class mofosGenreScreen(MPScreen):
+class teamskeetGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -81,24 +82,25 @@ class mofosGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
-		url = "http://www.mofos.com/tour/categories/"
-		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
+		url = "http://www.teamskeet.com/t1/updates/load?view=rating&page=1&fltrs[tags]=&fltrs[site]=ALL&fltrs[alpha]="
+		getPage(url, agent=myagent, cookies=ck, headers={'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://www.teamskeet.com/t1/updates/?site=ts'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('<a\shref="(.*?)".*?class="tag-list-card".*?img\ssrc="(.*?)".*?alt="(.*?)"', data, re.S)
-		if Cats:
-			for (Url, Image, Title) in Cats:
-				Url = 'http://www.mofos.com%s' % Url
-				self.genreliste.append((decodeHtml(Title), Url, Image))
+		Tags = re.findall('option\s+value="http.*?\?tags=(.*?)"', data, re.S)
+		if Tags:
+			for Tag in Tags:
+				if Tag != "":
+					url = "http://www.teamskeet.com/t1/updates/load?view=newest&changedOrder=0&fltrs[tags]=%s&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=&nats=null" % Tag.replace(' ','+')
+					self.genreliste.append((Tag.title(), url, default_cover))
 			self.genreliste.sort()
-		self.genreliste.insert(0, ("Series", 'http://www.mofos.com/tour/series/', default_cover))
-		self.genreliste.insert(0, ("Sites", 'http://www.mofos.com/tour/sites/', default_cover))
-		self.genreliste.insert(0, ("Girls", 'http://www.mofos.com/tour/girls/all-videos/all-models/all-categories/thismonth/toprated/', default_cover))
-		self.genreliste.insert(0, ("Most Commented", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/comments/', default_cover))
-		self.genreliste.insert(0, ("Most Viewed", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/mostviewed/', default_cover))
-		self.genreliste.insert(0, ("Top Rated", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/toprated/', default_cover))
-		self.genreliste.insert(0, ("Release Date", 'http://www.mofos.com/tour/videos/all-videos/all-models/all-categories/alltime/bydate/', default_cover))
-		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
+		#self.genreliste.insert(0, ("Series", 'http://www.mofos.com/tour/series/', default_cover))
+		#self.genreliste.insert(0, ("Sites", 'http://www.mofos.com/tour/sites/', default_cover))
+		#self.genreliste.insert(0, ("Girls", 'http://www.mofos.com/tour/girls/all-videos/all-models/all-categories/thismonth/toprated/', default_cover))
+		self.genreliste.insert(0, ("Most Favorited", 'http://www.teamskeet.com/t1/updates/load?view=favorited&fltrs[tags]=&fltrs[site]=ALL&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=', default_cover))
+		self.genreliste.insert(0, ("Most Viewed", 'http://www.teamskeet.com/t1/updates/load?view=views&fltrs[tags]=&fltrs[site]=ALL&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=', default_cover))
+		self.genreliste.insert(0, ("Top Rated", 'http://www.teamskeet.com/t1/updates/load?view=rating&fltrs[tags]=&fltrs[site]=ALL&fltrs[alpha]=&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=', default_cover))
+		self.genreliste.insert(0, ("Most Recent", 'http://www.teamskeet.com/t1/updates/load?view=newest&fltrs[tags]=&fltrs[site]=ALL&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=ASC&tags_select=&fltrs[title]=', default_cover))
+		#self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
@@ -121,25 +123,25 @@ class mofosGenreScreen(MPScreen):
 			self.suchen()
 		elif Name == "Sites":
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(mofosSitesScreen, Link, Name)
+			self.session.open(teamskeetSitesScreen, Link, Name)
 		elif Name == "Series":
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(mofosSitesScreen, Link, Name)
+			self.session.open(teamskeetSitesScreen, Link, Name)
 		elif Name == "Girls":
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(mofosGirlsScreen, Link, Name)
+			self.session.open(teamskeetGirlsScreen, Link, Name)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(mofosFilmScreen, Link, Name)
+			self.session.open(teamskeetFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
 			self.suchString = callback
 			Name = "--- Search ---"
 			Link = self.suchString.replace(' ', '+')
-			self.session.open(mofosFilmScreen, Link, Name)
+			self.session.open(teamskeetFilmScreen, Link, Name)
 
-class mofosSitesScreen(MPScreen, ThumbsHelper):
+class teamskeetSitesScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -191,21 +193,8 @@ class mofosSitesScreen(MPScreen, ThumbsHelper):
 		if Sites:
 			for (Url, Image, Title, Scenes) in Sites:
 				Url = "http://www.mofos.com" + Url.replace('/toprated/','/bydate/')
-				if Title == "Mofos World Wide":
-					Url = Url.replace('/mofos-vault/','/mofos-world-wide/')
-				elif Title == "Milfs Like It Black":
-					Url = Url.replace('/mofos-vault/','/milfs-like-it-black/')
-				elif Title == "Mofos Old School":
-					Url = Url.replace('/mofos-vault/','/mofos-old-school/')
-				elif Title == "Teens At Work":
-					Url = Url.replace('/mofos-vault/','/teens-at-work/')
-				elif Title == "In Gang We Bang":
-					Url = Url.replace('/mofos-vault/','/in-gang-we-bang/')
-				elif Title == "Can She Take It":
-					Url = Url.replace('/mofos-vault/','/can-she-take-it/')
-				if Title != "Liveshows":
-					Title = Title + " - %s Scenes" % Scenes.strip()
-					self.filmliste.append((decodeHtml(Title), Url, Image))
+				Title = Title + " - %s Scenes" % Scenes.strip()
+				self.filmliste.append((decodeHtml(Title), Url, Image))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No sites/series found!'), None, None))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -225,9 +214,9 @@ class mofosSitesScreen(MPScreen, ThumbsHelper):
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		Link = self['liste'].getCurrent()[0][1]
-		self.session.open(mofosFilmScreen, Link, Name)
+		self.session.open(teamskeetFilmScreen, Link, Name)
 
-class mofosGirlsScreen(MPScreen, ThumbsHelper):
+class teamskeetGirlsScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -307,9 +296,9 @@ class mofosGirlsScreen(MPScreen, ThumbsHelper):
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		Link = self['liste'].getCurrent()[0][1]
-		self.session.open(mofosFilmScreen, Link, Name)
+		self.session.open(teamskeetFilmScreen, Link, Name)
 
-class mofosFilmScreen(MPScreen, ThumbsHelper):
+class teamskeetFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -365,21 +354,19 @@ class mofosFilmScreen(MPScreen, ThumbsHelper):
 			else:
 				url = "http://www.mofos.com/tour/search/videos/%s/%s/" % (self.Link, str(self.page))
 		else:
-			if self.page == 1:
-				url = self.Link
-			else:
-				url = "%s%s/" % (self.Link, str(self.page))
-		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
+			url = "%s&page=%s" % (self.Link, str(self.page))
+		print url
+		getPage(url, agent=myagent, cookies=ck, headers={'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://www.teamskeet.com/t1/updates/?site=ts'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'class="pagination">(.*?)</nav>')
-		Movies = re.findall('widget-release-card.*?href="(.*?)".*?src="(.*?jpg).*?alt="(.*?)".*?class="site-name".*?>(.*?)</.*?class="rating">(\d+)\s{0,20}%{0,1}</span.*?views-count":\s"(.*?)".*?date-added">(.*?)\s{0,2}</span', data, re.S)
+		print data
+		self.getLastPage(data, 'paging_links"(.*?)</div>')
+		Movies = re.findall('class="(?:white|grey)".*?<a\shref="(.*?)".*?data-original="(.*?)".*?class="info".*?12px;">(.*?)</a', data, re.S)
 		if Movies:
-			for (Url, Image, Title, Collection, Rating, Views, Date) in Movies:
-				Url = "http://www.mofos.com" + Url
-				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection, Rating, Views))
+			for (Url, Image, Title) in Movies:
+				self.filmliste.append((decodeHtml(Title), Url, Image))
 		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No videos found!'), '', None, ''))
+			self.filmliste.append((_('No videos found!'), '', None))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
@@ -389,11 +376,6 @@ class mofosFilmScreen(MPScreen, ThumbsHelper):
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]
 		pic = self['liste'].getCurrent()[0][2]
-		date = self['liste'].getCurrent()[0][3]
-		coll = self['liste'].getCurrent()[0][4]
-		rating = self['liste'].getCurrent()[0][5]
-		views = self['liste'].getCurrent()[0][6]
-		self['handlung'].setText("Date: "+date+'\nSite: '+coll.strip()+'\nViews: '+views+'\nRating: '+rating+" %")
 		self['name'].setText(title)
 		CoverHelper(self['coverArt']).getCover(pic)
 
@@ -405,4 +387,4 @@ class mofosFilmScreen(MPScreen, ThumbsHelper):
 
 	def play(self, url):
 		title = self['liste'].getCurrent()[0][0]
-		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='mofos')
+		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='teamkeet')

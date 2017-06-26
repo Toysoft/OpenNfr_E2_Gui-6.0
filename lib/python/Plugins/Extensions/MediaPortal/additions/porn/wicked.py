@@ -296,10 +296,8 @@ class wickedFilmScreen(MPScreen, ThumbsHelper):
 		if self.keyLocked:
 			return
 		Link = self['liste'].getCurrent()[0][1]
-		self.keyLocked = True
 		get_stream_link(self.session).check_link(Link, self.play)
 
 	def play(self, url):
-		self.keyLocked = False
 		title = self['liste'].getCurrent()[0][0]
 		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='wicked')

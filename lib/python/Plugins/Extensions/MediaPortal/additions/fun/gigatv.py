@@ -41,6 +41,8 @@ class gigatvGenreScreen(MPScreen, ThumbsHelper):
 	def layoutFinished(self):
 		self.genreliste.append(("Alle Videos", "http://www.giga.de/tv/alle-videos/", None))
 		self.genreliste.append(("G-Log","http://www.giga.de/games/videos/g-log/", "http://media2.giga.de/2012/12/g-log2-150x95.jpg"))
+		self.genreliste.append(("GIGA Tech","http://www.giga.de/tech/videos/", None))
+		self.genreliste.append(("GIGA Windows","http://www.giga.de/windows/videos/", None))
 		self.genreliste.append(("GIGA Android/Apple","http://www.giga.de/android/videos-podcasts/", None))
 		self.genreliste.append(("GIGA Failplays","http://www.giga.de/games/channel/giga-failplays/", "http://media2.giga.de/2013/04/failplay-teaser-150x95.jpg"))
 		self.genreliste.append(("GIGA Gameplay","http://www.giga.de/games/videos/giga-gameplay/", "http://media2.giga.de/2012/12/gameplay2-150x95.jpg"))
@@ -48,12 +50,11 @@ class gigatvGenreScreen(MPScreen, ThumbsHelper):
 		self.genreliste.append(("GIGA Top Montag","http://www.giga.de/mac/channel/giga-top-montag/", "http://media2.giga.de/2013/04/topmontag-teaser-150x95.jpg"))
 		self.genreliste.append(("Jonas liest","http://www.giga.de/games/videos/jonas-liest/", "http://media2.giga.de/2012/12/jonasliest-teaser-150x95.jpg"))
 		self.genreliste.append(("NostalGIGA","http://www.giga.de/games/videos/nostalgiga/", "http://media2.giga.de/2012/12/nostalgiga-150x95.jpg"))
-		#self.genreliste.append(("Radio GIGA","http://www.giga.de/games/videos/radio-giga/", "http://media2.giga.de/2012/12/radiogiga-150x95.jpg"))
+		self.genreliste.append(("Radio GIGA","http://www.giga.de/games/videos/radio-giga/", "http://media2.giga.de/2012/12/radiogiga-150x95.jpg"))
 		self.genreliste.append(("Specials","http://www.giga.de/games/videos/specials/", None))
-		self.genreliste.append(("Top 100 Filme","http://www.giga.de/games/videos/top-100-filme/", "http://media2.giga.de/2012/12/top100filme-teaser-150x95.jpg"))
-		self.genreliste.append(("Top 100 Games","http://www.giga.de/games/videos/top-100-games/", "http://media2.giga.de/2012/12/top100spiele-teaser-150x95.jpg"))
+		self.genreliste.append(("Top 100 Filme","http://www.giga.de/games/channel/top-100-filme/", "http://media2.giga.de/2012/12/top100filme-teaser-150x95.jpg"))
+		self.genreliste.append(("Top 100 Games","http://www.giga.de/games/channel/top-100-games/", "http://media2.giga.de/2012/12/top100spiele-teaser-150x95.jpg"))
 		self.genreliste.append(("Top 100 Momente","http://www.giga.de/android/channel/top-100-spielemomente/", "http://media2.giga.de/2013/04/top100spielemomente-teaser-150x95.jpg"))
-		#self.genreliste.append(("Top 100 Serien","http://www.giga.de/games/videos/top-100-tv-serien/", "http://media2.giga.de/2012/12/top100serien-teaser-150x95.jpg"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
@@ -129,7 +130,7 @@ class gigatvFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, '<ul\sclass="sequences\shlist">(.*?)</ul>')
-		Movies = re.findall('embed\/(\d+).*?<article\sclass=.*?smallimg">.*?hgroup>.*?<a\shref=".*?>(.*?)</a>.*?img\ssrc="(http://static.giga.de/.*?)"\salt=', data, re.S|re.I)
+		Movies = re.findall('embed\/(\d+).*?<article\sclass=.*?smallimg">.*?hgroup>.*?<a\shref=".*?>(.*?)</a>.*?img\s(?:data-pagespeed-lazy-|)src="(http[s]?://static.giga.de/.*?)"\salt=', data, re.S|re.I)
 		if Movies:
 			for (ID, Title, Image) in Movies:
 				Title = Title.replace('<b>','').replace('</b>','')
@@ -155,7 +156,7 @@ class gigatvFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall('file.":."(http://lx\d+.spieletips.de/\d+(?:_v\d+|)/\d+p.mp4)."', data, re.S)
+		videoPage = re.findall('file.":."(http://lx\d+.spieletips.de/\d+(?:_v\d+|)/(?:1080|720|480|360)+p.mp4)."', data, re.S)
 		if videoPage:
 			url = videoPage[0]
 			self.play(url)

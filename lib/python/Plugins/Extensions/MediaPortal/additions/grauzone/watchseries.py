@@ -2,6 +2,8 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
+ws_url = "watchseriesfree.to"
+
 class watchseriesGenreScreen(MPScreen):
 
 	def __init__(self, session):
@@ -32,10 +34,10 @@ class watchseriesGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		# ('Series',"https://watchseriesfree.to/letters/"),
-		self.genreliste = [('Newest Episodes Added',"https://watchseriesfree.to/latest"),
-							('Popular Episodes Added This Week',"https://watchseriesfree.to/new"),
-							('TV Schedule',"https://watchseriesfree.to/tvschedule/-1")]
+		self.genreliste = [('Series',"https://%s/letters/" % ws_url),
+							('Newest Episodes Added',"https://%s/latest" % ws_url),
+							('Popular Episodes Added This Week',"https://%s/new" % ws_url),
+							('TV Schedule',"https://%s/tvschedule/-1" % ws_url)]
 
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
@@ -88,10 +90,9 @@ class watchseriesNewSeriesScreen(MPScreen):
 	def loadPageData(self, data):
 		eps = re.findall('<a itemprop="url" href="(/episode/.*?)".*?<span itemprop="seasonNumber">(.*?)</span></span>.*?<span itemprop="episodeNumber">(.*?)</span>.*?<span itemprop="name">(.*?)</span></span><em> - <span itemprop="name">(.*?)</span>', data, re.S)
 		if eps:
-			# /episode/Lucifer_s2_e14.html', '2', '14', 'Lucifer', 'Candy Morningstar
-			for (link, episode, season, serie, title) in eps:
-				url = "https://watchseriesfree.to%s" % link
-				title = "%s - S%sE%s - %s" % (serie, episode, season, title)
+			for link,title in eps:
+				title = title.replace('Seas. ','- S').replace('Ep. ','E')
+				url = "https://%s%s" % (ws_url, link)
 				self.genreliste.append((title, url))
 			self.ml.setList(map(self._defaultlistleft, self.genreliste))
 			self.keyLocked = False
@@ -135,7 +136,7 @@ class watchseriesSeriesLetterScreen(MPScreen):
 	def loadPage(self):
 		abc = ["09","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 		for letter in abc:
-			url = "https://watchseriesfree.to/letters/%s" % letter
+			url = "https://%s/letters/%s" % (ws_url, letter)
 			self.genreliste.append((letter, url))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
@@ -187,11 +188,12 @@ class watchseriesSeriesScreen(MPScreen, ThumbsHelper):
 		twAgentGetPage(self.streamGenreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
+		# FIXME: fix regex and implement multipage
 		series = re.findall('<li><a title="(.*?)" href="((?:/serie)?/.*?)">.*?</li>', data, re.S)
 		if series:
 			self.filmliste = []
 			for (title,link) in series:
-				url = "https://watchseriesfree.to%s" % link
+				url = "https://%s%s" % (ws_url, link)
 				self.filmliste.append((decodeHtml(title),url))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.keyLocked = False
@@ -276,7 +278,7 @@ class watchseriesEpisodeListeScreen(MPScreen):
 						else:
 							episode = "E"+str(episode)
 						episode = "%s%s - %s" % (season, episode, title)
-						url = "https://watchseriesfree.to%s" % url
+						url = "https://%s%s" % (ws_url, url)
 						self.filmliste.append((decodeHtml(episode),url))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_("No shows found!"), ''))
@@ -338,7 +340,7 @@ class watchseriesStreamListeScreen(MPScreen):
 				self.filmliste = []
 				for (hostername,url) in streams:
 					if isSupportedHoster(hostername, True):
-						url = "https://watchseriesfree.to%s" % url
+						url = "https://%s%s" % (ws_url, url)
 						self.filmliste.append((decodeHtml(hostername),url))
 				if len(self.filmliste) == 0:
 					self.filmliste.append(("No supported streams found.", None))

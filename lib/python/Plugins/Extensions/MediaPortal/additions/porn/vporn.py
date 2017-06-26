@@ -99,11 +99,11 @@ class vpornGenreScreen(MPScreen):
 
 	def Login(self):
 		loginUrl = "http://www.vporn.com/login"
-		loginData = {'backto': "", 'password': self.password, 'submit': 'Login', 'username': self.username}
+		loginData = {'backto': "", 'password': self.password, 'sub': 1, 'username': self.username}
 		getPage(loginUrl, method='POST', postdata=urlencode(loginData), cookies=ck, headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.Login2).addErrback(self.dataError)
 
 	def Login2(self, data):
-		if 'alt="Logout"' in data:
+		if 'href="/logout/"' in data:
 			self.loggedin = True
 		self.layoutFinished()
 
@@ -115,12 +115,12 @@ class vpornGenreScreen(MPScreen):
 	def genreData(self, data):
 		if not self.loggedin:
 			message = self.session.open(MessageBoxExt, _("Login data is required for HD video playback!"), MessageBoxExt.TYPE_INFO, timeout=5)
-		parse = re.search('<div\sclass="catslist(.*?)</div>', data, re.S)
-		Cats = re.findall('<li\s{0,1}><a\shref="/cat/(.*?)">.*?>(.*?)</a></li>', parse.group(1), re.S)
+		parse = re.search('class="cats-all categories-list">(.*?)</div>', data, re.S)
+		Cats = re.findall('<li>\s<a\shref="/cat/(.*?)".*?>(.*?)</a></li>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
 				Url = "http://www.vporn.com/cat/" + Url
-				Title = Title.title()
+				Title = Title.strip()
 				self.genreliste.append((Title, Url, None, False))
 			self.genreliste.sort()
 			self.genreliste.insert(0, ("Longest", "http://www.vporn.com/longest/", None, True))
@@ -313,10 +313,10 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 		getPage(url, cookies=ck).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'class="pager">(.*?)</div>')
-		Movies = re.findall('thumbsArr\[.*?<a\shref="(.*?)"\sclass="thumb"><img\ssrc="(.*?)"\salt="(.*?)".*?class="time">(.*?)</span>.*?class="ileft">(.*?)\sviews', data, re.S)
+		self.getLastPage(data, 'class="pages">(.*?)</div>')
+		Movies = re.findall('thumbsArr\[.*?class="thumb">.*?<a\shref="(.*?)".*?class="time">(.*?)</span>.*?<img\ssrc="(.*?)"\salt="(.*?)".*?alt="Views">(\d+)', data, re.S)
 		if Movies:
-			for (Url, Image, Title, Runtime, Views) in Movies:
+			for (Url, Runtime, Image, Title, Views) in Movies:
 				Runtime = stripAllTags(Runtime).strip()
 				Views = Views.replace(",","")
 				self.filmliste.append((decodeHtml(Title).strip(), Url, Image, Runtime, Views))

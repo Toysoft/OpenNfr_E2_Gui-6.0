@@ -85,7 +85,7 @@ class digitalplaygroundGenreScreen(MPScreen):
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('class="preview-image".*?<a\shref="(.*?)".*?title="(.*?)\svideos">.*?img\ssrc="(.*?)"', data, re.S)
+		Cats = re.findall('class="preview-image".*?<a\shref="(.*?)".*?title="(.*?)\svideos">.*?img\ssrc=".*?".*?data-srcset="(.*?)"', data, re.S)
 		if Cats:
 			for (Url, Title, Image) in Cats:
 				Url = 'http://www.digitalplayground.com%s' % Url
@@ -199,9 +199,9 @@ class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination(.*?)</nav>')
-		Movies = re.findall('box-card scene.*?<a\shref="(.*?)".*?img\ssrc="(.*?)".*?alt="(.*?)".*?class="subtitle">.*?>(.*?)</a>.*? <span class=""><span>(.*?)</span>.*?<span>(.*?)</span>.*?class="middle">(.*?)<', data, re.S)
+		Movies = re.findall('box-card scene.*?<a\shref="(.*?)".*?img\ssrc=".*?".*?alt="(.*?)".*?data-srcset="(.*?)".*?class="subtitle">.*?>(.*?)</a>.*? <span class=""><span>(.*?)</span>.*?<span>(.*?)</span>.*?class="middle">(.*?)<', data, re.S)
 		if Movies:
-			for (Url, Image, Title, Collection, Runtime, Date, Views) in Movies:
+			for (Url, Title, Image, Collection, Runtime, Date, Views) in Movies:
 				Url = "http://www.digitalplayground.com" + Url
 				if not Image.startswith('http'):
 					Image = 'http:' + Image
@@ -229,10 +229,8 @@ class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 		if self.keyLocked:
 			return
 		Link = self['liste'].getCurrent()[0][1]
-		self.keyLocked = True
 		get_stream_link(self.session).check_link(Link, self.play)
 
 	def play(self, url):
-		self.keyLocked = False
 		title = self['liste'].getCurrent()[0][0]
 		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='digitalplayground')

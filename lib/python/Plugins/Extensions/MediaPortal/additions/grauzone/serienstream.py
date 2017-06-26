@@ -792,7 +792,15 @@ class ssStreams(MPScreen):
 				get_stream_link(self.session).check_link(url, self.playfile)
 
 	def getStream(self, url):
-		get_stream_link(self.session).check_link(url, self.playfile)
+		if url.startswith(BASE_URL + '/out'):
+			twAgentGetPage(url, agent=ss_agent, cookieJar=ss_cookies).addCallback(self.parseStream).addErrback(self.dataError)
+		else:
+			get_stream_link(self.session).check_link(url, self.playfile)
+
+	def parseStream(self, data):
+		stream = re.findall('<iframe\ssrc="(.*?)"', data, re.S)
+		if stream:
+			get_stream_link(self.session).check_link(stream[0], self.playfile)
 
 	def playfile(self, stream_url):
 		if not re.search('\S[0-9][0-9]E[0-9][0-9]', self.Title, re.I):

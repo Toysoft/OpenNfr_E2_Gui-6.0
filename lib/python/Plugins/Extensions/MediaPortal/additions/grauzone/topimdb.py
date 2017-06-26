@@ -33,7 +33,6 @@ class timdbGenreScreen(MPScreen):
 			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"red" : self.kkisteSearch,
 			"green" : self.kinoxSearch,
 			"yellow" : self.movie4kSearch,
 			"blue" : self.ddlmeSearch
@@ -41,7 +40,6 @@ class timdbGenreScreen(MPScreen):
 
 		self['title'] = Label("Top IMDb")
 		self['ContentTitle'] = Label(_("Selection:"))
-		self['F1'] = Label("kkiste")
 		self['F2'] = Label("Kinox")
 		self['F3'] = Label("Movie4k")
 		self['F4'] = Label("ddl.me")
@@ -106,15 +104,6 @@ class timdbGenreScreen(MPScreen):
 			url = "http://www.movie4k.tv/movies.php?list=search&search=%s" %(callbackStr)
 			name = "Suche: %s" %(callbackStr)
 			self.session.open(m4kFilme, url, name)
-
-	def kkisteSearch(self):
-		self.searchTitle = self['liste'].getCurrent()[0][1]
-		self.session.openWithCallback(self.searchkkisteCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.searchTitle, is_dialog=True, auto_text_init=True)
-
-	def searchkkisteCallback(self, callbackStr):
-		if callbackStr is not None:
-			url = "http://kkiste.to/search/?q=%s" % callbackStr.replace(' ','%20')
-			self.session.open(kinokisteSearchScreen, url, callbackStr)
 
 	def ddlmeSearch(self):
 		self.searchTitle = self['liste'].getCurrent()[0][1]

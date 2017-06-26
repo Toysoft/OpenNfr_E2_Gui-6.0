@@ -281,10 +281,10 @@ class tataParsing(MPScreen):
 	def getStream(self, data):
 		title = self['liste'].getCurrent()[0][0]
 		cover = self['liste'].getCurrent()[0][2]
-		if not "link_mp4" in data:
+		if not "playinfo" in data:
 			import base64
 			data = base64.b64decode(data)
-		stream = re.findall('link_mp4":"(.*?)"', data, re.S)
+		stream = re.findall('playinfo":"(.*?)"', data, re.S)
 		if stream:
 			url = stream[-1].replace('\/','/')
 			self.session.open(SimplePlayer, [(title, url, cover)], showPlaylist=False, ltype='tata', cover=True)

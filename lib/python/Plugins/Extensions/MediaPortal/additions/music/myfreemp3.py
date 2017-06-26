@@ -36,7 +36,7 @@ mfmp3_cookies = CookieJar()
 mfmp3_ck = {}
 mfmp3_agent = ''
 glob_historyLRUCache = SimpleLRUCache(100, config.mediaportal.watchlistpath.value + 'mp_mfmp3_history')
-BASE_URL = "http://www.myfreemp3.life"
+BASE_URL = "http://www.myfreemp3.fun"
 TIME_OUT = 10
 config.mediaportal.mfmp3_precheck_mp3ids = ConfigYesNo(default = True)
 config.mediaportal.mfmp3_discard_mp3_duplicates = ConfigYesNo(default = True)
@@ -146,6 +146,8 @@ class show_MFMP3_Genre(MenuHelper):
 
 	def mh_initMenu(self):
 		self['name'].setText('')
+		# temporary fix, no hash available
+		self.__class__.hash = "foobar"
 		if not self.__class__.hash:
 			twAgentGetPage(BASE_URL+'/theme/new/js/lang.js', agent=mfmp3_agent, cookieJar=mfmp3_cookies, timeout=5).addCallback(self.parseHash).addErrback(self.parseHash, True).addCallback(lambda x: self.mh_initMenu())
 		else:

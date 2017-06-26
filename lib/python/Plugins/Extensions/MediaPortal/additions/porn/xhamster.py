@@ -194,7 +194,7 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 	def pageData(self, data):
 		self.getLastPage(data, 'class=[\'|"]pager[\'|"]>(.*?)</table>')
 		if re.search('vDate', data, re.S):
-			parse = re.search('(<div\sclass=[\'|"]video[\w\s-]*[\'|"]><div\sclass=[\'|"]vDate.*?)</html>', data, re.S)
+			parse = re.search('(<div\sclass=[\'|"]video\s.*?[\'|"]><div\sclass=[\'|"]vDate.*?)</html>', data, re.S)
 		else:
 			parse = re.search('<html(.*)</html>', data, re.S)
 		Liste = re.findall('class=[\'|"]video.*?><a\shref=[\'|"](.*?/movies/.*?)[\'|"].*?class=[\'|"]hRotator[\'|"]\s*><img\ssrc=[\'|"](.*?)[\'|"].*?alt=[\'|"](.*?)[\'|"].*?sprite.*?<b>(.*?)</b>', parse.group(1), re.S)

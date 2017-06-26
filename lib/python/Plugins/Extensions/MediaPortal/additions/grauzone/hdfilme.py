@@ -383,29 +383,30 @@ class hdfilmeStreams(MPScreen):
 			self.extractStreams(data)
 
 	def extractStreams(self, data, videoPrio=2):
+		try:
+			import base64
+			data = base64.b64decode(data)
+		except:
+			self.stream_not_found()
+		d = json.loads(data)
+		links = {}
+		if d['playinfo']:
+			for stream in d['playinfo']:
+				key = str(stream.get('label'))
+				if key:
+					key = key.strip('p')
+					if self.new_video_formats[videoPrio].has_key(key):
+						links[self.new_video_formats[videoPrio][key]] = stream.get('file')
+					else:
+						print 'no format prio:', key
 			try:
-				import base64
-				data = base64.b64decode(data)
-			except:
+				video_url = links[sorted(links.iterkeys())[0]]
+			except (KeyError,IndexError):
 				self.stream_not_found()
-			d = json.loads(data)
-			links = {}
-			if d['playinfo']:
-				for stream in d['playinfo']:
-					key = str(stream.get('label'))
-					if key:
-						if self.new_video_formats[videoPrio].has_key(key):
-							links[self.new_video_formats[videoPrio][key]] = stream.get('file')
-						else:
-							print 'no format prio:', key
-				try:
-					video_url = links[sorted(links.iterkeys())[0]]
-				except (KeyError,IndexError):
-					self.stream_not_found()
-				else:
-					self.play(str(video_url))
 			else:
-				self.stream_not_found()
+				self.play(str(video_url))
+		else:
+			self.stream_not_found()
 
 	def play(self, url):
 		title = self.makeTitle()

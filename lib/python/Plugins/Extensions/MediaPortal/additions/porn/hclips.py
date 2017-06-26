@@ -259,7 +259,7 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall("file':\s'(http[s]?:(?:(?://)|(?:\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*.mp4)", data, re.S)
+		videoPage = re.findall("file':\s'(http[s]?:(?:(?://)|(?:\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*.mp4.*?)\','", data, re.S)
 		if videoPage:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]

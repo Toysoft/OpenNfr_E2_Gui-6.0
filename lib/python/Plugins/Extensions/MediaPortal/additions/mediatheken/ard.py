@@ -427,20 +427,25 @@ class ARDPostSelect(MPScreen, ThumbsHelper):
 				if "|" in title:
 					title = title.replace("|","-")
 				self.genreliste.append((decodeHtml(title),url))
+			self.keyLocked = False
 		else:
 			self.genreliste.append((isWeg,None))
 		self.ml.setList(map(self._defaultlistleft, self.genreliste))
-		self.keyLocked = False
 		self.th_ThumbsQuery(self.genreliste, 0, 1, None, None, '<meta name="gsaimg512" content="(.*?)"', self.page, self.lastpage, mode=1)
 		if self['liste'].getCurrent()[0][0] != isWeg:
 			self.showInfos()
 
 	def showInfos(self):
+		if self.keyLocked:
+			return
 		if self.gF != "10":
 			url = self['liste'].getCurrent()[0][1]
-			getPage(url).addCallback(self.handlePicAndTxt).addErrback(self.dataError)
+			if url:
+				getPage(url).addCallback(self.handlePicAndTxt).addErrback(self.dataError)
 
 	def handlePicAndTxt(self, data):
+		if self.keyLocked:
+			return
 		handlung = ''
 		streamPic = None
 		gefunden = re.findall('<meta name="description" content="(.*?)"/.*?<meta name="author" content="(.*?)".*?<meta name="gsaimg512" content="(.*?)"/>.*?<div class="box">.*?textWrapper.*?dachzeile">(.*?)[<|\s]', data, re.S)
@@ -469,7 +474,6 @@ class ARDPostSelect(MPScreen, ThumbsHelper):
 		self['handlung'].setText(streamHandlung)
 		streamName = self['liste'].getCurrent()[0][0]
 		self['name'].setText("Sendung / Thema\n"+streamName)
-		self.keyLocked = False
 		if streamPic:
 			CoverHelper(self['coverArt']).getCover(streamPic)
 
@@ -621,20 +625,25 @@ class ARDStreamScreen(MPScreen, ThumbsHelper):
 						self.filmliste.append((decodeHtml(title),url,iD))
 						self.ml.setList(map(self._defaultlistleft, self.filmliste))
 						self.ml.moveToIndex(self.blueIdx)
+			self.keyLocked = False
 		else:
 			self.filmliste.append((isWeg, None, None, None))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
-		self.keyLocked = False
 		self.th_ThumbsQuery(self.filmliste, 0, 1, None, None, '<meta name="gsaimg512" content="(.*?)"', self.page,self.lastpage, mode=1)
 		if self['liste'].getCurrent()[0][0] != isWeg:
 			self.showInfos()
 
 	def showInfos(self):
+		if self.keyLocked:
+			return
 		self['name'].setText('')
 		self.blueURL = self['liste'].getCurrent()[0][1]
-		getPage(self.blueURL).addCallback(self.handlePicAndTxt).addErrback(self.dataError)
+		if self.blueURL:
+			getPage(self.blueURL).addCallback(self.handlePicAndTxt).addErrback(self.dataError)
 
 	def handlePicAndTxt(self, data):
+		if self.keyLocked:
+			return
 		handlung = ''
 		streamPic = None
 		self.future = 0
@@ -679,7 +688,6 @@ class ARDStreamScreen(MPScreen, ThumbsHelper):
 		self['handlung'].setText(streamHandlung)
 		streamName = self['liste'].getCurrent()[0][0]
 		self['name'].setText("Sendung / Thema\n"+decodeHtml(self.sendung))
-		self.keyLocked = False
 		if streamPic:
 			CoverHelper(self['coverArt']).getCover(streamPic)
 

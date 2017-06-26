@@ -66,7 +66,7 @@ class CoverHelper:
 					if (req and mp_globals.requests) or mdh:
 						try:
 							import requests
-							headers = {'User-Agent': agent}
+							headers = {'User-Agent': agent, 'Accept-Encoding': 'deflate'}
 							response = requests.get(url, stream=True, cookies=cookies, headers=headers)
 							with open(self.downloadPath, 'wb') as out_file:
 								shutil.copyfileobj(response.raw, out_file)

@@ -299,7 +299,7 @@ class youpornCountryScreen(MPScreen):
 		self.keyLocked = True
 		self.genreliste = []
 		url = self.Link
-		getPage(url, headers={'Cookie': 'age_verified=1'}).addCallback(self.genreData).addErrback(self.dataError)
+		getPage(url, agent=ypAgent, headers={'Cookie': 'age_verified=1'}).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('id="countryFlags">(.*?)heading4">Network\sSites</h2>', data, re.S)
@@ -489,12 +489,13 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 			return
 		Link = 'http://www.youporn.com' + self['liste'].getCurrent()[0][1]
 		self.keyLocked = True
-		getPage(Link, headers={'Cookie': 'age_verified=1'}).addCallback(self.getVideoPage).addErrback(self.dataError)
+		getPage(Link, agent=ypAgent, headers={'Cookie': 'age_verified=1'}).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
 		Title = self['liste'].getCurrent()[0][0]
-		parse = re.search('sources: {(.*?)},', data, re.S)
-		videoPage = re.findall("\d+:\s[\"|\'](http.*?)[\"|\']", parse.group(1), re.S)
-		if videoPage:
-			self.keyLocked = False
-			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='youporn')
+		parse = re.findall('video.mediaDefinition =.{0,2}\[(.*?)\];', data, re.S)
+		if parse:
+			videoPage = re.findall('\d+","videoUrl":[\"|\'](http[s]?.*?)[\"|\']', parse[-1], re.S)
+			if videoPage:
+				self.keyLocked = False
+				self.session.open(SimplePlayer, [(Title, videoPage[0].replace('\/','/'))], showPlaylist=False, ltype='youporn')

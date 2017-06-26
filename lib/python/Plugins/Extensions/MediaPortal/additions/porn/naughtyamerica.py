@@ -194,7 +194,7 @@ class naughtyamericaFilmScreen(MPScreen, ThumbsHelper):
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination(.*?)</div>', '.*(?:\/|>)(\d+)')
 		parse = re.search('content-main(.*?)(id="fantasySideBar"|id="wrapper-footer)', data, re.S)
-		Movies = re.findall('a\shref="(http://tour.naughtyamerica.com.*?)(?:\?nats.*?)"\stitle="(.*?)".*?img.*?src="(.*?)"(.*?)class="entry-date">(.*?)</p', parse.group(1), re.S)
+		Movies = re.findall('a\shref="(http://tour.naughtyamerica.com.*?)"\stitle="(.*?)".*?img.*?src="(.*?)"(.*?)class="entry-date">(.*?)</p', parse.group(1), re.S)
 		if Movies:
 			for (Url, Title, Image, VrCheck, Date) in Movies:
 				if not "vr-icon" in VrCheck:
@@ -219,10 +219,8 @@ class naughtyamericaFilmScreen(MPScreen, ThumbsHelper):
 		if self.keyLocked:
 			return
 		Link = self['liste'].getCurrent()[0][1]
-		self.keyLocked = True
 		get_stream_link(self.session).check_link(Link, self.play)
 
 	def play(self, url):
-		self.keyLocked = False
 		title = self['liste'].getCurrent()[0][0]
 		self.session.open(SimplePlayer, [(title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='naughtyamerica')

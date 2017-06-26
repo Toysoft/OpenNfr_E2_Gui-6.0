@@ -130,6 +130,7 @@ class showevonicGenre(MPScreen):
 		self.genreListe.append(("Suche", "suche"))
 		self.genreListe.append(("Neueinsteiger", "http://crynet.to/forum/content.php?r=1969-Aktuelle-HD-Filme&page="))
 		self.genreListe.append(("Cineline", "http://crynet.to/forum/list.php?r=category/169&page="))
+		self.genreListe.append(("UHD-Filme", "http://crynet.to/forum/content.php?r=11845-UHD-Filme&page="))
 		self.genreListe.append(("Blockbuster & Event-Movies", "http://crynet.to/forum/content.php?r=10290-Blockbuster-Event-Movies&page="))
 		self.genreListe.append(("HD-Collection", "http://crynet.to/forum/content.php?r=3501-hd-collection&page="))
 		self.genreListe.append(("Serien Charts", "http://crynet.to/forum/content.php?r=1997-serien-charts&page="))

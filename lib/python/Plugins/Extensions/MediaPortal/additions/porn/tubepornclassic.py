@@ -42,6 +42,8 @@ from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoard
 
 tcAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
+baseurl = "http://de.tubepornclassic.com"
+
 class tubepornclassicGenreScreen(MPScreen):
 
 	def __init__(self, session):
@@ -80,16 +82,15 @@ class tubepornclassicGenreScreen(MPScreen):
 
 	def genreData(self, data):
 		parse = re.search('id="filter-categories(.*?)</html>', data, re.S)
-		Cats = re.findall(' class="list-item__link" href="(.*?)" title=".*?">(.*?)</a>', parse.group(1), re.S)
-		Country = re.findall('class="logo">.*?<a\shref="http[s]?://(.*?)\.tubepornclassic.com', data, re.S)
+		Cats = re.findall('class="list-item__link" href=".*?tubepornclassic.com(.*?)" title=".*?">(.*?)</a>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
+				Url = baseurl + Url
 				self.genreliste.append((Title, Url))
 			self.genreliste.sort()
-			if Country:
-				self.genreliste.insert(0, ("Most Popular", "http://%s.tubepornclassic.com/most-popular/" % Country[0]))
-				self.genreliste.insert(0, ("Top Rated", "http://%s.tubepornclassic.com/top-rated/" % Country[0]))
-				self.genreliste.insert(0, ("Most Recent", "http://%s.tubepornclassic.com/latest-updates/" % Country[0]))
+			self.genreliste.insert(0, ("Most Popular", "%s/most-popular/" % baseurl))
+			self.genreliste.insert(0, ("Top Rated", "%s/top-rated/" % baseurl))
+			self.genreliste.insert(0, ("Most Recent", "%s/latest-updates/" % baseurl))
 			self.genreliste.insert(0, ("--- Search ---", ""))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
@@ -163,7 +164,7 @@ class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 		if not re.search('Search', self.Name):
 			url = "%s%s/" % (self.Link, str(self.page))
 		else:
-			url = "http://tubepornclassic.com/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (self.Link, self.page)
+			url = "%s/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (baseurl, self.Link, self.page)
 		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
