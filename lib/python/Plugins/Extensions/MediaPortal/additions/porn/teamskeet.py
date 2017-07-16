@@ -355,11 +355,9 @@ class teamskeetFilmScreen(MPScreen, ThumbsHelper):
 				url = "http://www.mofos.com/tour/search/videos/%s/%s/" % (self.Link, str(self.page))
 		else:
 			url = "%s&page=%s" % (self.Link, str(self.page))
-		print url
 		getPage(url, agent=myagent, cookies=ck, headers={'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://www.teamskeet.com/t1/updates/?site=ts'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		print data
 		self.getLastPage(data, 'paging_links"(.*?)</div>')
 		Movies = re.findall('class="(?:white|grey)".*?<a\shref="(.*?)".*?data-original="(.*?)".*?class="info".*?12px;">(.*?)</a', data, re.S)
 		if Movies:

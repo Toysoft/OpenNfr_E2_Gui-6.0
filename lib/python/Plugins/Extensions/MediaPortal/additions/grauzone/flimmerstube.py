@@ -39,7 +39,7 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 
-BASE_URL="http://horrorkino.do.am"
+BASE_URL="http://flimmerstube.com"
 
 class flimmerstubeGenreScreen(MPScreen):
 

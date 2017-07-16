@@ -255,15 +255,16 @@ class paradisehillFilmAuswahlScreen(MPScreen):
 		getPage(self.genreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		parse = re.search('films="(.*?)"', data, re.S)
-		streams = parse.group(1).split('|||')
+		parse = re.search('films=(.*?)\];', data, re.S)
+		if parse:
+			streams = re.findall('sources.*?src":"(.*?)"', parse.group(1), re.S)
 		if len(streams) > 1:
 			for i in range(0,len(streams),1):
 				videoname = self.genreName + ' (Part ' + str(i+1) + ')'
-				self.filmliste.append((videoname, streams[i]))
+				self.filmliste.append((videoname, streams[i].replace('\/','/')))
 		elif len(streams) == 1:
 			videoname = self.genreName
-			self.filmliste.append((videoname, parse.group(1)))
+			self.filmliste.append((videoname, streams[0].replace('\/','/')))
 		else:
 			self.filmliste.append(("No streams found!",None))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))

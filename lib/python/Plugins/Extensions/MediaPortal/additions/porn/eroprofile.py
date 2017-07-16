@@ -41,7 +41,7 @@ class eroprofileGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.genreliste.append(("--- Search ---", ""))
 		self.genreliste.append(("Newest", "home"))
-		self.genreliste.append(("Popular", "popular"))
+		self.genreliste.append(("Most Popular", "popular"))
 		self.genreliste.append(("Amateur Moms/Mature", "13"))
 		self.genreliste.append(("Amateur Teens", "14"))
 		self.genreliste.append(("Amateurs", "12"))
@@ -49,7 +49,6 @@ class eroprofileGenreScreen(MPScreen):
 		self.genreliste.append(("Ass", "27"))
 		self.genreliste.append(("Big Ladies", "5"))
 		self.genreliste.append(("Big Tits", "11"))
-		self.genreliste.append(("Bisexual", "18"))
 		self.genreliste.append(("Black / Ebony", "20"))
 		self.genreliste.append(("Celeb", "23"))
 		self.genreliste.append(("Facial / Cum", "24"))
@@ -60,7 +59,6 @@ class eroprofileGenreScreen(MPScreen):
 		self.genreliste.append(("Lesbian", "6"))
 		self.genreliste.append(("Lingerie / Panties", "30"))
 		self.genreliste.append(("Nudist / Voyeur / Public", "16"))
-		self.genreliste.append(("Other", "28"))
 		self.genreliste.append(("Swingers / Gangbang", "8"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
@@ -140,36 +138,47 @@ class eroprofileFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if self.ID == "":
-			url = 'http://www.eroprofile.com/m/videos/home?text=%s&pnum=%s' % (self.SearchString, str(self.page))
+			url = 'http://www.eroprofile.com/m/videos/home?niche=13.14.12.19.27.5.11.20.23.24.10.26.7.15.6.30.16.8&text=%s&pnum=%s' % (self.SearchString, str(self.page))
 		elif self.ID == "home":
-			url = 'http://www.eroprofile.com/m/videos/home?text=%s&pnum=%s' % (self.SearchString, str(self.page))
+			url = 'http://www.eroprofile.com/m/videos/home?niche=13.14.12.19.27.5.11.20.23.24.10.26.7.15.6.30.16.8&text=%s&pnum=%s' % (self.SearchString, str(self.page))
 		elif self.ID == "popular":
-			url = 'http://www.eroprofile.com/m/videos/popular/month?text=%s&pnum=%s' % (self.SearchString, str(self.page))
+			url = 'http://www.eroprofile.com/m/videos/popular?niche=13.14.12.19.27.5.11.20.23.24.10.26.7.15.6.30.16.8&text=%s&pnum=%s' % (self.SearchString, str(self.page))
 		else:
 			url = 'http://www.eroprofile.com/m/videos/niche/%s/?text=%s&pnum=%s' % (self.ID, self.SearchString, str(self.page))
-		getPage(url, headers={'Cookie': 'hideNiches=9%2C2%2C3%2C1%2C29%2C31%2C4%2C21%2C22%2C25', 'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.loadData).addErrback(self.dataError)
+		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		lastp = re.search('class="maxW"><tr><td><b>(.*?)</b>\sresults</td>', data, re.S)
-		if lastp:
-			lastp = round((float(lastp.group(1)) / 12) + 0.5)
-			self.lastpage = int(lastp)
+		if "divVideoListPageNav" in data:
+			self.getLastPage(data, 'id="divVideoListPageNav">(.*?)</div>','.*pnum=(\d+)')
+			Movies = re.findall('class="video">.*?<a\shref="(.*?)"><img\ssrc="(.*?)".*?class="videoDur">(.*?)</div>.*?(?:class="videoTtl">|class="videoTtl"\stitle=")(.*?)(?:</div|")', data, re.S)
+			if Movies:
+				for (Url, Image, Runtime, Title) in Movies:
+					if Image.startswith('//'):
+						Image = "http:" + Image
+					Url = "http://www.eroprofile.com" + Url
+					self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
 		else:
-			self.lastpage = 1
-		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-		Movies = re.findall('class="video">.*?img\ssrc="(.*?)".*?class="title"><a\shref="(.*?)">(.*?)</a.*?class="duration">(.*?)</div>', data, re.S)
-		if Movies:
-			for (Image, Url, Title, Runtime) in Movies:
-				if Image.startswith('//'):
-					Image = "http:" + Image
-				self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
-			if self.page == 1:
-				self.filmliste.insert(0, ("--- Search ---", None, None, None))
-			self.ml.setList(map(self._defaultlistleft, self.filmliste))
-			self.ml.moveToIndex(0)
-			self.keyLocked = False
-			self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
-			self.showInfos()
+			lastp = re.search('class="maxW"><tr><td><b>(.*?)</b>\sresults</td>', data, re.S)
+			if lastp:
+				lastp = round((float(lastp.group(1)) / 12) + 0.5)
+				self.lastpage = int(lastp)
+			else:
+				self.lastpage = 1
+			self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
+			Movies = re.findall('class="video">.*?img\ssrc="(.*?)".*?class="title"><a\shref="(.*?)">(.*?)</a.*?class="duration">(.*?)</div>', data, re.S)
+			if Movies:
+				for (Image, Url, Title, Runtime) in Movies:
+					if Image.startswith('//'):
+						Image = "http:" + Image
+					Url = "http://www.eroprofile.com" + Url
+					self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
+		if len(self.filmliste) == 0:
+			self.filmliste.append((_('No videos found!'), None, '', ''))
+		self.ml.setList(map(self._defaultlistleft, self.filmliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
+		self.showInfos()
 
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]
@@ -187,9 +196,9 @@ class eroprofileFilmScreen(MPScreen, ThumbsHelper):
 			self.suchen()
 		else:
 			url = self['liste'].getCurrent()[0][1]
-			self.keyLocked = True
-			url = 'http://www.eroprofile.com' + url
-			getPage(url).addCallback(self.getVideoPage).addErrback(self.dataError)
+			if url:
+				self.keyLocked = True
+				getPage(url).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

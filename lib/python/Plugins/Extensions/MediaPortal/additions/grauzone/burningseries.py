@@ -663,7 +663,7 @@ class bsStreams(MPScreen):
 
 	def findStream(self, data):
 		if "<html" in data:
-			message = self.session.open(MessageBoxExt, _("Unknown API error, please try again in a few minutes."), MessageBoxExt.TYPE_INFO, timeout=3)
+			message = self.session.open(MessageBoxExt, _("Sorry this video is currently captcha protected, please try again later."), MessageBoxExt.TYPE_INFO, timeout=3)
 		else:
 			parse = re.findall('"hoster":"(.*?)","url":"(.*?)".*?"fullurl":"(.*?)"', data, re.S)
 			if parse:

@@ -41,9 +41,12 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.configlistext import ConfigListScreenExt
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
+from Plugins.Extensions.MediaPortal.resources.DelayedFunction import DelayedFunction
 
 config.mediaportal.pornhub_username = ConfigText(default="pornhubUserName", fixed_size=False)
 config.mediaportal.pornhub_password = ConfigPassword(default="pornhubPassword", fixed_size=False)
+
+base_url = 'https://www.pornhub.com'
 
 ck = {}
 ckUrl = {}
@@ -55,6 +58,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
+
 default_cover = "http://blacksportsonline.com/home/wp-content/uploads/2015/08/pornhub-logo.jpg"
 token = ''
 nodejs = True
@@ -127,7 +131,7 @@ class pornhubGenreScreen(MPScreen, rnCalc):
 		global nodejs
 		nodejs = True
 		ck.update({'lang':'en'})
-		url = "http://www.pornhub.com"
+		url = base_url
 		getPage(url, agent=phAgent, cookies=ck).addCallback(self.Login2).addErrback(self.dataError)
 
 	def Login2(self, data):
@@ -136,7 +140,7 @@ class pornhubGenreScreen(MPScreen, rnCalc):
 			global token
 			token = str(parse[0][1])
 			if self.username != "pornhubUserName" and self.password != "pornhubPassword":
-				loginUrl = "http://www.pornhub.com/front/authenticate"
+				loginUrl = base_url + "/front/authenticate"
 				loginData = {
 					'redirect' : str(parse[0][0]),
 					'token' : token,
@@ -153,7 +157,7 @@ class pornhubGenreScreen(MPScreen, rnCalc):
 
 	def layoutFinished(self,res=None):
 		self.keyLocked = True
-		url = "http://www.pornhub.com/categories"
+		url = base_url + "/categories"
 		getPage(url, agent=phAgent, cookies=ck).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
@@ -170,39 +174,39 @@ class pornhubGenreScreen(MPScreen, rnCalc):
 			if Cats:
 				for (Url, Image, Title) in Cats:
 					if re.match(".*\?",Url):
-						Url = "http://www.pornhub.com" + Url + "&page="
+						Url = base_url + Url + "&page="
 					else:
-						Url = "http://www.pornhub.com" + Url + "?page="
+						Url = base_url + Url + "?page="
 					self.filmliste.append((Title, Url, Image))
 				self.filmliste.sort()
 			if phLoggedIn:
 				self.filmliste.insert(0, (400 * "—", None, default_cover))
-				self.filmliste.insert(0, ("My Feed", "http://www.pornhub.com/feeds?section=videos&page=", default_cover))
-				self.filmliste.insert(0, ("Recommended", "http://www.pornhub.com/recommended?page=", default_cover))
-				self.filmliste.insert(0, ("Member Subscriptions", "http://www.pornhub.com/users/%s/subscriptions?page=" % self.username, default_cover))
-				self.filmliste.insert(0, ("Channel Subscriptions", "http://www.pornhub.com/users/%s/channel_subscriptions?page=" % self.username, default_cover))
-				self.filmliste.insert(0, ("Pornstar Subscriptions", "http://www.pornhub.com/users/%s/pornstar_subscriptions?page=" % self.username, default_cover))
-				self.filmliste.insert(0, ("Favourite Playlists", "http://www.pornhub.com/users/%s/playlists/favorites?page=" % self.username, default_cover))
-				self.filmliste.insert(0, ("Favourite Videos", "http://www.pornhub.com/users/%s/videos/favorites?page=" % self.username, default_cover))
+				self.filmliste.insert(0, ("My Feed", "%s/feeds?section=videos&page=" % base_url, default_cover))
+				self.filmliste.insert(0, ("Recommended", "%s/recommended?page=" % base_url, default_cover))
+				self.filmliste.insert(0, ("Member Subscriptions", "%s/users/%s/subscriptions?page=" % (base_url, self.username), default_cover))
+				self.filmliste.insert(0, ("Channel Subscriptions", "%s/users/%s/channel_subscriptions?page=" % (base_url, self.username), default_cover))
+				self.filmliste.insert(0, ("Pornstar Subscriptions", "%s/users/%s/pornstar_subscriptions?page=" % (base_url, self.username), default_cover))
+				self.filmliste.insert(0, ("Favourite Playlists", "%s/users/%s/playlists/favorites?page=" % (base_url, self.username), default_cover))
+				self.filmliste.insert(0, ("Favourite Videos", "%s/users/%s/videos/favorites?page=" % (base_url, self.username), default_cover))
 			self.filmliste.insert(0, (400 * "—", None, default_cover))
-			self.filmliste.insert(0, ("Playlists", "http://www.pornhub.com/playlists?page=", default_cover))
-			self.filmliste.insert(0, ("Channels", "http://www.pornhub.com/channels?page=", default_cover))
-			self.filmliste.insert(0, ("Pornstars", "http://www.pornhub.com/pornstars?page=", default_cover))
-			self.filmliste.insert(0, ("Homemade - Longest", "http://www.pornhub.com/video?p=homemade&o=lg&page=", default_cover))
-			self.filmliste.insert(0, ("Homemade - Hottest", "http://www.pornhub.com/video?p=homemade&o=ht&page=", default_cover))
-			self.filmliste.insert(0, ("Homemade - Top Rated", "http://www.pornhub.com/video?p=homemade&o=tr&page=", default_cover))
-			self.filmliste.insert(0, ("Homemade - Most Viewed", "http://www.pornhub.com/video?p=homemade&o=mv&page=", default_cover))
-			self.filmliste.insert(0, ("Homemade - Featured Recently", "http://www.pornhub.com/video?p=homemade&o=mr&page=", default_cover))
-			self.filmliste.insert(0, ("Homemade - Newest", "http://www.pornhub.com/video?p=homemade&o=cm&page=", default_cover))
-			self.filmliste.insert(0, ("Longest", "http://www.pornhub.com/video?o=lg&page=", default_cover))
-			self.filmliste.insert(0, ("Hottest", "http://www.pornhub.com/video?o=ht&page=", default_cover))
-			self.filmliste.insert(0, ("Top Rated", "http://www.pornhub.com/video?o=tr&page=", default_cover))
-			self.filmliste.insert(0, ("Most Viewed", "http://www.pornhub.com/video?o=mv&page=", default_cover))
-			self.filmliste.insert(0, ("Community Feed", "http://www.pornhub.com/community?content=videos&page=", default_cover))
+			self.filmliste.insert(0, ("Playlists", "%s/playlists?page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Channels", "%s/channels?page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Pornstars", "%s/pornstars?page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Homemade - Longest", "%s/video?p=homemade&o=lg&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Homemade - Hottest", "%s/video?p=homemade&o=ht&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Homemade - Top Rated", "%s/video?p=homemade&o=tr&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Homemade - Most Viewed", "%s/video?p=homemade&o=mv&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Homemade - Featured Recently", "%s/video?p=homemade&o=mr&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Homemade - Newest", "%s/video?p=homemade&o=cm&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Longest", "%s/video?o=lg&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Hottest", "%s/video?o=ht&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Top Rated", "%s/video?o=tr&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Most Viewed", "%s/video?o=mv&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Community Feed", "%s/community?content=videos&page=" % base_url, default_cover))
 			if not phLoggedIn:
-				self.filmliste.insert(0, ("Recommended", "http://www.pornhub.com/recommended?page=", default_cover))
-			self.filmliste.insert(0, ("Featured Recently", "http://www.pornhub.com/video?o=mr&page=", default_cover))
-			self.filmliste.insert(0, ("Newest", "http://www.pornhub.com/video?o=cm&page=", default_cover))
+				self.filmliste.insert(0, ("Recommended", "%s/recommended?page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Featured Recently", "%s/video?o=mr&page=" % base_url, default_cover))
+			self.filmliste.insert(0, ("Newest", "%s/video?o=cm&page=" % base_url, default_cover))
 			self.filmliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 			self.ml.moveToIndex(0)
@@ -240,11 +244,11 @@ class pornhubGenreScreen(MPScreen, rnCalc):
 		if callback is not None and len(callback):
 			Name = "--- Search ---"
 			self.suchString = callback
-			Link = 'http://www.pornhub.com/video/search?search=%s&page=' % self.suchString.replace(' ', '+')
+			Link = base_url + '/video/search?search=%s&page=' % self.suchString.replace(' ', '+')
 			self.session.open(pornhubFilmScreen, Link, Name)
 
 	def getSuggestions(self, text, max_res):
-		url = "http://www.pornhub.com/video/search_autocomplete?pornstars=true&token=%s&orientation=straight&alt=0&q=%s" % (token, urllib.quote_plus(text))
+		url = base_url + "/video/search_autocomplete?pornstars=true&token=%s&orientation=straight&alt=0&q=%s" % (token, urllib.quote_plus(text))
 		d = twAgentGetPage(url, agent=phAgent, headers=json_headers, timeout=5)
 		d.addCallback(self.gotSuggestions, max_res)
 		d.addErrback(self.gotSuggestions, max_res, err=True)
@@ -392,8 +396,8 @@ class pornhubPlayListScreen(MPScreen, ThumbsHelper, rnCalc):
 			Cats = re.findall('class="playlist-videos">.*?class="number"><span>(.*?)</span>.*?src="(.*?jpg)".*?href="(/view_video.php.*?)".*?class="viewPlaylistLink"\shref="(.*?)".*?class="title"\stitle="(.*?)"', preparse.group(1), re.S)
 			if Cats:
 				for Videos, Image, PlayUrl, Url, Title in Cats:
-					Url = "http://www.pornhub.com" + Url
-					PlayUrl = "http://www.pornhub.com" + PlayUrl
+					Url = base_url + Url
+					PlayUrl = base_url + PlayUrl
 					self.filmliste.append((decodeHtml(Title), Videos, Image, Url, PlayUrl))
 			if len(self.filmliste) == 0:
 				self.filmliste.append((_('No playlists found!'), "", None, None, None))
@@ -472,12 +476,12 @@ class pornhubPlayListScreen(MPScreen, ThumbsHelper, rnCalc):
 			favtoken = str(parse[0][0])
 			id = str(parse[0][2])
 			if isfav == "1":
-				FavUrl = "http://www.pornhub.com/playlist/remove_favourite?playlist_id=%s&token=%s" % (id, favtoken)
+				FavUrl = base_url + "/playlist/remove_favourite?playlist_id=%s&token=%s" % (id, favtoken)
 			else:
-				FavUrl = "http://www.pornhub.com/playlist_json/favourite?playlist_id=%s&token=%s" % (id, favtoken)
+				FavUrl = base_url + "/playlist_json/favourite?playlist_id=%s&token=%s" % (id, favtoken)
 			getPage(FavUrl, agent=phAgent, cookies=ck, headers={'Content-Type':'application/x-www-form-urlencoded','Referer':self.playurl}).addCallback(self.ok).addErrback(self.dataError)
 			self.reload = True
-			self.loadPage()
+			DelayedFunction(1000, self.loadPage)
 
 	def ok(self, data):
 		#print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -585,7 +589,7 @@ class pornhubSubscriptionsScreen(MPScreen, ThumbsHelper, rnCalc):
 						Url = Url + '?o=cm&page='
 					else:
 						Url = Url + '/videos?o=da&page='
-					Url = 'http://www.pornhub.com' + Url
+					Url = base_url + Url
 					self.filmliste.append((decodeHtml(Title), Url, Image))
 				if self.Name == "Pornstar Subscriptions" and self.sortname == "Pornstar Name":
 					self.filmliste.sort()
@@ -640,14 +644,14 @@ class pornhubSubscriptionsScreen(MPScreen, ThumbsHelper, rnCalc):
 	def parseSubscribe(self, data):
 		subs = re.findall('data-unsubscribe-url="(.*?)"', data, re.S)
 		if subs:
-			url = 'http://www.pornhub.com' + subs[0].replace('&amp;','&')
+			url = base_url + subs[0].replace('&amp;','&')
 			getPage(url, agent=phAgent, cookies=ck).addCallback(self.parseSubscribe2).addErrback(self.dataError)
 
 	def parseSubscribe2(self, data):
 		unsub = re.findall('(Subscription removed.*?PASS)', data, re.S)
 		if unsub:
 			self.reload = True
-			self.loadPage()
+			DelayedFunction(1000, self.loadPage)
 		else:
 			self.session.open(MessageBoxExt, _("Unknown error."), MessageBoxExt.TYPE_INFO)
 
@@ -718,7 +722,7 @@ class pornhubPornstarScreen(MPScreen, ThumbsHelper, rnCalc):
 			Cats = re.findall('rank_number">(.*?)<.*?src="(.*?)".*?href="(.*?)".*?class="title.*?>(.*?)<.*?videosNumber">(.*?)\sVideos', parse.group(1), re.S)
 			if Cats:
 				for Rank, Image, Url, Title, Videos in Cats:
-					Url = 'http://www.pornhub.com' + Url + "?page="
+					Url = base_url + Url + "?page="
 					self.filmliste.append((decodeHtml(Title), Url, Image, Rank.strip(), Videos))
 			if len(self.filmliste) == 0:
 				self.filmliste.append((_('No pornstars found!'), None, None, "", ""))
@@ -782,21 +786,21 @@ class pornhubPornstarScreen(MPScreen, ThumbsHelper, rnCalc):
 		if subs:
 			Subscribed = subs[0][2]
 			if Subscribed == "1":
-				url = 'http://www.pornhub.com' + subs[0][1].replace('&amp;','&')
+				url = base_url + subs[0][1].replace('&amp;','&')
 			else:
-				url = 'http://www.pornhub.com' + subs[0][0].replace('&amp;','&')
+				url = base_url + subs[0][0].replace('&amp;','&')
 			getPage(url, agent=phAgent, cookies=ck).addCallback(self.parseSubscribe2).addErrback(self.dataError)
 
 	def parseSubscribe2(self, data):
 		unsub = re.findall('(Subscription removed.*?PASS)', data, re.S)
 		if unsub:
 			self.reload = True
-			self.loadPage()
+			DelayedFunction(1000, self.loadPage)
 		else:
 			sub = re.findall('(Subscription added.*?PASS)', data, re.S)
 			if sub:
 				self.reload = True
-				self.loadPage()
+				DelayedFunction(1000, self.loadPage)
 			else:
 				self.session.open(MessageBoxExt, _("Unknown error."), MessageBoxExt.TYPE_INFO)
 
@@ -866,9 +870,9 @@ class pornhubChannelScreen(MPScreen, ThumbsHelper, rnCalc):
 			Cats = re.findall('class="channelsWrapper.*?ref="(.*?)".*?class="rank"><span>Rank<br/>\s{0,1}(\d+)</span>.*?img\salt="(.*?)"\ssrc="(.*?)".*?Subscribers.*?<li><span>(.*?)</span>\s{0,1}Videos</li>.*?.*?data-subscribe-url="(.*?)"\sdata-unsubscribe-url="(.*?)"\sdata-subscribed="(.*?)"', data, re.S)
 			if Cats:
 				for Url, Rank, Title, Image, Videos, Reg, Unreg, Subscribed in Cats:
-					Url = 'http://www.pornhub.com' + Url + "/videos?o=da&page="
-					Reg = 'http://www.pornhub.com' + Reg.replace('&amp;','&')
-					Unreg = 'http://www.pornhub.com' + Unreg.replace('&amp;','&')
+					Url = base_url + Url + "/videos?o=da&page="
+					Reg = base_url + Reg.replace('&amp;','&')
+					Unreg = base_url + Unreg.replace('&amp;','&')
 					Videos = Videos.replace(',','')
 					self.filmliste.append((decodeHtml(Title), Url, Image, Rank.strip(), Videos, Reg, Unreg, Subscribed))
 			if len(self.filmliste) == 0:
@@ -928,12 +932,12 @@ class pornhubChannelScreen(MPScreen, ThumbsHelper, rnCalc):
 		unsub = re.findall('(Subscription removed.*?PASS)', data, re.S)
 		if unsub:
 			self.reload = True
-			self.loadPage()
+			DelayedFunction(1000, self.loadPage)
 		else:
 			sub = re.findall('(Subscription added.*?PASS)', data, re.S)
 			if sub:
 				self.reload = True
-				self.loadPage()
+				DelayedFunction(1000, self.loadPage)
 			else:
 				self.session.open(MessageBoxExt, _("Unknown error."), MessageBoxExt.TYPE_INFO)
 
@@ -1056,7 +1060,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 				Movies = re.findall('class="videoblock.*?<a\shref="(.*?)".*?title="(.*?)".*?data-mediumthumb="(.*?)".*?class="duration">(.*?)</var>.*?<span\sclass="views"><var>(.*?)<.*?<var\sclass="added">(.*?)</var>', parse.group(1), re.S)
 			if Movies:
 				for (Url, Title, Image, Runtime, Views, Added) in Movies:
-					Url = 'http://www.pornhub.com' + Url
+					Url = base_url + Url
 					Title = Title.replace('&amp;amp;','&')
 					self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views, Added))
 			if len(self.filmliste) == 0:
@@ -1077,7 +1081,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 				Movies = re.findall('class="videoblock.*?<a\shref="(.*?)".*?title="(.*?)".*?data-mediumthumb="(.*?)".*?class="duration">(.*?)</var>.*?<span\sclass="views"><var>(.*?)<.*?<var\sclass="added">(.*?)</var>', each, re.S)
 				if Movies:
 					for (Url, Title, Image, Runtime, Views, Added) in Movies:
-						Url = 'http://www.pornhub.com' + Url
+						Url = base_url + Url
 						Title = Title.replace('&amp;amp;','&')
 						self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views, Added))
 		if len(self.filmliste) == 0:
@@ -1133,8 +1137,8 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			if not username == "unknown":
 				subparse = re.findall('data-subscribe-url="(.*?)".{0,4}data-unsubscribe-url="(.*?)".{0,4}data-subscribed="(.*?)"', data, re.S)
 				if subparse:
-					self.suburl = 'http://www.pornhub.com' + subparse[0][0].replace('&amp;','&')
-					self.unsuburl = 'http://www.pornhub.com' + subparse[0][1].replace('&amp;','&')
+					self.suburl = base_url + subparse[0][0].replace('&amp;','&')
+					self.unsuburl = base_url + subparse[0][1].replace('&amp;','&')
 					self.subscribed = str(subparse[0][2])
 			if self.subscribed == "1":
 				submsg = "\n" + usertype + ": " + username + " - Subscribed"
@@ -1177,7 +1181,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 		if self.lock:
 			return
 		if phLoggedIn:
-			FavUrl = "http://www.pornhub.com/video/favourite"
+			FavUrl = base_url + "/video/favourite"
 			toggle = self.favourited
 			if toggle == "0":
 				toggle = "1"
@@ -1191,7 +1195,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			getPage(FavUrl, agent=phAgent, method='POST', postdata=urlencode(FavData), cookies=ck, headers={'Content-Type':'application/x-www-form-urlencoded','Referer':self.url}).addCallback(self.ok).addErrback(self.dataError)
 			if self.Name == "Favourite Videos":
 				self.reload = True
-				self.loadPage()
+				DelayedFunction(1000, self.loadPage)
 			else:
 				self.showInfos()
 
@@ -1203,7 +1207,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 		if self.id == '':
 			return
 		if phLoggedIn:
-			RelatedUrl = "http://www.pornhub.com/video/relateds?ajax=1&id=%s&num_per_page=10&page=" % self.id
+			RelatedUrl = base_url + "/video/relateds?ajax=1&id=%s&num_per_page=10&page=" % self.id
 			self.session.open(pornhubFilmScreen, RelatedUrl, "Related")
 
 	def keySubscribe(self):
@@ -1224,7 +1228,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 		if unsub:
 			if re.match(".*Feed",self.Name):
 				self.reload = True
-				self.loadPage()
+				DelayedFunction(1000, self.loadPage)
 			else:
 				self.showInfos()
 		else:

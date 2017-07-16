@@ -52,7 +52,7 @@ class wetplaceGenreScreen(MPScreen):
 			self.genreliste.sort()
 			self.genreliste.insert(0, ("Most Popular", "http://www.wetplace.com/most-popular/", None))
 			self.genreliste.insert(0, ("Top Rated", "http://www.wetplace.com/top-rated/", None))
-			self.genreliste.insert(0, ("Newest", "http://www.wetplace.com/", None))
+			#self.genreliste.insert(0, ("Newest", "http://www.wetplace.com/", None))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)

@@ -66,7 +66,7 @@ class updatetubeGenreScreen(MPScreen):
 			self.genreliste.sort()
 			self.genreliste.insert(0, ("Most Popular", "http://%s/most-popular/" % self.baseurl, None))
 			self.genreliste.insert(0, ("Top Rated", "http://%s/top-rated/" % self.baseurl, None))
-			self.genreliste.insert(0, ("Newest", "http://%s/" % self.baseurl, None))
+			#self.genreliste.insert(0, ("Newest", "http://%s/" % self.baseurl, None))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)

@@ -1330,6 +1330,10 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		if self.seekBarLocked:
 			self.cancelSeek()
 		else:
+			try:
+				InfoBarShowHide.doWriteAlpha(self,config.av.osd_alpha.value)
+			except:
+				pass
 			self.handleLeave(config.mediaportal.sp_on_movie_stop.value)
 
 	def doEofInternal(self, playing):

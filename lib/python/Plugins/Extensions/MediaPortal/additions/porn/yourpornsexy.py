@@ -88,7 +88,7 @@ class YourPornSexyGenreScreen(MPScreen):
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('<span>Popular HashTags</span>(.*?)<div class=\'all_albums_div\'>', data, re.S)
+		parse = re.search('<span>Popular HashTags</span>(.*?)<div class="spacer" style="clear: both;">', data, re.S)
 		Cats = re.findall('<a\shref=[\'|"](/blog/.*?)[\'|"].*?<span>#(.*?)</span>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
@@ -285,7 +285,7 @@ class YourPornSexyFilmScreen(MPScreen, ThumbsHelper):
 			preparse = re.search('</head>(.*?)<span>Other Results</span>', data, re.S)
 			if preparse:
 				prep = preparse.group(1)
-		Movies = re.findall("vid_container.*?<img.*?\ssrc='(.*?full.jpg)'.*?a\shref='(.*?\.html.*?)'\sclass='tdn'.*?title='(.*?)'(.*?\sviews)", prep, re.S)
+		Movies = re.findall("vid_container.*?<img.*?\ssrc='(.*?.jpg)'.*?a\shref='(.*?\.html.*?)'\sclass='tdn'.*?title='(.*?)'(.*?\sviews)", prep, re.S)
 		if Movies:
 			for (Image, Url, Title, RuntimeAddedViews) in Movies:
 				if ("mini_post_player_img" in RuntimeAddedViews) or ("maxi_post_player_img" in RuntimeAddedViews):

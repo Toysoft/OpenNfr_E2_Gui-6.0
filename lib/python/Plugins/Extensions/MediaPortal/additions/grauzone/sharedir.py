@@ -505,7 +505,7 @@ class sharedirListScreen(sharedirHelper, MPScreen):
 		getPage(Link, agent=std_headers).addCallback(self.getHosterLink).addErrback(self.noVideoError).addErrback(self.dataError)
 
 	def getHosterLink(self, data):
-		streams = re.search('<pre\sid="dirlinks"\sclass="dl_normal">(.*?).</pre>', data, re.S)
+		streams = re.search('<pre\sid="dirlinks"\sclass="dl_normal clr">(.*?).</pre>', data, re.S)
 		if streams:
 			Hoster = self['liste'].getCurrent()[0][2]
 			self.get_redirect(streams.group(1))

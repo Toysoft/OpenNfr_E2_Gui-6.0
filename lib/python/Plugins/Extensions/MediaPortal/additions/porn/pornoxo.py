@@ -74,22 +74,22 @@ class pornoxoGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.pornoxo.com"
+		url = "https://www.pornoxo.com"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('title="Main Page"(.*?)>Top Users</div>', data, re.S)
-		Cats = re.findall('href="(.*?)".*?title=".*?">(.*?)</a>', parse.group(1), re.S)
+		Cats = re.findall('href="(/videos/.*?)".*?title=".*?">(.*?)</a>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
-				Url = "http://www.pornoxo.com" + Url
+				Url = "https://www.pornoxo.com" + Url
 				self.genreliste.append((Title.title(), Url))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.pornoxo.com/videos/longest/", None))
-			self.genreliste.insert(0, ("Best Recent", "http://www.pornoxo.com/videos/best-recent/", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.pornoxo.com/videos/top-rated/", None))
-			self.genreliste.insert(0, ("Most Popular", "http://www.pornoxo.com/videos/most-popular/today/", None))
-			self.genreliste.insert(0, ("Most Recent", "http://www.pornoxo.com/videos/newest/", None))
+			self.genreliste.insert(0, ("Longest", "https://www.pornoxo.com/videos/longest/", None))
+			self.genreliste.insert(0, ("Best Recent", "https://www.pornoxo.com/videos/best-recent/", None))
+			self.genreliste.insert(0, ("Top Rated", "https://www.pornoxo.com/videos/top-rated/", None))
+			self.genreliste.insert(0, ("Most Popular", "https://www.pornoxo.com/videos/most-popular/today/", None))
+			self.genreliste.insert(0, ("Most Recent", "https://www.pornoxo.com/videos/newest/", None))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
@@ -162,16 +162,18 @@ class pornoxoFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://www.pornoxo.com/search/%s/page%s.html" % (self.Link, str(self.page))
+			url = "https://www.pornoxo.com/search/%s/page%s.html" % (self.Link, str(self.page))
 		else:
 			url = self.Link + str(self.page) + '/'
 		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination"(.*?)</div>')
-		Movies = re.findall('vidItem"\sdata-video-id="\d+">.{1,5}<a\shref="(.*?)">.{1,5}<img\s{1,2}class="rotate"\s{1,2}src="(.*?)"\salt="(.*?)"', data, re.S)
+		Movies = re.findall('vidItem"\sdata-video-id="\d+">.{1,10}<a\shref="(.*?)"\s{0,1}>.{0,5}<img\s{1,2}class="rotate"\s{1,2}src="(.*?)"\salt="(.*?)"', data, re.S)
 		if Movies:
 			for (Url, Image, Title) in Movies:
+				if Url.startswith('/'):
+					Url = "https://www.pornoxo.com" + Url
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No movies found!'), None, None))

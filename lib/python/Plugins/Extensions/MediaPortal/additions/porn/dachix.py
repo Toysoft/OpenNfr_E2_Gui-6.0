@@ -25,7 +25,7 @@ class dachixGenreScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("Dachix.com")
+		self['title'] = Label("DaChix.com")
 		self['ContentTitle'] = Label("Genre:")
 		self['name'] = Label(_("Please wait..."))
 
@@ -111,7 +111,7 @@ class dachixListScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("Dachix.com")
+		self['title'] = Label("DaChix.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
 		self['F2'] = Label(_("Page"))
@@ -162,7 +162,7 @@ class dachixListScreen(MPScreen, ThumbsHelper):
 
 	def getStreamData(self, data):
 		self.title = self['liste'].getCurrent()[0][0]
-		url = re.search('file":"(.*?)"', data, re.S)
+		url = re.search("<source src='(.*?)'", data, re.S)
 		url = unquote(url.group(1))
 		if url:
 			self.session.open(SimplePlayer, [(self.title, url)], showPlaylist=False, ltype='dachix')

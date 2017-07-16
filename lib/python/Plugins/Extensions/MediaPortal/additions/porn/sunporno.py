@@ -38,15 +38,25 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
+
+default_cover = "https://sunstatic.fuckandcdn.com/sun/sunstatic/v31/common/sunporno/img/logo_big.png"
+spAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+json_headers = {
+	'Accept':'application/json',
+	'Accept-Language':'en,en-US;q=0.7,en;q=0.3',
+	'X-Requested-With':'XMLHttpRequest',
+	'Content-Type':'application/x-www-form-urlencoded',
+	}
 
 class sunpornoGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -75,46 +85,70 @@ class sunpornoGenreScreen(MPScreen):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		url = "https://www.sunporno.com/channels/"
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		getPage(url, agent=spAgent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('class="cat-container"(.*?)class="clearfix">', data, re.S)
 		Cats = re.findall('<a\shref="https://www.sunporno.com/channels/(\d+).*?">(.*?)<', parse.group(1), re.S)
 		if Cats:
 			for (Id, Title) in Cats:
-				Url = "https://www.sunporno.com/?area=movieAjaxListViewer&nicheId=%s&dateAddedType=5&lengthType=0-50&orderBy=id&pageId=" % Id
+				Url = "https://www.sunporno.com/?area=ajaxMovieListViewer&nicheId=%s&dateAddedType=5&lengthType=0-50&orderBy=id&pageId=" % Id
 				Title = Title.strip()
 				self.genreliste.append((Title, Url))
 			self.genreliste.sort()
-		self.genreliste.insert(0, ("High Definition", "https://www.sunporno.com/?area=movieAjaxListViewer&dateAddedType=5&lengthType=0-50&orderBy=hd&pageId="))
-		self.genreliste.insert(0, ("Longest", "https://www.sunporno.com/?area=movieAjaxListViewer&dateAddedType=5&lengthType=0-50&orderBy=longest&pageId="))
-		self.genreliste.insert(0, ("Most Favorited", "https://www.sunporno.com/?area=movieAjaxListViewer&dateAddedType=5&lengthType=0-50&orderBy=favorited&pageId="))
-		self.genreliste.insert(0, ("Top Rated", "https://www.sunporno.com/?area=movieAjaxListViewer&dateAddedType=5&lengthType=0-50&orderBy=rating&pageId="))
-		self.genreliste.insert(0, ("Newest", "https://www.sunporno.com/?area=movieAjaxListViewer&dateAddedType=5&lengthType=0-50&orderBy=id&pageId="))
+		self.genreliste.insert(0, ("High Definition", "https://www.sunporno.com/?area=ajaxMovieListViewer&dateAddedType=5&lengthType=0-50&orderBy=hd&pageId="))
+		self.genreliste.insert(0, ("Longest", "https://www.sunporno.com/?area=ajaxMovieListViewer&dateAddedType=5&lengthType=0-50&orderBy=longest&pageId="))
+		self.genreliste.insert(0, ("Most Favorited", "https://www.sunporno.com/?area=ajaxMovieListViewer&dateAddedType=5&lengthType=0-50&orderBy=favorited&pageId="))
+		self.genreliste.insert(0, ("Most Viewed", "https://www.sunporno.com/?area=ajaxMovieListViewer&dateAddedType=5&lengthType=0-50&orderBy=viewCount&pageId="))
+		self.genreliste.insert(0, ("Top Rated", "https://www.sunporno.com/?area=ajaxMovieListViewer&dateAddedType=5&lengthType=0-50&orderBy=rating&pageId="))
+		self.genreliste.insert(0, ("Newest", "https://www.sunporno.com/?area=ajaxMovieListViewer&dateAddedType=5&lengthType=0-50&orderBy=id&pageId="))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
 		self['name'].setText('')
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		if Name == "--- Search ---":
-			self.suchen()
-
+			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
 			self.session.open(sunpornoFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
-			self.suchString = callback.replace(' ', '+')
 			Name = "--- Search ---"
-			Link = '%s' % (self.suchString)
+			self.suchString = callback
+			Link = '%s' % (self.suchString.replace(' ', '+'))
 			self.session.open(sunpornoFilmScreen, Link, Name)
 
+	def getSuggestions(self, text, max_res):
+		url = "https://www.sunporno.com/?area=autocomplete&o=straight&q=%s" % urllib.quote_plus(text)
+		d = twAgentGetPage(url, agent=spAgent, headers=json_headers, timeout=5)
+		d.addCallback(self.gotSuggestions, max_res)
+		d.addErrback(self.gotSuggestions, max_res, err=True)
+		return d
+
+	def gotSuggestions(self, suggestions, max_res, err=False):
+		list = []
+		if not err and type(suggestions) in (str, buffer):
+			suggestions = json.loads(suggestions)
+			for item in suggestions['suggestions']:
+				li = re.sub('\s+', ' ', item).strip()
+				list.append(str(li))
+				max_res -= 1
+				if not max_res: break
+		elif err:
+			printl(str(suggestions),self,'E')
+		return list
+		
 class sunpornoFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
@@ -153,7 +187,7 @@ class sunpornoFilmScreen(MPScreen, ThumbsHelper):
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
-		self.lastpage = 999
+		self.lastpage = 1
 
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -163,22 +197,24 @@ class sunpornoFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadPage(self):
 		self.keyLocked = True
-		self['page'].setText(str(self.page))
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "https://www.sunporno.com/?area=movieAjaxListViewer&q=%s&dateAddedType=5&lengthType=0-50&orderBy=relevance&pageId=%s" % (self.Link, str(self.page))
+			url = "https://www.sunporno.com/?area=ajaxMovieListViewer&q=%s&dateAddedType=5&lengthType=0-50&orderBy=relevance&pageId=%s" % (self.Link, str(self.page))
 		else:
 			url = "%s%s" % (self.Link, str(self.page))
-		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
+		getPage(url, agent=spAgent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		Movies = re.findall('data-id="(.*?)".*?img\ssrc="(.*?)".*?btime">(.*?)</p.*?movie-title\s{0,1}">(.*?)</p>', data, re.S)
+		self.getLastPage(data, '', '"maxPage":(\d+),"')
+		Movies = re.findall('id":"(\d+)","thumb":"(.*?)".*?"duration":"(.*?)","rating":"(\d+)".*?"name":"(.*?)"', data, re.S)
 		if Movies:
-			for (Id, Image, Runtime, Title) in Movies:
+			for (Id, Image, Runtime, Rating, Title) in Movies:
 				Title = stripAllTags(Title)
 				Url = "https://www.sunporno.com/videos/%s/" % Id
-				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime))
+				Image = Image.replace('\/','/')
+				Rating = Rating + "%"
+				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Rating))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None, ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -192,7 +228,8 @@ class sunpornoFilmScreen(MPScreen, ThumbsHelper):
 		url = self['liste'].getCurrent()[0][1]
 		pic = self['liste'].getCurrent()[0][2]
 		runtime = self['liste'].getCurrent()[0][3]
-		self['handlung'].setText("Runtime: %s" % (runtime))
+		rating = self['liste'].getCurrent()[0][4]
+		self['handlung'].setText("Runtime: %s\nRating: %s" % (runtime, rating))
 		self['name'].setText(title)
 		CoverHelper(self['coverArt']).getCover(pic)
 
@@ -201,7 +238,7 @@ class sunpornoFilmScreen(MPScreen, ThumbsHelper):
 			return
 		Link = self['liste'].getCurrent()[0][1]
 		self.keyLocked = True
-		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
+		getPage(Link, agent=spAgent).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
 		parse = re.findall('itemprop="name">(.*?)</span>', data, re.S|re.I)

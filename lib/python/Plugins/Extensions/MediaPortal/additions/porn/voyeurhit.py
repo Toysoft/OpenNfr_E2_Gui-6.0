@@ -39,6 +39,8 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
+default_cover = "https://tubecorporate.com/home/img/sites/our_sites_logo_2.png"
+
 class voyeurhitGenreScreen(MPScreen):
 
 	def __init__(self, session):
@@ -87,9 +89,9 @@ class voyeurhitGenreScreen(MPScreen):
 				Title = title.replace(' ','').replace('\n','')
 				self.genreliste.append((Title, url, img))
 		self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Popular", "http://www.voyeurhit.com/most-popular/", None))
-		self.genreliste.insert(0, ("Top Rated", "http://voyeurhit.com/top-rated/", None))
-		self.genreliste.insert(0, ("Most Recent", "http://voyeurhit.com/latest-updates/", None))
+		self.genreliste.insert(0, ("Most Popular", "http://www.voyeurhit.com/most-popular/", default_cover))
+		self.genreliste.insert(0, ("Top Rated", "http://voyeurhit.com/top-rated/", default_cover))
+		self.genreliste.insert(0, ("Most Recent", "http://voyeurhit.com/latest-updates/", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False

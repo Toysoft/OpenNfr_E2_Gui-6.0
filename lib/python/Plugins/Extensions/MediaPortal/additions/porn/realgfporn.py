@@ -45,6 +45,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
+default_cover = "https://cdn-images.realgfporn.com/media/misc/53f636a254a05.png"
 
 class realgfpornGenreScreen(MPScreen):
 
@@ -83,7 +84,7 @@ class realgfpornGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.realgfporn.com/channels/"
+		url = "https://www.realgfporn.com/channels/"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
@@ -92,13 +93,14 @@ class realgfpornGenreScreen(MPScreen):
 			for (Url, Image, Title) in Cats:
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.realgfporn.com/longest/page", None))
-			self.genreliste.insert(0, ("Most Popular", "http://www.realgfporn.com/most-viewed/page", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.realgfporn.com/top-rated/page", None))
-			self.genreliste.insert(0, ("Most Recent", "http://www.realgfporn.com/most-recent/page", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Longest", "https://www.realgfporn.com/longest/page", default_cover))
+			self.genreliste.insert(0, ("Most Popular", "https://www.realgfporn.com/most-viewed/page", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "https://www.realgfporn.com/top-rated/page", default_cover))
+			self.genreliste.insert(0, ("Most Recent", "https://www.realgfporn.com/most-recent/page", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+		self.showInfos()
 
 	def showInfos(self):
 		Image = self['liste'].getCurrent()[0][2]
@@ -118,11 +120,11 @@ class realgfpornGenreScreen(MPScreen):
 		if callback is not None and len(callback):
 			Name = "--- Search ---"
 			self.suchString = callback
-			Link = 'http://www.realgfporn.com/search/%s/page' % self.suchString.replace(' ', '-')
+			Link = 'https://www.realgfporn.com/search/%s/page' % self.suchString.replace(' ', '-')
 			self.session.open(realgfpornFilmScreen, Link, Name)
 
 	def getSuggestions(self, text, max_res):
-		url = "http://www.realgfporn.com/autocomplete.php?term=%s" % urllib.quote_plus(text)
+		url = "https://www.realgfporn.com/autocomplete.php?term=%s" % urllib.quote_plus(text)
 		d = twAgentGetPage(url, agent=agent, headers=headers, timeout=5)
 		d.addCallback(self.gotSuggestions, max_res)
 		d.addErrback(self.gotSuggestions, max_res, err=True)
@@ -195,11 +197,11 @@ class realgfpornFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination(.*?)</div>')
-		Movies = re.findall('class="video-spot">.*?<a\shref="http://www.realgfporn.com/videos(.*?)".*?<img\s.*?src="(.*?)".*?alt="(.*?)".*?post-duration">(.*?)</b>.*?post-views">(.*?)</b>', data, re.S)
+		Movies = re.findall('class="video-spot">.*?<a\shref="http[s]?://www.realgfporn.com/videos(.*?)".*?<img\s.*?src="(.*?)".*?alt="(.*?)".*?post-duration">(.*?)</b>.*?post-views">(.*?)</b>', data, re.S)
 		if Movies:
 			for (Url, Image, Title, Runtime, Views) in Movies:
 				Image = Image.replace(' ','%20')
-				Url = "http://www.realgfporn.com/videos" + Url
+				Url = "https://www.realgfporn.com/videos" + Url
 				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views))
 		else:
 			if re.search('no\sresults\swere\sfound', data):

@@ -38,16 +38,40 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
+
+ck = {}
+favourites = []
+subscriptions = []
+xhAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
+base_url = "https://xhamster.com"
+
+if mp_globals.isDreamOS:
+	default_cover = "https://static-ec.xhcdn.com/css/promo/newlogo/images/guide/logo-vertical-color-invert.svg"
+else:
+	default_cover = "https://s3.amazonaws.com/uploads.uservoice.com/logo/design_setting/4667/original/logo_horizontal_color.jpg"
+
+def writeFavSub():
+	try:
+		wl_path = config.mediaportal.watchlistpath.value+"mp_xhamster_favsub"
+		writefavsub = open(wl_path, 'w')
+		for m in favourites:
+			writefavsub.write('"fav";"%s";"%s"\n' % (m[0], m[1]))
+		for m in subscriptions:
+			writefavsub.write('"sub";"%s";"%s"\n' % (m[0], m[1]))
+		writefavsub.close()
+	except:
+		pass
 
 class xhamsterGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -56,11 +80,7 @@ class xhamsterGenreScreen(MPScreen):
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel" : self.keyCancel,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft
+			"cancel" : self.keyCancel
 		}, -1)
 
 		self['title'] = Label("xHamster.com")
@@ -72,49 +92,223 @@ class xhamsterGenreScreen(MPScreen):
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
+		self.onLayoutFinish.append(self.loadFavSub)
 		self.onLayoutFinish.append(self.layoutFinished)
 
+	def loadFavSub(self):
+		global favourites
+		favourites = []
+		global subscriptions
+		subscriptions = []
+		self.wl_path = config.mediaportal.watchlistpath.value+"mp_xhamster_favsub"
+		try:
+			readfavsub = open(self.wl_path,"r")
+			rawData = readfavsub.read()
+			readfavsub.close()
+			for m in re.finditer('"(.*?)";"(.*?)";"(.*?)"\n', rawData):
+				(type, link, name) = m.groups()
+
+				if type == "fav":
+					favourites.append(((link, name)))
+				elif type == "sub":
+					subscriptions.append((link, name))
+		except:
+			pass
+
 	def layoutFinished(self):
-		self.keyLocked = True
-		url = "http://xhamster.com/categories"
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		url = base_url + "/categories"
+		ck.update({'x_ndvkey':'s%3A8%3A%22bef3e026%22%3B'})
+		getPage(url, agent=xhAgent, cookies=ck).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="alphabet-block"(.*?)</div></div></div>', data, re.S)
-		Cats = re.findall('<a\shref="(http[s]?://xhamster.com/[channels\/|categories\/|tags\/].*?)(?:-1.html|)">(?:<span >|)(.*?)<', parse.group(1), re.S)
+		parse = re.search('class="letter-blocks(.*?)class="footer-buffer">', data, re.S)
+		Cats = re.findall('<a\shref="(https://xhamster.com\/(?:channels\/|categories\/|tags\/).*?)(?:-1.html|)"\s{0,2}>(.*?)</a', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
 				Title = Title.strip(' ')
 				self.genreliste.append((Title, Url))
 		self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Commented (All Time)", 'https://xhamster.com/rankings/alltime-top-commented'))
-		self.genreliste.insert(0, ("Most Viewed (All Time)", 'https://xhamster.com/rankings/alltime-top-viewed'))
-		self.genreliste.insert(0, ("Top Rated (All Time)", 'https://xhamster.com/rankings/alltime-top-videos'))
-		self.genreliste.insert(0, ("Top Rated (Monthly)", 'https://xhamster.com/rankings/monthly-top-videos'))
-		self.genreliste.insert(0, ("Top Rated (Weekly)", 'https://xhamster.com/rankings/weekly-top-videos'))
-		self.genreliste.insert(0, ("Top Rated (Daily)", 'https://xhamster.com/rankings/daily-top-videos'))
-		self.genreliste.insert(0, ("Newest", 'https://xhamster.com/new/'))
+		self.genreliste.insert(0, (400 * "—", None))
+		self.genreliste.insert(0, ("Subscriptions", 'subs'))
+		self.genreliste.insert(0, ("Favourites", 'favs'))
+		self.genreliste.insert(0, (400 * "—", None))
+		self.genreliste.insert(0, ("Most Commented (All Time)", '%s/rankings/alltime-top-commented' % base_url))
+		self.genreliste.insert(0, ("Most Commented (Monthly)", '%s/rankings/monthly-top-commented' % base_url))
+		self.genreliste.insert(0, ("Most Commented (Weekly)", '%s/rankings/weekly-top-commented' % base_url))
+		self.genreliste.insert(0, ("Most Commented (Daily)", '%s/rankings/daily-top-commented' % base_url))
+		self.genreliste.insert(0, ("Most Viewed (All Time)", '%s/rankings/alltime-top-viewed' % base_url))
+		self.genreliste.insert(0, ("Most Viewed (Monthly)", '%s/rankings/monthly-top-viewed' % base_url))
+		self.genreliste.insert(0, ("Most Viewed (Weekly)", '%s/rankings/weekly-top-viewed' % base_url))
+		self.genreliste.insert(0, ("Most Viewed (Daily)", '%s/rankings/daily-top-viewed' % base_url))
+		self.genreliste.insert(0, ("Top Rated (All Time)", '%s/rankings/alltime-top-videos' % base_url))
+		self.genreliste.insert(0, ("Top Rated (Monthly)", '%s/rankings/monthly-top-videos' % base_url))
+		self.genreliste.insert(0, ("Top Rated (Weekly)", '%s/rankings/weekly-top-videos' % base_url))
+		self.genreliste.insert(0, ("Top Rated (Daily)", '%s/rankings/daily-top-videos' % base_url))
+		self.genreliste.insert(0, ("Newest", '%s/new/' % base_url))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		if Name == "--- Search ---":
-			self.suchen()
+			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
+		elif Name == "Subscriptions":
+			self.session.open(xhamsterSubscriptionsScreen, Name)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(xhamsterFilmScreen, Link, Name)
+			if Link:
+				self.session.open(xhamsterFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
-			self.suchString = callback.replace(' ', '+')
-			Link = '%s' % (self.suchString)
 			Name = "--- Search ---"
+			self.suchString = callback
+			Link = '%s' % self.suchString.replace(' ', '+')
 			self.session.open(xhamsterFilmScreen, Link, Name)
+
+	def getSuggestions(self, text, max_res):
+		url = "http://m.xhamster.com/ajax.php?act=search&q=%s" % urllib.quote_plus(text)
+		d = twAgentGetPage(url, agent=xhAgent, headers={'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}, timeout=5)
+		d.addCallback(self.gotSuggestions, max_res)
+		d.addErrback(self.gotSuggestions, max_res, err=True)
+		return d
+
+	def gotSuggestions(self, suggestions, max_res, err=False):
+		list = []
+		if not err and type(suggestions) in (str, buffer):
+			suggestions = re.findall('"(.*?)"', suggestions, re.S)
+			for item in suggestions:
+				li = stripAllTags(item)
+				list.append(str(li))
+				max_res -= 1
+				if not max_res: break
+		elif err:
+			printl(str(suggestions),self,'E')
+		return list
+
+class xhamsterSubscriptionsScreen(MPScreen):
+
+	def __init__(self, session, name):
+		self.Name = name
+		self.plugin_path = mp_globals.pluginPath
+		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		if not fileExists(path):
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
+		with open(path, "r") as f:
+			self.skin = f.read()
+			f.close()
+
+		MPScreen.__init__(self, session)
+
+		self["actions"] = ActionMap(["MP_Actions"], {
+			"ok" : self.keyOK,
+			"0" : self.closeAll,
+			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft,
+			"red" : self.keySubscribe,
+		}, -1)
+
+		self['title'] = Label("xHamster.com")
+		self['ContentTitle'] = Label("Genre: %s" % self.Name)
+		self.keyLocked = True
+		self.subscribed = False
+
+		self.streamList = []
+
+		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self['liste'] = self.ml
+
+		self.onLayoutFinish.append(self.pageData)
+
+	def pageData(self):
+		self.streamList = []
+		self.keyLocked = True
+		global subscriptions
+		for m in subscriptions:
+			url = "https://xhamster.com/users/%s/videos" % m[0]
+			self.streamList.append((m[1], None, url))
+		if len(self.streamList) == 0:
+			self.streamList.append((_('No subscriptions found!'), None, None))
+		self.ml.setList(map(self._defaultlistleft, self.streamList))
+		self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		Link = self['liste'].getCurrent()[0][2]
+		if Link:
+			getPage(Link, agent=xhAgent, cookies=ck).addCallback(self.showInfos2).addErrback(self.dataError)
+
+	def showInfos2(self, data):
+		self.username = re.findall('class="user-name.*?href="https://xhamster.com/users/(.*?)".*? class="value">(.*?)</a', data, re.S)
+		title = self['liste'].getCurrent()[0][0]
+		pic = re.findall('class="xh-avatar large" src="(.*?)"', data, re.S)
+		if pic:
+			import requests
+			r = requests.head(pic[0])
+			size = int(r.headers['content-length'])
+			if size < 50000:
+				pic = pic[0]
+			else:
+				pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon-152x152.png"
+		else:
+			pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon-152x152.png"
+		self['name'].setText(title)
+		global subscriptions
+		found = False
+		for t in subscriptions:
+			if t[0] == self.username[0][0]:
+				submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
+				self['F1'].setText(_("Unsubscribe"))
+				self.subscribed = True
+				found = True
+		if not found:
+			submsg = "\nUser: " + self.username[0][1]
+			self['F1'].setText(_("Subscribe"))
+			self.subscribed = False
+		self['handlung'].setText(submsg.strip('\n'))
+		CoverHelper(self['coverArt']).getCover(pic)
+
+	def keyOK(self):
+		if self.keyLocked:
+			return
+		Name = self['liste'].getCurrent()[0][0]
+		Link = self['liste'].getCurrent()[0][2]
+		if Link:
+			self.session.open(xhamsterFilmScreen, Link, Name)
+
+	def keySubscribe(self):
+		Link = self['liste'].getCurrent()[0][2]
+		if self.keyLocked:
+			return
+		if not Link:
+			return
+		self.keyLocked = True
+		global subscriptions
+		if self.subscribed:
+			sub_tmp = []
+			for t in subscriptions:
+				if t[0] == self.username[0][0]:
+					continue
+				else:
+					sub_tmp.append(((t[0], t[1])))
+			subscriptions = sub_tmp
+		else:
+			subscriptions.insert(0, ((self.username[0][0], self.username[0][1])))
+		self.pageData()
+		writeFavSub()
+		self.keyLocked = False
 
 class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 
@@ -143,81 +337,154 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
+			"menu" : self.keyMenu,
+			"red" : self.keySubscribe,
 			"green" : self.keyPageNumber,
-			"yellow" : self.keyFilter,
-			"blue" : self.keySort
+			"yellow" : self.keyRelated,
+			"blue" : self.keyFavourite
 		}, -1)
 
 		self['title'] = Label("xHamster.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
-		if re.match(".*?Search", self.Name):
-			self['F3'] = Label(_("Filter"))
-			self['F4'] = Label(_("Sort"))
-
+		self['F3'] = Label(_("Show Related"))
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
 		self.lastpage = 1
-
-		self.duration = 'Duration All'
-		self.sort = 'Data Added'
-		self.quality = 'Quality Any'
-		self.search_video= {"sort":"da","duration":"","channels":";0","quality":0,"date":""}
+		self.hd = False
+		self.favourited = False
+		self.subscribed = False
+		self.username = ""
+		self.videoId = ""
+		self.reload = False
 		self.streamList = []
+
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		self.keyLocked = True
-		self['name'].setText(_('Please wait...'))
 		self.streamList = []
-		if re.match(".*?Search", self.Name):
-			url = "http://xhamster.com/search.php?new=&q=%s&qcat=video&page=%s" % (self.Link, str(self.page))
+		self.keyLocked = True
+		if self.Link == "favs":
+			self['Page'].setText('')
+			self.pageData('')
 		else:
-			if re.match('.*?\/channels\/', self.Link):
-				url = "%s-%s.html" % (self.Link, str(self.page))
-			elif re.match('.*?\/rankings\/', self.Link):
-				url = "%s-%s.html" % (self.Link, str(self.page))
-			elif re.match('.*?\/new\/', self.Link):
-				url = "%s%s.html" % (self.Link, str(self.page))
-			else:
-				if self.page == 1:
-					url = self.Link
+			self['name'].setText(_('Please wait...'))
+			if re.match(".*?Search", self.Name):
+				url = "http://xhamster.com/search.php?new=&q=%s&qcat=video&page=%s" % (self.Link, str(self.page))
+				if self.hd:
+					ck.update({'video_search_form':"%7b%22categories%22%3a%7b%22straight%22%3atrue%2c%22gay%22%3afalse%2c%22shemale%22%3afalse%7d%2c%22quality%22%3a%22hd%22%7d"})
 				else:
-					url = "%s/%s" % (self.Link, str(self.page))
-		searchcookie = 'search_video=' + quote(str(self.search_video).replace(' ', '')).replace('%27', '%22')
-		getPage(url, headers={'Cookie': searchcookie, 'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.pageData).addErrback(self.dataError)
+					ck.update({'video_search_form':"%7b%22categories%22%3a%7b%22straight%22%3atrue%2c%22gay%22%3afalse%2c%22shemale%22%3afalse%7d%2c%22quality%22%3a%22all%22%7d"})
+			else:
+				if re.match('.*?\/channels\/', self.Link):
+					url = "%s-%s.html" % (self.Link, str(self.page))
+					if self.hd:
+						url = url.replace('/new-', '/hd-')
+				elif re.match('.*?\/rankings\/', self.Link):
+					url = "%s-%s.html" % (self.Link, str(self.page))
+				elif re.match('.*?\/new\/', self.Link):
+					url = "%s%s.html" % (self.Link, str(self.page))
+				elif self.Name == "Related":
+					url = self.Link + str(self.page)
+				else:
+					if self.hd:
+						hd = '/hd'
+					else:
+						hd = ''
+					url = "%s%s/%s" % (self.Link, hd, str(self.page))
+			getPage(url, agent=xhAgent, cookies=ck).addCallback(self.pageData).addErrback(self.dataError)
 
 	def pageData(self, data):
-		self.getLastPage(data, 'class=[\'|"]pager[\'|"]>(.*?)</table>')
-		if re.search('vDate', data, re.S):
-			parse = re.search('(<div\sclass=[\'|"]video\s.*?[\'|"]><div\sclass=[\'|"]vDate.*?)</html>', data, re.S)
+		if self.Link == "favs":
+			for m in favourites:
+				url = "https://xhamster.com/movies/" + m[0]
+				self.streamList.append((m[1], None, url, "", "", ""))
 		else:
-			parse = re.search('<html(.*)</html>', data, re.S)
-		Liste = re.findall('class=[\'|"]video.*?><a\shref=[\'|"](.*?/movies/.*?)[\'|"].*?class=[\'|"]hRotator[\'|"]\s*><img\ssrc=[\'|"](.*?)[\'|"].*?alt=[\'|"](.*?)[\'|"].*?sprite.*?<b>(.*?)</b>', parse.group(1), re.S)
-		if Liste:
-			for (Link, Image, Name, Runtime) in Liste:
-				self.streamList.append((decodeHtml(Name), Image, Link, Runtime))
+			self.getLastPage(data, 'class="pager-section"(.*?)</div>')
+			if 'class="date-added"' in data:
+				parse = re.search('class="date-added">(.*?)</html>', data, re.S)
+			else:
+				parse = re.search('class="iframe-container"(.*?)</html>', data, re.S)
+			if parse:
+				Liste = re.findall('class="thumb-container"\sdata-href="(.*?)"\sdata-thumb="(.*?)".*?class="duration">(.*?)</div>.*?class="name">(.*?)</div>.*?class="views">(.*?)</div>.*?class="rating">(.*?)</div>', parse.group(1), re.S)
+				if Liste:
+					for (Link, Image, Runtime, Name, Views, Rating) in Liste:
+						Name = stripAllTags(Name).strip()
+						Views = stripAllTags(Views).strip().replace(',','')
+						Rating = stripAllTags(Rating).strip()
+						self.streamList.append((decodeHtml(Name), Image, Link, Runtime, Views, Rating))
+			else:
+				Liste = re.findall('"duration":(\d+),"title":"(.*?)","pageURL":"(.*?)".*?ratingModel","value":(\d+).*?videoModel","thumbURL":"(.*?)".*?views":(\d+),', data, re.S)
+				if Liste:
+					for (Runtime, Name, Link, Rating, Image, Views) in Liste:
+						Link = Link.replace('\/','/')
+						Image = Image.replace('\/','/')
+						Rating = Rating + "%"
+						m, s = divmod(int(Runtime), 60)
+						Runtime = "%02d:%02d" % (m, s)
+						self.streamList.append((decodeHtml(Name), Image, Link, Runtime, Views, Rating))
 		if len(self.streamList) == 0:
-			self.streamList.append((_('No videos found!'), None, '', ''))
+			self.streamList.append((_('No videos found!'), None, None, '', '', ''))
 		self.ml.setList(map(self._defaultlistleft, self.streamList))
-		self.ml.moveToIndex(0)
+		if not self.reload:
+			self.ml.moveToIndex(0)
+		self.reload = False
 		self.keyLocked = False
-		self.th_ThumbsQuery(self.streamList, 0, 2, 1, 3, None, self.page, self.lastpage, mode=1)
+		if self.Link == "favs":
+			self.th_ThumbsQuery(self.streamList, 0, 2, None, None, 'itemprop="thumbnailUrl" href="(.*?)">', 1, 1, mode=1)
+		else:
+			self.th_ThumbsQuery(self.streamList, 0, 2, 1, 3, None, self.page, self.lastpage, mode=1)
 		self.showInfos()
 
 	def showInfos(self):
+		Link = self['liste'].getCurrent()[0][2]
+		if Link:
+			getPage(Link, agent=xhAgent, cookies=ck).addCallback(self.showInfos2).addErrback(self.dataError)
+
+	def showInfos2(self, data):
+		self.videoId = re.findall('"videoId":(\d+),', data, re.S)[0]
+		self.username = re.findall('"entity-author-container__name" href="https://xhamster.com/users/(.*?)"\s.*?itemprop="name">(.*?)</span', data, re.S)
 		title = self['liste'].getCurrent()[0][0]
-		pic = self['liste'].getCurrent()[0][1]
-		runtime = self['liste'].getCurrent()[0][3]
-		self['name'].setText(title)
-		if re.match(".*?Search", self.Name):
-			self['handlung'].setText("Runtime: %s\nSort: %s\nFilter: %s / %s" % (runtime, self.sort, self.duration, self.quality))
+		if self.Link == "favs":
+			pic = re.findall('itemprop="thumbnailUrl" href="(.*?)">', data, re.S)[0]
 		else:
-			self['handlung'].setText("Runtime: %s" % runtime)
+			pic = self['liste'].getCurrent()[0][1]
+		runtime = self['liste'].getCurrent()[0][3]
+		views = self['liste'].getCurrent()[0][4]
+		rating = self['liste'].getCurrent()[0][5]
+		self['name'].setText(title)
+		found = False
+		global subscriptions
+		for t in subscriptions:
+			if t[0] == self.username[0][0]:
+				submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
+				self['F1'].setText(_("Unsubscribe"))
+				self.subscribed = True
+				found = True
+		if not found:
+			submsg = "\nUser: " + self.username[0][1]
+			self['F1'].setText(_("Subscribe"))
+			self.subscribed = False
+		found = False
+		global favourites
+		for t in favourites:
+			if t[0] == self.videoId:
+				favmsg = "\nFavourited"
+				self.favourited = True
+				self['F4'].setText(_("Remove Favourite"))
+				found = True
+		if not found:
+			favmsg = ""
+			self['F4'].setText(_("Add Favourite"))
+			self.favourited = False
+		if self.Link == "favs":
+			self['handlung'].setText(submsg.strip('\n'))
+		else:
+			self['handlung'].setText("Runtime: %s\nViews: %s\nRating: %s%s%s" % (runtime, views, rating, submsg, favmsg))
 		CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
@@ -225,41 +492,100 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 			return
 		Link = self['liste'].getCurrent()[0][2]
 		self.keyLocked = True
-		getPage(Link).addCallback(self.playData).addErrback(self.dataError)
+		if Link:
+			getPage(Link, agent=xhAgent, cookies=ck).addCallback(self.playerData).addErrback(self.dataError)
 
-	def keySort(self):
-		if self.keyLocked or not re.match(".*?Search", self.Name):
+	def keyMenu(self):
+		if self.keyLocked:
 			return
-		rangelist = [['Data Added', 'da'], ['Relevance', 'rl'], ['Views','vc'], ['Rating','rt'], ['Duration','dr']]
-		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+		if re.match('.*?\/rankings\/', self.Link):
+			return
+		elif re.match('.*?\/new\/', self.Link):
+			return
+		elif self.Name == "Related":
+			return
+		elif self.Link == "favs":
+			return
+		rangelist = [['All Videos', False], ['Only HD', True]]
+		self.session.openWithCallback(self.keyMenuAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
 
-	def keySortAction(self, result):
+	def keyMenuAction(self, result):
 		if result:
-			self.search_video["sort"] = result[1]
-			self.sort = result[0]
+			self.hd = result[1]
 			self.loadPage()
 
-	def keyFilter(self):
-		if self.keyLocked or not re.match(".*?Search", self.Name):
+	def keySubscribe(self):
+		Link = self['liste'].getCurrent()[0][2]
+		if self.keyLocked:
 			return
-		rangelist = [['Duration Any', ''], ['Duration 0-10', '0-10'], ['Duration 10-40', '10-40'], ['Duration 40+', '40+'],
-					['Quality Any', 0], ['Quality HD', 1],
-					]
-		self.session.openWithCallback(self.keyFilterAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+		if not Link:
+			return
+		self.keyLocked = True
+		global subscriptions
+		if self.subscribed:
+			sub_tmp = []
+			for t in subscriptions:
+				if t[0] == self.username[0][0]:
+					continue
+				else:
+					sub_tmp.append(((t[0], t[1])))
+			subscriptions = sub_tmp
+		else:
+			subscriptions.insert(0, ((self.username[0][0], self.username[0][1])))
+		self.showInfos()
+		writeFavSub()
+		self.keyLocked = False
 
-	def keyFilterAction(self, result):
-		if result:
-			if re.match('Duration', result[0]):
-				self.search_video["duration"] = result[1]
-				self.duration = result[0]
-			elif re.match('Quality', result[0]):
-				self.search_video["quality"] = result[1]
-				self.quality = result[0]
+	def keyRelated(self):
+		if self.keyLocked:
+			return
+		Link = self['liste'].getCurrent()[0][2]
+		self.keyLocked = True
+		if Link:
+			getPage(Link, agent=xhAgent, cookies=ck).addCallback(self.getRelated).addErrback(self.dataError)
+
+	def keyFavourite(self):
+		Link = self['liste'].getCurrent()[0][2]
+		if self.keyLocked:
+			return
+		if not Link:
+			return
+		self.keyLocked = True
+		global favourites
+		if self.favourited:
+			fav_tmp = []
+			for t in favourites:
+				if t[0] == self.videoId:
+					continue
+				else:
+					fav_tmp.append(((t[0], t[1])))
+			favourites = fav_tmp
+		else:
+			if self.videoId != "":
+				title = self['liste'].getCurrent()[0][0]
+				favourites.insert(0, (self.videoId, title))
+		if self.Link == "favs":
+			self.reload = True
 			self.loadPage()
+		else:
+			self.showInfos()
+		writeFavSub()
+		self.keyLocked = False
 
-	def playData(self, data):
+	def getRelated(self, data):
+		self.keyLocked = False
+		parse = re.findall('videoRelatedURL":"(.*?)"', data, re.S)
+		RelatedUrl = parse[0].replace('\/','/') + "&page="
+		self.session.open(xhamsterFilmScreen, RelatedUrl, "Related")
+
+	def playerData(self, data):
+		playerData = re.findall('itemprop="embedUrl" href="(.*?)">', data, re.S)
+		if playerData:
+			getPage(playerData[0], agent=xhAgent, cookies=ck).addCallback(self.playUrl).addErrback(self.dataError)
+
+	def playUrl(self, data):
 		Title = self['liste'].getCurrent()[0][0]
-		File = re.findall("file:.'(.*?)'", data)
-		if File:
+		playUrl = re.findall('video":{"file":"(.*?)"', data, re.S)
+		if playUrl:
 			self.keyLocked = False
-			self.session.open(SimplePlayer, [(Title, File[0])], showPlaylist=False, ltype='xhamster')
+			self.session.open(SimplePlayer, [(Title, playUrl[-1].replace('&amp;','&').replace('\/','/'))], showPlaylist=False, ltype='xhamster')

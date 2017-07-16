@@ -47,6 +47,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
+default_cover = "https://s3.amazonaws.com/uploads.uservoice.com/logo/design_setting/226367/original/red__2.jpg"
 
 class redtubeGenreScreen(MPScreen):
 
@@ -98,11 +99,11 @@ class redtubeGenreScreen(MPScreen):
 					Image = 'http:' + Image
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Favored", "http://www.redtube.com/mostfavored?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Most Viewed", "http://www.redtube.com/mostviewed?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.redtube.com/top?period=alltime&page=", None))
-			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/?page=", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Most Favored", "http://www.redtube.com/mostfavored?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Most Viewed", "http://www.redtube.com/mostviewed?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "http://www.redtube.com/top?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/?page=", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

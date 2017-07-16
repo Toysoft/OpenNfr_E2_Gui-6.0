@@ -46,6 +46,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
+default_cover = "https://tubecorporate.com/home/img/sites/our_sites_logo_3.png"
 
 class hclipsGenreScreen(MPScreen):
 
@@ -94,13 +95,14 @@ class hclipsGenreScreen(MPScreen):
 			for (Url, Image, Title) in Cats:
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.hclips.com/longest/", None))
-			self.genreliste.insert(0, ("Most Popular", "http://www.hclips.com/most-popular/", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.hclips.com/top-rated/", None))
-			self.genreliste.insert(0, ("Most Recent", "http://www.hclips.com/latest-updates/", None))
-			self.genreliste.insert(0, ("--- Search ---", "", None))
+			self.genreliste.insert(0, ("Longest", "http://www.hclips.com/longest/", default_cover))
+			self.genreliste.insert(0, ("Most Popular", "http://www.hclips.com/most-popular/", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "http://www.hclips.com/top-rated/", default_cover))
+			self.genreliste.insert(0, ("Most Recent", "http://www.hclips.com/latest-updates/", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+		self.showInfos()
 
 	def showInfos(self):
 		Image = self['liste'].getCurrent()[0][2]

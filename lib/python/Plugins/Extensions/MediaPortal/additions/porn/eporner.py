@@ -45,7 +45,8 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
-
+default_cover = "https://pbs.twimg.com/profile_images/577610027491405824/u6hnTtSa.png"
+	
 class epornerGenreScreen(MPScreen):
 
 	def __init__(self, session):
@@ -97,11 +98,11 @@ class epornerGenreScreen(MPScreen):
 				Title = Title.replace(' porn videos', '')
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "https://www.eporner.com/%page/longest/", None))
-			self.genreliste.insert(0, ("Top Rated", "https://www.eporner.com/top-rated/", None))
-			self.genreliste.insert(0, ("Most Viewed", "https://www.eporner.com/%page/most_viewed/", None))
-			self.genreliste.insert(0, ("Most Recent", "http://www.eporner.com/", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Longest", "https://www.eporner.com/%page/longest/", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "https://www.eporner.com/top-rated/", default_cover))
+			self.genreliste.insert(0, ("Most Viewed", "https://www.eporner.com/%page/most_viewed/", default_cover))
+			self.genreliste.insert(0, ("Most Recent", "http://www.eporner.com/", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

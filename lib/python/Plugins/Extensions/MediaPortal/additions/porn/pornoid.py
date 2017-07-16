@@ -59,6 +59,8 @@ class pornoidGenreScreen(MPScreen):
 		if raw:
 			for (Url, Image, Title) in raw:
 				Title = Title.strip().title().replace('. ','')
+				if not Url.endswith('/'):
+					Url = Url + '/'
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 			self.filmliste.sort()
 			self.filmliste.insert(0, ("Most Popular", "http://%s/most-popular/" % self.baseurl, None))
@@ -152,9 +154,9 @@ class pornoidListScreen(MPScreen, ThumbsHelper):
 	def parseData(self, data):
 		data = re.sub(r'<[<!--].*<a href="http://www.pornoid.com/login.php..*-->', "", data)
 		self.getLastPage(data, '<nav\sid="pgn">(.*?)</nav>')
-		raw = re.findall('<div\sclass="ic">.*?href="(http://\D+/videos/.*?)"\s(class=".*?title=|title=)"(.*?)">.*?src="(.*?)".*?<span>(.*?)</span>', data, re.S)
+		raw = re.findall('<div\sclass="ic">.*?href="(http[s]?://\D+/videos/.*?)"\s(?:class=".*?title=|title=)"(.*?)">.*?data-src="(.*?)".*?<span>(.*?)</span>', data, re.S)
 		if raw:
-			for (Link, x, Title, Image, Length) in raw:
+			for (Link, Title, Image, Length) in raw:
 				if not re.match(".*?pornsharia.com", Link, re.S):
 					Title = Title.strip()
 					self.filmliste.append((decodeHtml(Title), Link, Image, Length))
@@ -181,5 +183,7 @@ class pornoidListScreen(MPScreen, ThumbsHelper):
 	def getStreamData(self, data):
 		title = self['liste'].getCurrent()[0][0]
 		videoLink = re.search("video_url:\s'(.*?)'", data, re.S)
+		if not videoLink:
+			videoLink = re.search('<source\ssrc="(.*?)"', data, re.S)
 		if videoLink:
-			self.session.open(SimplePlayer, [(title, videoLink.group(1))], showPlaylist=False, ltype='pornoid')
+			self.session.open(SimplePlayer, [(title, videoLink.group(1).replace('&amp;','&'))], showPlaylist=False, ltype='pornoid')

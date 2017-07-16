@@ -40,6 +40,8 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.aes_crypt import aes_decrypt_text
 
+default_cover = "https://www.pornrabbit.com/static/pornrabbit/img/logo.png"
+
 class pornrabbitGenreScreen(MPScreen):
 
 	def __init__(self, session):
@@ -84,10 +86,11 @@ class pornrabbitGenreScreen(MPScreen):
 		Cats = re.findall('class="cat">.*?<a\shref="(.*?)".*?<h2>(.*?)<small>.*?(\d+,?\d+).*?<img\ssrc="(.*?)"', data, re.S)
 		if Cats:
 			for (Url, Title, Count, Image) in Cats:
+				Image = "http://www.pornrabbit.com" + Image
 				self.genreliste.append((Title, Url, Image, Count.replace(',','')))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Recent", "/videos/", None, None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None, None))
+			self.genreliste.insert(0, ("Most Recent", "/videos/", default_cover, None))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover, None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

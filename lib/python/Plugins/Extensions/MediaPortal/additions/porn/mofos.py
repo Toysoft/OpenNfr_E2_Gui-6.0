@@ -376,6 +376,10 @@ class mofosFilmScreen(MPScreen, ThumbsHelper):
 		Movies = re.findall('widget-release-card.*?href="(.*?)".*?src="(.*?jpg).*?alt="(.*?)".*?class="site-name".*?>(.*?)</.*?class="rating">(\d+)\s{0,20}%{0,1}</span.*?views-count":\s"(.*?)".*?date-added">(.*?)\s{0,2}</span', data, re.S)
 		if Movies:
 			for (Url, Image, Title, Collection, Rating, Views, Date) in Movies:
+				if Image.startswith('//////'):
+					Image = Image.replace('//////','//')
+				if Image.startswith('//'):
+					Image = "http:" + Image
 				Url = "http://www.mofos.com" + Url
 				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection, Rating, Views))
 		if len(self.filmliste) == 0:

@@ -81,7 +81,7 @@ class brazzersGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
-		url = "http://www.brazzers.com/categories/"
+		url = "https://www.brazzers.com/categories/"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
@@ -89,14 +89,14 @@ class brazzersGenreScreen(MPScreen):
 		Cats = re.findall('class="tag-card">.*?href="(.*?)".*?title="(.*?)".*?img.*?src="(.*?)".*?</li>', parse.group(1), re.S|re.I)
 		if Cats:
 			for (Url, Title, Image) in Cats:
-				Url = 'http://www.brazzers.com%s' % Url
+				Url = 'https://www.brazzers.com%s' % Url
 				if not Image.startswith('http'):
 					Image = 'http:' + Image
 				self.genreliste.append((decodeHtml(Title), Url, Image))
 			self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Viewed", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostviewed/', default_cover))
-		self.genreliste.insert(0, ("Most Rated", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostrated/', default_cover))
-		self.genreliste.insert(0, ("Release Date", 'http://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/bydate/', default_cover))
+		self.genreliste.insert(0, ("Most Viewed", 'https://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostviewed/', default_cover))
+		self.genreliste.insert(0, ("Most Rated", 'https://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/mostrated/', default_cover))
+		self.genreliste.insert(0, ("Release Date", 'https://www.brazzers.com/videos/all-sites/all-pornstars/all-categories/alltime/bydate/', default_cover))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
@@ -180,7 +180,7 @@ class brazzersFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://www.brazzers.com/search/all/?q=%s" % (self.Link)
+			url = "https://www.brazzers.com/search/all/?q=%s" % (self.Link)
 		else:
 			url = "%s%s/" % (self.Link, str(self.page))
 		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
@@ -193,7 +193,7 @@ class brazzersFilmScreen(MPScreen, ThumbsHelper):
 				SceneUrl = re.findall(".*?\/([0-9]+)\/([^\/]+)\/\"", Url , re.S)
 				if not Image.startswith('http'):
 					Image = 'http:' + Image
-				Url = "http://www.brazzers.com/scenes/view/id/%s/%s/" % (SceneUrl[0][0], SceneUrl[0][1])
+				Url = "https://www.brazzers.com/scenes/view/id/%s/%s/" % (SceneUrl[0][0], SceneUrl[0][1])
 				Title = stripAllTags(Pornstars).replace('...','').strip() + " - " + Title
 				self.filmliste.append((decodeHtml(Title), Url, Image, Date, Collection))
 		if len(self.filmliste) == 0:

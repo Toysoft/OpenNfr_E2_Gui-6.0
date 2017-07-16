@@ -43,15 +43,16 @@ from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoard
 tcAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
 baseurl = "http://de.tubepornclassic.com"
+default_cover = "https://tubecorporate.com/home/img/sites/our_sites_logo_8.png"
 
 class tubepornclassicGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -94,7 +95,11 @@ class tubepornclassicGenreScreen(MPScreen):
 			self.genreliste.insert(0, ("--- Search ---", ""))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+		self.showInfos()
 
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
+		
 	def keyOK(self):
 		if self.keyLocked:
 			return

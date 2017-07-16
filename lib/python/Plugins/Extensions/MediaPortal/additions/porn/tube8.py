@@ -49,6 +49,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/json',
 	}
+default_cover = "https://s3.amazonaws.com/uploads.uservoice.com/logo/design_setting/164750/original/tube8logo-tumblr.png"
 
 class tube8GenreScreen(MPScreen):
 
@@ -90,37 +91,29 @@ class tube8GenreScreen(MPScreen):
 		getPage(self.url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="categories-menu(.*?)</div>', data,re.S)
-		Cats = re.findall('href="(.*?)">(.*?)</a>', parse.group(1), re.S)
+		parse = re.search('categories-subnav-box(.*?)</div>', data,re.S)
+		Cats = re.findall('a\shref="(http[s]?://www.tube8.com/cat/.*?)">.*?class="category-thumb">.*?data-thumb="(.*?)".*?</span>(.*?)</a>', parse.group(1), re.S)
 		if Cats:
-			for (Url, Title) in Cats:
+			for (Url, Image, Title) in Cats:
 				Url = Url + "page/"
-				self.filmliste.append((Title, Url))
+				self.filmliste.append((Title, Url, Image))
 			self.filmliste.sort()
-			self.filmliste.insert(0, ("Longest", "http://www.tube8.com/longest/page/"))
-			self.filmliste.insert(0, ("Most Voted", "http://www.tube8.com/most-voted/page/"))
-			self.filmliste.insert(0, ("Most Discussed", "http://www.tube8.com/most-discussed/page/"))
-			self.filmliste.insert(0, ("Most Favorited", "http://www.tube8.com/most-favorited/page/"))
-			self.filmliste.insert(0, ("Top Rated", "http://www.tube8.com/top/page/"))
-			self.filmliste.insert(0, ("Most Viewed", "http://www.tube8.com/most-viewed/page/"))
-			self.filmliste.insert(0, ("Featured", "http://www.tube8.com/latest/page/"))
-			self.filmliste.insert(0, ("Newest", "http://www.tube8.com/newest/page/"))
-			self.filmliste.insert(0, ("--- Search ---", "callSuchen"))
+			self.filmliste.insert(0, ("Longest", "http://www.tube8.com/longest/page/", default_cover))
+			self.filmliste.insert(0, ("Most Voted", "http://www.tube8.com/most-voted/page/", default_cover))
+			self.filmliste.insert(0, ("Most Discussed", "http://www.tube8.com/most-discussed/page/", default_cover))
+			self.filmliste.insert(0, ("Most Favorited", "http://www.tube8.com/most-favorited/page/", default_cover))
+			self.filmliste.insert(0, ("Top Rated", "http://www.tube8.com/top/page/", default_cover))
+			self.filmliste.insert(0, ("Most Viewed", "http://www.tube8.com/most-viewed/page/", default_cover))
+			self.filmliste.insert(0, ("Featured", "http://www.tube8.com/latest/page/", default_cover))
+			self.filmliste.insert(0, ("Newest", "http://www.tube8.com/newest/page/", default_cover))
+			self.filmliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False
 		self.showInfos()
 
 	def showInfos(self):
-		getPage(self.url).addCallback(self.getCover).addErrback(self.dataError)
-
-	def getCover(self, data):
-		cat = self['liste'].getCurrent()[0][0]
-		parse = re.search('class="sh1"><span>%s</span></h2>.*?src="(.*?.jpg)"' % cat, data, re.S)
-		if parse:
-			cover = parse.group(1)
-		else:
-			cover = None
+		cover = self['liste'].getCurrent()[0][2]
 		CoverHelper(self['coverArt']).getCover(cover)
 
 	def keyOK(self):

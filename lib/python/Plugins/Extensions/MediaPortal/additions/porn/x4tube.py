@@ -39,6 +39,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
+from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
 
 agent='Mozilla/5.0 (Windows NT 6.1; rv:44.0) Gecko/20100101 Firefox/44.0'
 headers = {
@@ -55,24 +56,28 @@ class fourtubeGenreScreen(MPScreen):
 			self.portal = "4Tube.com"
 			self.baseurl = "www.4tube.com"
 			self.s = "s"
+			self.default_cover = None
 		if self.mode == "fux":
 			self.portal = "fux.com"
 			self.baseurl = "www.fux.com"
 			self.s = ""
+			self.default_cover = None
 		if self.mode == "porntube":
 			self.portal = "PornTube.com"
 			self.baseurl = "www.porntube.com"
 			self.s = "s"
+			self.default_cover = None
 		if self.mode == "pornerbros":
 			self.portal = "PornerBros.com"
 			self.baseurl = "www.pornerbros.com"
 			self.s = "s"
+			self.default_cover = "https://cdn1-ht-ui.pornerbros.com/assets/img/layout/mobile/pornerbros-logo-74f8f142ac.png"
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -105,29 +110,32 @@ class fourtubeGenreScreen(MPScreen):
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('>Categories<(.*?)>Channels<', data, re.S)
-		Cats = re.findall('<li><a\shref="(\/tag.*?)"\stitle="(.*?)"', parse.group(1), re.S)
+		parse = re.search('categories_page">(.*?)class="footer">', data, re.S)
+		Cats = re.findall(' class="thumb-link" href="(.*?)".*?class="thumb-title">(.*?)</.*?img data-original="(.*?)"', parse.group(1), re.S)
 		if Cats:
-			for (Url, Title) in Cats:
-				Url = "http://" + self.baseurl + Url
-				Title = Title.title()
-				self.genreliste.append((Title, Url))
+			for (Url, Title, Image) in Cats:
+				self.genreliste.append((Title, Url, Image))
 		parse = re.search('All\scategories(.*?)</div', data, re.S)
 		Cats = re.findall('<li><a\shref=".*?(\/tag.*?)"\stitle="(.*?)\ssex\smovies', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
 				Url = "http://" + self.baseurl + Url
 				Title = Title.title()
-				self.genreliste.append((Title, Url))
+				self.genreliste.append((Title, Url, self.default_cover))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Websites", "http://%s/channel%s" % (self.baseurl, self.s)))
-			self.genreliste.insert(0, ("Pornstars", "http://%s/pornstar%s" % (self.baseurl, self.s)))
-			self.genreliste.insert(0, ("Highest Rating", "http://%s/video%s?sort=rating&time=month" % (self.baseurl, self.s)))
-			self.genreliste.insert(0, ("Most Viewed", "http://%s/video%s?sort=views&time=month" % (self.baseurl, self.s)))
-			self.genreliste.insert(0, ("Latest", "http://%s/video%s?sort=date" % (self.baseurl, self.s)))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
+			self.genreliste.insert(0, ("Websites", "http://%s/channel%s" % (self.baseurl, self.s), self.default_cover))
+			self.genreliste.insert(0, ("Pornstars", "http://%s/pornstar%s" % (self.baseurl, self.s), self.default_cover))
+			self.genreliste.insert(0, ("Highest Rating", "http://%s/video%s?sort=rating&time=month" % (self.baseurl, self.s), self.default_cover))
+			self.genreliste.insert(0, ("Most Viewed", "http://%s/video%s?sort=views&time=month" % (self.baseurl, self.s), self.default_cover))
+			self.genreliste.insert(0, ("Latest", "http://%s/video%s?sort=date" % (self.baseurl, self.s), self.default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", self.default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		Image = self['liste'].getCurrent()[0][2]
+		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -241,15 +249,15 @@ class fourtubeSitesScreen(MPScreen, ThumbsHelper):
 		if self.keyLocked:
 			return
 		if self.Name == 'Pornstars':
-			chlist = ['likes', 'popularity', 'twitter', 'videos', 'name', 'date', 'subscribers']
+			rangelist = [['Likes', 'likes'], ['Popularity','popularity'], ['Twitter','twitter'], ['Videos','videos'], ['Name','name'], ['Date','date'], ['Subscribers','subscribers']]
 		else:
-			chlist = ['likes', 'videos', 'name', 'date', 'subscribers']
-		for x in range(0, len(chlist)):
-			if self.sort == chlist[x]:
-				next = (x+1) % len(chlist)
-				self.sort = chlist[next]
-				break
-		self.loadPage()
+			rangelist = [['Likes', 'likes'], ['Videos','videos'], ['Name','name'], ['Date','date'], ['Subscribers','subscribers']]
+		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+
+	def keySortAction(self, result):
+		if result:
+			self.sort = result[1]
+			self.loadPage()
 
 	def showInfos(self):
 		Title = self['liste'].getCurrent()[0][0]
@@ -331,7 +339,7 @@ class fourtubeFilmScreen(MPScreen, ThumbsHelper):
 				self.sort = sortpart[0][1]
 				self.filter = sortpart[0][2]
 			url = "%s?sort=%s%s&p=%s" % (self.Link, self.sort, self.filter, str(self.page))
-		if not re.match('http://', url):
+		if not re.match('http[s]?://', url):
 			url = "http://%s%s" % (self.baseurl, url)
 		getPage(url).addCallback(self.loadData).addErrback(self.novideofound).addErrback(self.dataError)
 
@@ -366,29 +374,24 @@ class fourtubeFilmScreen(MPScreen, ThumbsHelper):
 	def keySort(self):
 		if self.keyLocked:
 			return
-		chlist = ['date', 'duration', 'rating', 'views']
-		for x in range(0, len(chlist)):
-			if self.sort == chlist[x]:
-				next = (x+1) % len(chlist)
-				self.sort = chlist[next]
-				break
-		self.loadPage()
+		rangelist = [['Date', 'date'], ['Duration','duration'], ['Rating','rating'], ['Views','views']]
+		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+
+	def keySortAction(self, result):
+		if result:
+			self.sort = result[1]
+			self.loadPage()
 
 	def keyFilter(self):
 		if self.keyLocked:
 			return
-		if self.filter == '':
-			self.filter = '&none'
-		chlist = ['quality=hd', 'duration=long', 'duration=medium','duration=short', 'time=month', 'time=week', 'none']
-		for x in range(0, len(chlist)):
-			if self.filter == "&%s" % chlist[x]:
-				next = (x+1) % len(chlist)
-				if chlist[next] != "none":
-					self.filter = "&%s" % chlist[next]
-				else:
-					self.filter = ''
-				break
-		self.loadPage()
+		rangelist = [['Quality: HD', '&quality=hd'], ['Duration: Long','&duration=long'], ['Duration: Medium','&duration=medium'], ['Duration: Short','&duration=short'], ['Time: Week','&time=week'], ['Time: Month','&time=month'], ['Time: Year','&time=year']]
+		self.session.openWithCallback(self.keyFilterAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+
+	def keyFilterAction(self, result):
+		if result:
+			self.filter = result[1]
+			self.loadPage()
 
 	def keyOK(self):
 		if self.keyLocked:

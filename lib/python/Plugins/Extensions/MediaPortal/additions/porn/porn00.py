@@ -257,11 +257,10 @@ class porn00FilmAuswahlScreen(MPScreen):
 					elif 'http://www.porn00.org/video_ext.php' in stream:
 						hostername = 'porn00 pornaq'
 					elif 'http://www.porn00.org/play/?v=' in stream:
-						#hostername = 'porn00 API'
 						hostername = 'porn00 direct'
 					elif hostername == 'www.wankz.com':
 						hostername = 'porn00 wankz'
-					elif re.search('http://www.porn00.org/(player|video|server|watch)/\?.=.*?', stream):
+					elif re.search('http://www.porn00.org/(player|video|server|watch|plays)/\?.=.*?', stream):
 						hostername = 'porn00 direct'
 					if re.match('porn00 ', hostername) or isSupportedHoster(hostername, True):
 						self.filmliste.append((hostername, stream))
@@ -287,8 +286,6 @@ class porn00FilmAuswahlScreen(MPScreen):
 			twAgentGetPage(url, agent=myagent).addCallback(self.porn00pornaqData).addErrback(self.dataError)
 		elif hoster == 'porn00 direct':
 			twAgentGetPage(url, agent=myagent).addCallback(self.porn00directData).addErrback(self.dataError)
-		elif hoster == 'porn00 API':
-			twAgentGetPage(url, agent=myagent).addCallback(self.porn00API).addErrback(self.dataError)
 		elif hoster == 'porn00 wankz':
 			twAgentGetPage(url, agent=myagent).addCallback(self.porn00wankzData).addErrback(self.dataError)
 		else:
@@ -322,27 +319,6 @@ class porn00FilmAuswahlScreen(MPScreen):
 				self.got_link(link[-1])
 				return
 		message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
-
-	def porn00API(self,data):
-		link = re.search('playermodes\(\'(.*?)\'', data)
-		if link:
-			#TODO ckeck if access_token is static
-			url = 'https://api.pcloud.com/getvideolinks?fileid=%s&access_token=6EWjZL1NQ4yoIe5kZSj6Wq7Z0Yc1Wmg04EmBbwWttEcUekM7cWwX' % link.group(1)
-			twAgentGetPage(url, agent=myagent).addCallback(self.porn00APIdata).addErrback(self.dataError)
-			return
-		message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
-
-	def porn00APIdata(self,data):
-		link = re.findall('path":\s*"(.*?)".*?height":\s*(\d+),.*?hosts":\s*\[\s*"(.*?)"', data, re.S)
-		if link:
-			best = 0
-			url = ""
-			for (path, res, host) in link:
-				if res > best:
-					url = "https://%s%s" % (host, path)
-			self.got_link(url.replace('\/', '/'))
-		else:
-			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def got_link(self, stream_url):
 		title = self.genreName
