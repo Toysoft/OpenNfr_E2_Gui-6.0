@@ -38,15 +38,16 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+default_cover = "file://%s/arte.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class arteFirstScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -71,6 +72,7 @@ class arteFirstScreen(MPScreen):
 
 
 	def genreData(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.filmliste.append(("Neueste", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/AIRDATE_DESC/0/0/DE_FR.json"))
 		self.filmliste.append(("Meistgesehen", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/VIEWS/0/0/DE_FR.json"))
 		self.filmliste.append(("Letzte Chance", "http://www.arte.tv/papi/tvguide/videos/plus7/program/D/L2/ALL/ALL/-1/LAST_CHANCE/0/0/DE_FR.json"))

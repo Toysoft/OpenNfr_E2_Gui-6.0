@@ -41,7 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 BASE_NAME = "Bangbros.com"
-default_cover = "http://pbs.twimg.com/profile_images/761292654575517696/Xb0I4R1m_400x400.jpg"
+default_cover = "file://%s/bangbros.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class bangbrosGenreScreen(MPScreen):
 
@@ -189,6 +189,8 @@ class bangbrosFilmScreen(MPScreen, ThumbsHelper):
 		Movies = re.findall('class="echThumb"><a title="(.*?)"\s+href="(.*?)".*?class="tTm">(.*?)</b.*?data-rollover-url="(.*?)".*?class="cast-wrapper">(.*?)</div>.*?fa-bus.*?class="faTxt">(.*?)</span.*?fa-calendar.*?class="faTxt">(.*?)</span', data, re.S)
 		if Movies:
 			for (Title, Url, Runtime, Image, Pornstars, Collection, Date) in Movies:
+				if Image.startswith('//'):
+					Image = 'http:' + Image
 				Image = Image + '1.jpg'
 				Url = "http://bangbrothers.net" + Url
 				if not Pornstars == '':

@@ -41,7 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 BASE_NAME = "TeamSkeet.com"
-default_cover = "http://galleries.teamskeet.com/ts/3263/images/tslogo.png"
+default_cover = "file://%s/teamskeet.png" % (config.mediaportal.iconcachepath.value + "logos")
 ck = {}
 
 class teamskeetGenreScreen(MPScreen):

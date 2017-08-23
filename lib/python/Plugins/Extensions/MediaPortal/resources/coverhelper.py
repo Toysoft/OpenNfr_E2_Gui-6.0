@@ -35,7 +35,7 @@ class CoverHelper:
 	def downloadPage(self, url, path, agent=None):
 		if not agent:
 			agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.82 Safari/537.36"
-		return twDownloadPage(url, path, timeout=5, cookieJar=cookies, agent=agent)
+		return twDownloadPage(url, path, timeout=10, cookieJar=cookies, agent=agent)
 
 	def closeFile(self, result, f):
 		f.close()

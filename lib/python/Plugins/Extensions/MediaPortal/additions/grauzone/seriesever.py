@@ -41,12 +41,8 @@ from Plugins.Extensions.MediaPortal.resources.configlistext import ConfigListScr
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 glob_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0'
-premium = False
 keckse = {}
 BASE_URL = 'http://seriesever.net'
-
-config.mediaportal.seriesever_userName = ConfigText(default="USERNAME", fixed_size=False)
-config.mediaportal.seriesever_userPass = ConfigPassword(default="PASSWORD", fixed_size=False)
 
 class serieseverMain(MPScreen):
 
@@ -69,13 +65,11 @@ class serieseverMain(MPScreen):
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"blue" : self.loginSetup
+			"left" : self.keyLeft
 		}, -1)
 
 		self['title'] = Label("SeriesEver")
 		self['ContentTitle'] = Label(_("Genre Selection"))
-		self['F4'] = Label(_("Setup"))
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -92,7 +86,6 @@ class serieseverMain(MPScreen):
 		self.ml.setList(map(self._defaultlistcenter, self.streamList))
 		self.keyLocked = False
 		self.showInfos()
-		self.login(False)
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -104,56 +97,6 @@ class serieseverMain(MPScreen):
 		else:
 			url = self['liste'].getCurrent()[0][1]
 			self.session.open(serieseverParsing, auswahl, url)
-
-	def login(self, msg=False):
-		self.username = config.mediaportal.seriesever_userName.value
-		self.password = config.mediaportal.seriesever_userPass.value
-		if not self.username == "USERNAME" and not self.password == "PASSWORD":
-			loginUrl = BASE_URL + '/service/login'
-			loginData = {'username': self.username, 'password': self.password}
-			getPage(loginUrl, method='POST', agent=glob_agent, postdata=urlencode(loginData), cookies=keckse, headers={'Referer': BASE_URL, 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.loginCheck, msg).addErrback(self.dataError)
-		else:
-			self.setPremium(False)
-
-	def loginCheck(self, data, msg):
-		if re.search(self.username, data, re.S|re.I):
-			url = BASE_URL + "/premium.html"
-			getPage(url, cookies=keckse, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.checkPremium, msg).addErrback(self.dataError)
-		else:
-			self.setPremium(False)
-			if msg:
-				message = self.session.open(MessageBoxExt, _("Login failed!"), MessageBoxExt.TYPE_INFO, timeout=3)
-
-	def checkPremium(self, data, msg):
-		if re.search('<strong>Status.*?</strong>.*?Premium</p>', data, re.S|re.I):
-			self.setPremium(True)
-		else:
-			self.setPremium(False)
-			if msg:
-				message = self.session.open(MessageBoxExt, _("You are not a Premium User!"), MessageBoxExt.TYPE_INFO, timeout=3)
-
-	def setPremium(self, status):
-		global premium
-		premium = status
-		if premium:
-			self['title'].setText("SeriesEver - Premium (1080p)")
-		else:
-			self['title'].setText("SeriesEver")
-
-	def loginSetup(self):
-		if mp_globals.isDreamOS:
-			self.session.openWithCallback(self.callBackSetup, serieseverSetupScreen, is_dialog=True)
-		else:
-			self.session.openWithCallback(self.callBackSetup, serieseverSetupScreen)
-
-	def callBackSetup(self, answer):
-		if answer:
-			self.login(True)
-
-	def keyCancel(self):
-		url = BASE_URL + "/service/logout.html"
-		getPage(url, cookies=keckse, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'})
-		self.close()
 
 class serieseverParsing(MPScreen, ThumbsHelper):
 
@@ -482,43 +425,28 @@ class showStreams(MPScreen):
 			CoverHelper(self['coverArt']).getCover(self.coverUrl)
 		url = BASE_URL + "/service/get_video_part"
 		videoID = re.findall('var\svideo_id\s{0,2}=\s"(.*?)"', data)
-		videoReso = re.findall('<li><a href="#" class="changePart" data-part="(.*?)">', data, re.S)
 		if videoID:
 			self.videoID = videoID[0]
-			self.videoReso = videoReso[0]
-			if "720p" in self.videoReso:
-				post_data = urllib.urlencode({'page': '0', 'part_name': '720p', 'video_id': self.videoID})
-				getPage(url, method='POST', postdata=post_data, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.parseData, "720p").addErrback(self.dataError)
-			if "1080p" in self.videoReso:
-				post_data = urllib.urlencode({'page': '0', 'part_name': '1080p', 'video_id': self.videoID})
-				if premium:
-					getPage(url, method='POST', cookies=keckse, postdata=post_data, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.parseData, "1080p").addErrback(self.dataError)
-				else:
-					getPage(url, method='POST', postdata=post_data, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.parseData, "1080p").addErrback(self.dataError)
-			if "en-sub" in self.videoReso:
-				post_data = urllib.urlencode({'page': '0', 'part_name': 'en-sub', 'video_id': self.videoID})
-				getPage(url, method='POST', postdata=post_data, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.parseData, "en-sub").addErrback(self.dataError)
-			if "de-sub" in self.videoReso:
-				post_data = urllib.urlencode({'page': '0', 'part_name': 'de-sub', 'video_id': self.videoID})
-				getPage(url, method='POST', postdata=post_data, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.parseData, "de-sub").addErrback(self.dataError)
+			post_data = urllib.urlencode({'page': '0', 'part_name': '720p', 'video_id': self.videoID})
+			getPage(url, method='POST', postdata=post_data, agent=glob_agent, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.parseData).addErrback(self.dataError)
 		else:
 			self.streamList.append(('No VideoID found.', None))
 			self.ml.setList(map(self._defaultlistcenter, self.streamList))
 
-	def parseData(self, data, video_reso):
+	def parseData(self, data):
 		parts = re.findall('"part_count":(\d+),"', data)
 		if parts:
 			parts = parts[0]
 			if parts > 0:
 				for i in range(0,int(parts)):
-					self.streamList.append(('Stream '+str(i+1)+' - '+video_reso, str(i)))
+					self.streamList.append(('Stream '+str(i+1), str(i)))
 			else:
-				self.streamList.append(('Keine Streams in '+video_reso+'vorhanden !', None))
+				self.streamList.append(('Keine Streams vorhanden!', None))
 			self.ml.setList(map(self._defaultlistcenter, self.streamList))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False
 		else:
-			self.streamList.append(('Fehler auf der Webseite !', None))
+			self.streamList.append(('Fehler auf der Webseite!', None))
 			self.ml.setList(map(self._defaultlistcenter, self.streamList))
 			self.ml.moveToIndex(0)
 
@@ -529,18 +457,8 @@ class showStreams(MPScreen):
 		streamName = self['liste'].getCurrent()[0][0]
 		streamID = self['liste'].getCurrent()[0][1]
 		url = BASE_URL + "/service/get_video_part"
-		if re.search('en-sub', streamName):
-			post_data = urllib.urlencode({'page': streamID, 'part_name': 'en-sub', 'video_id': self.videoID})
-			getPage(url, method='POST', agent=glob_agent, postdata=post_data, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.getStreamData).addErrback(self.dataError)
-		if re.search('de-sub', streamName):
-			post_data = urllib.urlencode({'page': streamID, 'part_name': 'de-sub', 'video_id': self.videoID})
-			getPage(url, method='POST', agent=glob_agent, postdata=post_data, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.getStreamData).addErrback(self.dataError)
-		if premium:
-			post_data = urllib.urlencode({'page': streamID, 'part_name': '1080p', 'video_id': self.videoID})
-			getPage(url, method='POST', agent=glob_agent, postdata=post_data, cookies=keckse, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.getStreamData).addErrback(self.dataError)
-		else:
-			post_data = urllib.urlencode({'page': streamID, 'part_name': '720p', 'video_id': self.videoID})
-			getPage(url, method='POST', agent=glob_agent, postdata=post_data, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.getStreamData).addErrback(self.dataError)
+		post_data = urllib.urlencode({'page': streamID, 'part_name': '720p', 'video_id': self.videoID})
+		getPage(url, method='POST', agent=glob_agent, postdata=post_data, headers={'Content-Type':'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}).addCallback(self.getStreamData).addErrback(self.dataError)
 
 	def getStreamData(self, data):
 		try:
@@ -549,55 +467,28 @@ class showStreams(MPScreen):
 			if 'http' in code:
 				url = re.findall('src="(.*?)"', code)
 				if url:
-					get_stream_link(self.session).check_link(str(url[0]), self.got_link)
+					if 'play.seriesever.net' in str(url[0]):
+						getPage(str(url[0]), agent=glob_agent).addCallback(self.getStreamData2).addErrback(self.dataError)
+					else:
+						get_stream_link(self.session).check_link(str(url[0]), self.got_link)
 				else:
 					self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
 			else:
 				import base64
 				stream_url = base64.b64decode(code)
-				get_stream_link(self.session).check_link(stream_url, self.got_link)
+				if 'play.seriesever.net' in stream_url:
+					getPage(stream_url, agent=glob_agent).addCallback(self.getStreamData2).addErrback(self.dataError)
+				else:
+					get_stream_link(self.session).check_link(stream_url, self.got_link)
 		except:
+			self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
+
+	def getStreamData2(self, data):
+		stream = re.findall('iframe.*?src="(.*?)"', data, re.S)
+		if stream:
+			get_stream_link(self.session).check_link(stream[0], self.got_link)
+		else:
 			self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
 
 	def got_link(self, stream_url):
 		self.session.open(SimplePlayer, [(self.stream_name, stream_url, self.coverUrl)], cover=True, showPlaylist=False, ltype='seriesever')
-
-class serieseverSetupScreen(Screen, ConfigListScreenExt):
-
-	def __init__(self, session):
-
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/PluginUserDefault.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/PluginUserDefault.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		Screen.__init__(self, session)
-		self['title'] = Label("SeriesEver " + _("Setup"))
-		self['F4'] = Label('')
-		self.setTitle("SeriesEver " + _("Setup"))
-
-		self.list = []
-		ConfigListScreenExt.__init__(self, self.list)
-
-		self.list.append(getConfigListEntry(_("Username:"), config.mediaportal.seriesever_userName))
-		self.list.append(getConfigListEntry(_("Password:"), config.mediaportal.seriesever_userPass))
-		self["config"].setList(self.list)
-
-		self["setupActions"] = ActionMap(["MP_Actions"],
-		{
-			"ok":		self.saveConfig,
-			"cancel":	self.exit
-		}, -1)
-
-	def saveConfig(self):
-		for x in self["config"].list:
-			x[1].save()
-		configfile.save()
-		self.close(True)
-
-	def exit(self):
-		self.close(False)

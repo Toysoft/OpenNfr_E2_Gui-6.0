@@ -77,8 +77,8 @@ class kxMain(MPScreen):
 		self.currentdatum = strftime("%d.%m.%Y", localtime())
 		self.keyLocked = True
 		date = datetime.datetime.now().strftime('%Y-%m-%d')
-		self.streamList.append(("Frisches aus dem Kino vom %s" % self.currentdatum, "http://kinox.to"))
-		self.streamList.append(("Neue Filme online vom %s" % self.currentdatum, "http://kinox.to"))
+		self.streamList.append(("Frisches aus dem Kino vom %s" % self.currentdatum, "http://kinox.to/index.php"))
+		self.streamList.append(("Neue Filme online vom %s" % self.currentdatum, "http://kinox.to/index.php"))
 		self.streamList.append(("Kinofilme", "http://kinox.to/Cine-Films.html"))
 		self.streamList.append(("Suche", "dump"))
 		self.streamList.append(("Filme A-Z", "dump"))

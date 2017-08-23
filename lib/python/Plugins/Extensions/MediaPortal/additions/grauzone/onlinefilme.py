@@ -22,7 +22,7 @@ else:
 	IMDbPresent = False
 	TMDbPresent = False
 
-SKTO_Version = "OnlineFilme.to v2.11"
+SKTO_Version = "OnlineFilme.to"
 SKTO_siteEncoding = 'utf-8'
 BASE_URL = "http://onlinefilme.to"
 BASE_URL2 = "http://onlinefilme.biz"
@@ -257,7 +257,7 @@ class SKTO_FilmListeScreen(MPScreen, ThumbsHelper):
 				self.dokusListe.append((name, url, BASE_URL+img, infos, imdb))
 
 			if not self.pages:
-				ps = re.findall('href=\'.*?page=.*?\'>(\d+)</a>', data)
+				ps = re.findall('href=\".*?page=.*?\">(\d+)</a>', data)
 				try:
 					pages = int(ps[-1])
 				except:

@@ -42,7 +42,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 BASEURL = "https://chaturbate.com/"
 
 config.mediaportal.chaturbate_filter = ConfigText(default="all", fixed_size=False)
-default_cover = "https://ssl-ccstatic.highwebmedia.com/images/logo-standard.png"
+default_cover = "file://%s/chaturbate.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class chaturbateGenreScreen(MPScreen):
 

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugins>
+	<set name="additions_user">
+		<!--grauzone section-->
+		<plugin type="mod" modfile="grauzone.kinoxto" confopt="showKinox" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Kinox" icon="kinox" filter="Grauzone" screen="kxMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.movie4k" confopt="showM4k" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Movie4k" icon="movie4k" filter="Grauzone" screen="m4kGenreScreen" param1="default" param2=""/>
+		<plugin type="mod" modfile="grauzone.movie4k" confopt="showM4kPorn" default="False" confcat="porn" listcat="porn" gz="1" name="Movie4k-XXX" icon="movie4kporn" filter="Porn" screen="m4kGenreScreen" param1="porn" param2=""/>
+		<plugin type="mod" modfile="grauzone.streamit" confopt="showstreamit" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="STREAMIT" icon="streamit" filter="Grauzone" screen="showstreamitGenre" param1="" param2=""/>
+		<!--<plugin type="mod" modfile="grauzone.watchseries" confopt="showWatchseries" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="watchseries" icon="watchseries" filter="Grauzone" screen="watchseriesGenreScreen" param1="" param2=""/>-->
+		<plugin type="mod" modfile="grauzone.watchseriesonline" confopt="showWatchseriesonline" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="watchseries-online" icon="watchseriesonline" filter="Grauzone" screen="wsoMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.burningseries" confopt="showBurningSeries" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Burning-Series" icon="burningseries" filter="Grauzone" screen="bsMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.primewire" confopt="showprimewire" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="PrimeWire" icon="primewire" filter="Grauzone" screen="PrimeWireGenreScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.ddl_me" confopt="showDdlme" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="ddl.me" icon="ddl_me" filter="Grauzone" screen="show_DDLME_Genre" param1="" param2=""/>
+		<!--<plugin type="mod" modfile="grauzone.searchalluc" confopt="showsearchalluc" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="2SearchAlluc" icon="searchalluc" filter="Grauzone" screen="searchAllucMenueScreen" param1="" param2=""/>-->
+		<!--<plugin type="mod" modfile="grauzone.searchalluc" confopt="showsearchallucPorn" default="False" confcat="porn" listcat="porn" gz="1" name="2SearchAlluc-XXX" icon="searchallucXXX" filter="Porn" screen="searchAllucMenueScreen" param1="porn" param2=""/>-->
+		<plugin type="mod" modfile="grauzone.sharedir" confopt="showsharedir" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="ShareDir" icon="sharedir" filter="Grauzone" screen="sharedirMenueScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.topimdb" confopt="showtopimdb" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Top1000 IMDb" icon="topimdb" filter="Grauzone" screen="timdbGenreScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.filmpalast" confopt="showfilmpalast" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="FilmPalast" icon="filmpalast" filter="Grauzone" screen="filmPalastMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.nwanime" confopt="showNWAnime" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="NWANIME" icon="nwanime" filter="Grauzone" screen="nwanimeMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.ganime" confopt="showganime" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="GenX-Anime" icon="genxanime" filter="Grauzone" screen="gAnimeMain" param1="" param2=""/>
+		<!--<plugin type="mod" modfile="grauzone.solarmovie" confopt="showsolarmovie" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="SolarMovie" icon="solarmovie" filter="Grauzone" screen="solarMovieMain" param1="" param2=""/>-->
+		<plugin type="mod" modfile="grauzone.onlinefilme" confopt="showOnlineFilme" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="OnlineFilme" icon="onlinefilme" filter="Grauzone" screen="show_SKTO_Genre" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.hdfilme" confopt="showhdfilme" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="HDFilme" icon="hdfilme" filter="Grauzone" screen="hdfilmeMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.video4k" confopt="showvideoe4k" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Video4K" icon="video4k" filter="Grauzone" screen="video4kMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.vkstreamingfilm" confopt="showvkstreamingfilm" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="VKStreamingFilm" icon="vkstreamingfilm" filter="Grauzone" screen="vkstreamingfilmMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.filmestreamz" confopt="showfilmestreamz" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Filme-Streamz" icon="filmestreamz" filter="Grauzone" screen="filmestreamzMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.serienstream" confopt="showserienstream" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Serienstream" icon="serienstream" filter="Grauzone" screen="ssMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.crynet" confopt="showcrynet" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="Heul net" icon="crynet" filter="Grauzone" screen="showevonicGenre" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.seriesever" confopt="showseriesever" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="SeriesEver" icon="seriesever" filter="Grauzone" screen="serieseverMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.moviesever" confopt="showmoviesever" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="MoviesEver" icon="moviesever" filter="Grauzone" screen="movieseverMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.tata" confopt="showstata" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="tata" icon="tata" filter="Grauzone" screen="tataMain" param1="" param2=""/>
+		<plugin type="mod" modfile="grauzone.flimmerstube" confopt="showflimmerstube" default="False" confcat="grauzone" listcat="grauzone" gz="1" name="FlimmerStube" icon="flimmerstube" filter="Grauzone" screen="flimmerstubeGenreScreen" param1="" param2=""/>	</set>
+</plugins>

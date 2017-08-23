@@ -38,12 +38,20 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
 agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+json_headers = {
+	'Accept':'*/*',
+	'Accept-Encoding':'deflate',
+	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
+	'X-Requested-With':'XMLHttpRequest',
+	'Content-Type':'application/x-www-form-urlencoded'
+	}
+ck = {}
+default_cover = "file://%s/vjav.png" % (config.mediaportal.iconcachepath.value + "logos")
 
-default_cover = "file://%s/sexu.png" % (config.mediaportal.iconcachepath.value + "logos")
-
-class sexuGenreScreen(MPScreen):
+class vjavGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -60,11 +68,16 @@ class sexuGenreScreen(MPScreen):
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
-			"cancel" : self.keyCancel
+			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("Sexu.com")
+		self['title'] = Label("VJAV.com")
 		self['ContentTitle'] = Label("Genre:")
+
 		self.keyLocked = True
 		self.suchString = ''
 
@@ -76,27 +89,28 @@ class sexuGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://sexu.com/"
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		ck.update({'language':'en'})
+		url = "http://www.vjav.com/categories/"
+		getPage(url, agent=agent, cookies=ck).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="listTags">(.*?)class="wrapper', data, re.S)
-		Cats = re.findall('href="(.*?)".*?</i>(.*?)</a>', parse.group(1), re.S)
+		Cats = re.findall('class="item".*?href="(.*?)".*?img\sclass="thumb"\ssrc="(.*?)"\salt="(.*?)"', data, re.S)
 		if Cats:
-			for (Url, Title) in Cats:
-				Url = "http://sexu.com" + Url + '/'
-				self.genreliste.append((Title.title(), Url))
+			for (Url, Image, Title) in Cats:
+				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Trending", "http://sexu.com/trending/"))
-			self.genreliste.insert(0, ("Hall of Fame", "http://sexu.com/all/"))
-			self.genreliste.insert(0, ("Newest", "http://sexu.com/"))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
+			self.genreliste.insert(0, ("Most Popular", "http://www.vjav.com/most-popular/", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "http://www.vjav.com/top-rated/", default_cover))
+			self.genreliste.insert(0, ("Newest", "http://www.vjav.com/latest-updates/", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+			self.ml.moveToIndex(0)
 			self.keyLocked = False
-		self.showInfos()
+			self.showInfos()
 
 	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
+		Image = self['liste'].getCurrent()[0][2]
+		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -106,16 +120,16 @@ class sexuGenreScreen(MPScreen):
 			self.suchen()
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(sexuFilmScreen, Link, Name)
+			self.session.open(vjavFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
-			self.suchString = callback.replace(' ', '+')
 			Name = "--- Search ---"
-			Link = '%s' % (self.suchString)
-			self.session.open(sexuFilmScreen, Link, Name)
+			self.suchString = callback
+			Link = self.suchString.replace(' ', '%20')
+			self.session.open(vjavFilmScreen, Link, Name)
 
-class sexuFilmScreen(MPScreen, ThumbsHelper):
+class vjavFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
@@ -146,7 +160,7 @@ class sexuFilmScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("Sexu.com")
+		self['title'] = Label("VJAV.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
 
@@ -165,23 +179,30 @@ class sexuFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		if re.match(".*?Search", self.Name):
-			url = "http://sexu.com/search?q=%s&page=%s" % (self.Link, str(self.page))
+		if re.match(".*Search", self.Name):
+			url = "http://www.vjav.com/search/%s/%s/" % (self.Link, str(self.page))
 		else:
-			url = "%s%s" % (self.Link, str(self.page))
-		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
+			if self.page == 1:
+				url = self.Link
+			else:
+				url = "%s%s/" % (self.Link, str(self.page))
+		getPage(url, agent=agent, cookies=ck).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'class="pagination">(.*?)</ul>', '.*[>|=|\/](\d+)[<|"]')
-		parse = re.search('class="list-thumbs">(.*?)</html>', data, re.S)
-		Movies = re.findall('class="thumb".*?href="(.*?)"\stitle="(.*?)".*?img\sclass.*?data-original="(.*?)".*?timeVideo">(.*?)</span', parse.group(1), re.S)
+		if (self.page > 1) and (self.page == self.lastpage):
+			self.getLastPage(data, 'class="pagination"(.*?)</div>', '.*\s(\d+)')
+		else:
+			self.getLastPage(data, 'class="pagination"(.*?)</div>', '"page:(\d+)">Last')
+		Movies = re.findall('<div class="item.*?href="(.*?)".*?img.*?data-original="(.*?)"\s{0,1}alt="(.*?)(?:"|,).*?class="duration">(.*?)</div.*?class="added">(.*?)</div', data, re.S)
 		if Movies:
-			for (Url, Title, Image, Runtime) in Movies:
-				Url = "http://sexu.com" + Url
-				Title = Title.strip('.').replace("\\'","'")
-				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime))
+			for (Url, Image, Title, Runtime, Added) in Movies:
+				Runtime = Runtime.replace('h','').replace('m','').replace('s','')
+				Added = stripAllTags(Added)
+				if not Url.startswith('http'):
+					Url = 'http://www.vjav.com' + Url
+				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Added))
 		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No movies found!'), None, None))
+			self.filmliste.append((_('No videos found!'), None, None, ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
@@ -189,28 +210,37 @@ class sexuFilmScreen(MPScreen, ThumbsHelper):
 		self.showInfos()
 
 	def showInfos(self):
-		Url = self['liste'].getCurrent()[0][1]
-		if Url == None:
-			return
 		title = self['liste'].getCurrent()[0][0]
 		pic = self['liste'].getCurrent()[0][2]
 		runtime = self['liste'].getCurrent()[0][3]
+		added = self['liste'].getCurrent()[0][4]
 		self['name'].setText(title)
-		self['handlung'].setText("Runtime: %s" % runtime)
+		self['handlung'].setText("Runtime: %s\nAdded: %s" % (runtime, added))
 		CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
 		Link = self['liste'].getCurrent()[0][1]
-		if Link == None:
-			return
-		getPage(Link).addCallback(self.getVideoData).addErrback(self.dataError)
+		if Link:
+			self.keyLocked = True
+			getPage(Link, agent=agent, cookies=ck).addCallback(self.getVideoPage).addErrback(self.dataError)
 
-	def getVideoData(self, data):
-		url = re.findall('file":"(.*?\.mp4)"', data, re.S)
+	def getVideoPage(self, data):
+		try:
+			import execjs
+			node = execjs.get("Node")
+			decstring = re.findall('sources\[\d\]={type:\'mp4\',file:([a-zA-Z0-9]+)\(', data, re.S)
+			decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
+			video_url = re.findall('(var video_url.*?;)', data, re.S)
+			js = decoder[0] + "\n" + video_url[0] + "\n" + "vidurl = (%s(video_url));" % decstring[0] + "\n" + "return vidurl;"
+			url = str(node.exec_(js))
+			print url
+		except:
+			printl('nodejs not found',self,'E')
+			self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+			url = None
 		if url:
-			title = self['liste'].getCurrent()[0][0]
-			headers = '&Referer=http://sexu.com/'
-			url = url[-1] + '#User-Agent='+agent+headers
-			self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='sexu')
+			self.keyLocked = False
+			Title = self['liste'].getCurrent()[0][0]
+			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='vjav')

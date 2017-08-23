@@ -711,7 +711,6 @@ class ssEpisoden(MPScreen):
 			return
 		episodenName = self['liste'].getCurrent()[0][0]
 		url = self['liste'].getCurrent()[0][1]
-		#self.addGlobalWatchtlist([self.Title+' '+episodenName, self.cover, "ssStreams", self.Title, episodenName, url, self.cover])
 		self.session.openWithCallback(self.reloadList, ssStreams, self.Title, episodenName, url, self.cover)
 
 	def reloadList(self):

@@ -38,6 +38,7 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+default_cover = "file://%s/myspass.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class myspassGenreScreen(MPScreen):
 
@@ -73,6 +74,7 @@ class myspassGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.myspass.de/ganze-folgen/"
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 

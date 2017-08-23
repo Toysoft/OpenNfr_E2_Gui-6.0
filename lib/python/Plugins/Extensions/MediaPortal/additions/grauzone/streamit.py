@@ -63,16 +63,28 @@ def sit_grabpage(pageurl, method='GET', postdata={}):
 class showstreamitGenre(MenuHelper):
 
 	base_menu = [
-		(0, "/kino", 'Kino'),
-		(0, "", 'Filme'),
-		(1, "/film", 'Neue Filme'),
-		(1, "/film-hd", 'HD Filme'),
-		(1, "/film-3d", '3D Filme'),
-		(1, "", 'Genre'),
-		(0, "", 'Serien'),
-		(1, "/serie", 'Neue Serien'),
-		(1, "", 'Genre'),
-		(0, "/suche/?s=%s", 'Suche...')
+		(0, "/kino", 'Neu im Kino'),
+		(0, "/film", 'Neueste Filme'),
+		(0, "/film/?cat=1", 'Action'),
+		(0, "/film/?cat=2", 'Adventure'),
+		(0, "/film/?cat=3", 'Animation'),
+		(0, "/film/?cat=4", 'Biography'),
+		(0, "/film/?cat=5", 'Comedy'),
+		(0, "/film/?cat=6", 'Crime'),
+		(0, "/film/?cat=7", 'Documentary'),
+		(0, "/film/?cat=8", 'Drama'),
+		(0, "/film/?cat=9", 'Family'),
+		(0, "/film/?cat=10", 'Fantasy'),
+		(0, "/film/?cat=13", 'History'),
+		(0, "/film/?cat=14", 'Horror'),
+		(0, "/film/?cat=15", 'Music'),
+		(0, "/film/?cat=17", 'Mystery'),
+		(0, "/film/?cat=20", 'Romance'),
+		(0, "/film/?cat=21", 'Sci-Fi'),
+		(0, "/film/?cat=22", 'Sport'),
+		(0, "/film/?cat=24", 'Thriller'),
+		(0, "/film/?cat=25", 'War'),
+		(0, "/film/?cat=26", 'Western'),
 		]
 
 	def __init__(self, session, m_level='main', m_path='/'):
@@ -119,49 +131,11 @@ class showstreamitGenre(MenuHelper):
 		self.mh_buildMenu(self.mh_baseUrl + self.m_path, agent=sit_agent)
 
 	def mh_parseCategorys(self, data):
-		if self.m_level == 'main':
-			menu = self.base_menu[:6]
-			m = re.search('<a>Filme</a>.*?<a>Genre</a>.*?="sub-menu">(.*?)</ul>', data, re.S)
-			if m:
-				for m_entry in re.finditer('<a href="(.*?)">(.*?)</a>', m.group(1)):
-					href, nm = m_entry.groups()
-					menu.append((2, href, decodeHtml(nm)))
-
-			m = re.search('>Serien</a>.*?<a>Genre</a>.*?="sub-menu">(.*?)</ul>', data, re.S)
-			if m:
-				menu += self.base_menu[6:9]
-				for m_entry in re.finditer('<a href="(.*?)">(.*?)</a>', m.group(1)):
-					href, nm = m_entry.groups()
-					menu.append((2, href, decodeHtml(nm)))
-
-			menu += self.base_menu[-1:]
-		elif self.m_level == 'more-genre':
-			menu = []
-			m = re.search('<h1>Genre .*?="entry">(.*?)</div>', data, re.S)
-			if m:
-				for m_entry in re.finditer('<a href="(.*?)">(.*?)</a>', m.group(1)):
-					href, nm = m_entry.groups()
-					if not href.startswith('/'):
-						href = '/' + href
-					menu.append((0, href, decodeHtml(nm)))
-		self.mh_genMenu2(menu)
+		self.mh_genMenu2(self.base_menu)
 
 	def mh_callGenreListScreen(self):
-		if re.search('Suche...', self.mh_genreTitle):
-			self.session.openWithCallback(self.cb_Search, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.param_search, is_dialog=True, auto_text_init=True)
-		else:
-			genreurl = self.mh_baseUrl+self.mh_genreUrl[self.mh_menuLevel]
-			if "/genre-" in genreurl:
-				self.session.open(showstreamitGenre, m_level='more-genre', m_path=self.mh_genreUrl[self.mh_menuLevel])
-			else:
-				self.session.open(streamitFilmListeScreen, genreurl, self.mh_genreTitle)
-
-	def cb_Search(self, callback = None, entry = None):
-		if callback != None:
-			self.param_search = callback.strip()
-			genreName = 'Videosuche: ' + self.param_search
-			genreLink = self.mh_baseUrl+self.mh_genreUrl[self.mh_menuLevel] % urllib.quote_plus(self.param_search)
-			self.session.open(streamitFilmListeScreen, genreLink, genreName)
+		genreurl = self.mh_baseUrl+self.mh_genreUrl[self.mh_menuLevel]
+		self.session.open(streamitFilmListeScreen, genreurl, self.mh_genreTitle)
 
 class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 
@@ -263,12 +237,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 			self.streamTag = 'streamhd'
 		else:
 			self.streamTag = 'stream'
-		if '/serie/' in genreLink:
-			self.seriesTag = 'Staffeln: '
-		elif last_series_tag.startswith('Staf'):
-			self.seriesTag = 'Episoden: '
-		else:
-			self.seriesTag = ''
+		self.seriesTag = ''
 
 		self.setGenreStrTitle()
 
@@ -315,11 +284,8 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 		self['coverArt'].hide()
 		while not self.filmQ.empty():
 			url = self.filmQ.get_nowait()
-		if not self.seriesTag.startswith('Epi'):
-			data = sit_grabpage(url)
-			self.loadPageData(data)
-		else:
-			self.loadPageData(self.seasonData)
+		data = sit_grabpage(url)
+		self.loadPageData(data)
 
 	def dataError(self, error):
 		self.eventL.clear()
@@ -330,50 +296,29 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 	def loadPageData(self, data):
 		self.getPostFuncs(data)
 		self.filmListe = []
-		if not self.seriesTag:
-			l = len(data)
-			a = 0
-			while a < l:
-				mg = re.search('<div id="divA">(.*?)</div>\s+</li>', data[a:], re.S)
-				if mg:
-					a += mg.end()
-					m = re.search('<div class="voting".*?style="width:(\d*).*?<a href="(.*?)".*?title="(.*?)">.*?<img.*?src="(.*?)"', mg.group(1), re.S)
-					if m:
-						rating,url,name,imageurl = m.groups()
-						if 'hd_icon' in mg.group(1):
-							hd = True
-						else:
-							hd = False
-
-						if not rating: rating = "0"
-						imdb = "IMDb: %.1f / 10" % (float(rating) / 10)
-						if not url.startswith('http'):
-							url = BASE_URL + url
-						if not imageurl.startswith('http'):
-							imageurl = BASE_URL + imageurl
-						self.filmListe.append((decodeHtml(name), url, imageurl, imdb, rating, hd))
-				else:
-					a = l
-		elif self.seriesTag.startswith('Staf'):
-			mg = re.search('class="staffelauswahl" >(.*?)</select>', data, re.S)
+		l = len(data)
+		a = 0
+		while a < l:
+			mg = re.search('<div class="post-thumb"(.*?)</div>\s+</li>', data[a:], re.S)
 			if mg:
-				for m in re.finditer('<option value="(\d+)">(.*?)</option>', mg.group(1)):
-					season_num, season = m.groups()
-					md = re.search('(id="staffel%s".*?)</div>' % season_num, data, re.S)
-					if md:
-						mimdb = re.search("(var IMDB = '.*?';)", data)
-						if mimdb:
-							self.filmListe.append((decodeHtml(season), season_num, self.seriesImg, md.group(1)+mimdb.group(1), '', ''))
-		elif self.seriesTag.startswith('Epi'):
-			m = re.search("IMDB = '(.*?)';", data)
-			if m:
-				imdb = m.group(1)
-				m = re.search('seriesName="(.*?)"', data)
+				a += mg.end()
+				m = re.search('<a href="(.*?)".*?title="(.*?)">.*?<img.*?src="(.*?)".*?<div class="voting".*?style="width:(\d*)', mg.group(1), re.S)
 				if m:
-					seriesName = m.group(1)
-					for m in re.finditer('<a.*?href="#(.*?)"\s{0,1}>(.*?)</a>', data):
-						episode, title = m.groups()
-						self.filmListe.append((decodeHtml(title), episode, self.seriesImg, imdb, decodeHtml(seriesName), ''))
+					url,name,imageurl,rating = m.groups()
+					if 'hd_icon' in mg.group(1):
+						hd = True
+					else:
+						hd = False
+
+					if not rating: rating = "0"
+					imdb = "IMDb: %.1f / 10" % (float(rating) / 10)
+					if not url.startswith('http'):
+						url = BASE_URL + url
+					if not imageurl.startswith('http'):
+						imageurl = BASE_URL + imageurl
+					self.filmListe.append((decodeHtml(name), url, imageurl, imdb, rating, hd))
+			else:
+				a = l
 
 		if self.filmListe:
 			if not self.pages:
@@ -387,11 +332,8 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 				self['page'].setText("%d / %d" % (self.page,self.pages))
 
 			self.keyLocked = False
-			if not self.seriesTag:
-				self.ml.setList(map(self.streamitFilmListEntry,	self.filmListe))
-				self.th_ThumbsQuery(self.filmListe, 0, 1, 2, None, None, self.page, self.pages, agent=sit_agent, cookies=sit_ck)
-			else:
-				self.ml.setList(map(self._defaultlistleft, self.filmListe))
+			self.ml.setList(map(self.streamitFilmListEntry,	self.filmListe))
+			self.th_ThumbsQuery(self.filmListe, 0, 1, 2, None, None, self.page, self.pages, agent=sit_agent, cookies=sit_ck)
 
 			self['liste'].moveToIndex(0)
 			self.loadPicQueued()
@@ -447,19 +389,16 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 		streamUrl = self['liste'].getCurrent()[0][1]
 		self.updateP = 1
 		CoverHelper(self['coverArt'], self.showCoverExit).getCover(streamPic, agent=sit_agent, cookieJar=sit_cookies, req=True)
-		if not self.seriesTag:
-			rate = self['liste'].getCurrent()[0][4]
-			hd = self['liste'].getCurrent()[0][5]
-			if hd:
-				self['hdpic'].show()
-			else:
-				self['hdpic'].hide()
-			rating = int(rate)
-			if rating > 100:
-				rating = 100
-			self['rating10'].setValue(rating)
+		rate = self['liste'].getCurrent()[0][4]
+		hd = self['liste'].getCurrent()[0][5]
+		if hd:
+			self['hdpic'].show()
 		else:
-			self['rating10'].setValue(0)
+			self['hdpic'].hide()
+		rating = int(rate)
+		if rating > 100:
+			rating = 100
+		self['rating10'].setValue(rating)
 
 	def dataErrorP(self, error):
 		printl(error,self,"E")
@@ -480,22 +419,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 		streamLink = self['liste'].getCurrent()[0][1]
 		streamName = self['liste'].getCurrent()[0][0]
 		imageLink = self['liste'].getCurrent()[0][2]
-		if '/serie' in streamLink or self.seriesTag.startswith('Staf'):
-			seasonData = self['liste'].getCurrent()[0][3]
-			if self.seriesTag.startswith('Staf'):
-				streamName = "%s %s" % (self.genreName, streamName)
-			self.session.open(streamitFilmListeScreen, streamLink, streamName, series_img=imageLink, last_series_tag=self.seriesTag, season_data=seasonData+'seriesName="%s"' % self.genreName)
-		elif self.seriesTag.startswith('Epi'):
-			imdb = self['liste'].getCurrent()[0][3]
-			seriesName = self['liste'].getCurrent()[0][4]
-			postData = {'IMDB':imdb, 'val':streamLink}
-			link = BASE_URL + '/lade_episode.php'
-			staffel, episode = re.search('(\d+)e(\d+)', streamLink).groups()
-			streamName = "%s - S%02dE%02d - %s" % (seriesName, int(staffel), int(episode), re.sub('\d+\s', '', streamName, 1))
-			streamLink = BASE_URL + '/serie/' + imdb
-			self.session.open(streamitStreams, streamLink, streamName, imageLink, self.streamTag, post_data=postData, post_url=link)
-		else:
-			self.session.open(streamitStreams, streamLink, streamName, imageLink, self.streamTag)
+		self.session.open(streamitStreams, streamLink, streamName, imageLink, self.streamTag)
 
 	def keyUpRepeated(self):
 		if self.keyLocked:
@@ -744,8 +668,10 @@ class streamitStreams(MPScreen):
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		streamLink = self['liste'].getCurrent()[0][1]
-		data = sit_grabpage(streamLink)
+		url = self['liste'].getCurrent()[0][1]
+		if not url.startswith('http'):
+			url = BASE_URL + url
+		data = sit_grabpage(url)
 		self.getUrl(data)
 
 	def getUrl(self,data):

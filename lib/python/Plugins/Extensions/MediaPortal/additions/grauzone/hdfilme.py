@@ -258,7 +258,6 @@ class hdfilmeParsing(MPScreen, ThumbsHelper):
 		title = self['liste'].getCurrent()[0][0]
 		url = self['liste'].getCurrent()[0][1]
 		cover = self['liste'].getCurrent()[0][2]
-		#self.addGlobalWatchtlist([title, cover, "hdfilmeStreams", title, url, cover])
 		self.session.open(hdfilmeStreams, title, url, cover)
 
 class hdfilmeStreams(MPScreen):
@@ -321,7 +320,7 @@ class hdfilmeStreams(MPScreen):
 		self.parseData(data)
 
 	def parseData(self, data):
-		m = re.search('<a class="btn.*?href="(.*?)">Trailer</a>', data)
+		m = re.search('<a class="btn.*?href="(.*?)">Trailer\s{0,1}[</a>|<i]', data)
 		if m:
 			self.trailer = m.group(1)
 			self['F2'].setText('Trailer')
@@ -331,14 +330,14 @@ class hdfilmeStreams(MPScreen):
 			for tab, server in servers:
 				m = re.search('<div\srole="tabpanel"\sclass="tab-pane.*?"\sid="%s">(.*?)</div>' % tab, data, re.S)
 				if m:
-					streams = re.findall('_episode="(\d+)" _link="" _sub=""\s+href="(.*?)"', m.group(1), re.S)
+					streams = re.findall('_episode="(\d+)" _link(?:=""|) _sub(?:=""|)\s+href="(.*?)"', m.group(1), re.S)
 					if streams:
 						folge = 'Folge ' if len(streams) > 1 and len(servers) == 1 else server.strip()
 						for (epi_num, link) in streams:
 							if not folge[0] == 'F': epi_num = ''
 							self.streamList.append((folge+epi_num, link.replace('&amp;','&'), epi_num))
 		if not len(self.streamList):
-			streams = re.findall('_episode=".*?" _link="" _sub=""\s+href="(.*?)">', data, re.S)
+			streams = re.findall('_episode=".*?" _link(?:=""|) _sub(?:=""|)\s+href="(.*?)">', data, re.S)
 			if streams:
 				for link in streams:
 					epi_num = re.findall('episode=(\d+)\&amp', link)
@@ -388,25 +387,37 @@ class hdfilmeStreams(MPScreen):
 			data = base64.b64decode(data)
 		except:
 			self.stream_not_found()
-		d = json.loads(data)
-		links = {}
-		if d['playinfo']:
-			for stream in d['playinfo']:
-				key = str(stream.get('label'))
-				if key:
-					key = key.strip('p')
-					if self.new_video_formats[videoPrio].has_key(key):
-						links[self.new_video_formats[videoPrio][key]] = stream.get('file')
-					else:
-						print 'no format prio:', key
-			try:
-				video_url = links[sorted(links.iterkeys())[0]]
-			except (KeyError,IndexError):
-				self.stream_not_found()
+		try:
+			d = json.loads(data)
+			links = {}
+			if d['playinfo']:
+				for stream in d['playinfo']:
+					key = str(stream.get('label'))
+					if key:
+						key = key.strip('p')
+						if self.new_video_formats[videoPrio].has_key(key):
+							links[self.new_video_formats[videoPrio][key]] = stream.get('file')
+						else:
+							print 'no format prio:', key
+				try:
+					video_url = links[sorted(links.iterkeys())[0]]
+				except (KeyError,IndexError):
+					self.stream_not_found()
+				else:
+					self.play(str(video_url))
 			else:
-				self.play(str(video_url))
-		else:
-			self.stream_not_found()
+				self.stream_not_found()
+		except:
+			try:
+				d = json.loads(data)
+				links = {}
+				if d['playinfo']:
+					stream = d['playinfo']
+					self.play(str(stream))
+				else:
+					self.stream_not_found()
+			except:
+				self.stream_not_found()
 
 	def play(self, url):
 		title = self.makeTitle()

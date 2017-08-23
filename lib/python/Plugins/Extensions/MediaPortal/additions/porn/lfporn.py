@@ -40,15 +40,16 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+default_cover = "file://%s/lfporn.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class LFPornGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -85,10 +86,14 @@ class LFPornGenreScreen(MPScreen):
 				Url = Url + "page/"
 				self.genreliste.append((decodeHtml(Title), Url))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Newest", "http://lfporn.com/page/", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Newest", "http://lfporn.com/page/", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

@@ -1,9 +1,47 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 dreiurl = "http://www.3sat.de"
 baseurl = "http://www.3sat.de/mediathek/"
+default_cover = "file://%s/3sat.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class dreisatGenreScreen(MPScreen, ThumbsHelper):
 
@@ -42,13 +80,14 @@ class dreisatGenreScreen(MPScreen, ThumbsHelper):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.filmliste = []
 		url = baseurl + "?mode=sendungenaz0"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		self.filmliste.append(("Sendung verpasst!?", '', ''))
-		self.filmliste.append(("--- Suche ---", '', ''))
+		self.filmliste.append(("Sendung verpasst!?", '', default_cover))
+		self.filmliste.append(("--- Suche ---", '', default_cover))
 		raw = re.findall('class="mediatheklistbox.*?_hover".*?href="(.*?)".*?img\sclass=.*?MediathekListPic"\salt="(.*?)"\ssrc="(.*?)"', data, re.S)
 		if raw:
 			for (Url, Title, Image) in raw:

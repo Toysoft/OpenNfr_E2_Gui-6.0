@@ -79,7 +79,7 @@ class vpornGenreScreen(MPScreen):
 		self.username = str(config.mediaportal.vporn_username.value)
 		self.password = str(config.mediaportal.vporn_password.value)
 
-		self['title'] = Label("Vporn.com")
+		self['title'] = Label("VPORN.com")
 		self['ContentTitle'] = Label("Genre:")
 		self['F2'] = Label(self.hd)
 		self['F3'] = Label(self.date)
@@ -206,9 +206,9 @@ class vpornSetupScreen(Screen, ConfigListScreenExt):
 			f.close()
 
 		Screen.__init__(self, session)
-		self['title'] = Label("Vporn.com " + _("Setup"))
+		self['title'] = Label("VPORN.com " + _("Setup"))
 		self['F4'] = Label('')
-		self.setTitle("Vporn.com " + _("Setup"))
+		self.setTitle("VPORN.com " + _("Setup"))
 
 		self.list = []
 		ConfigListScreenExt.__init__(self, self.list)
@@ -277,7 +277,7 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 			"blue" : self.keySort
 		}, -1)
 
-		self['title'] = Label("Vporn.com")
+		self['title'] = Label("VPORN.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
 		self['F4'] = Label(_("Sort"))

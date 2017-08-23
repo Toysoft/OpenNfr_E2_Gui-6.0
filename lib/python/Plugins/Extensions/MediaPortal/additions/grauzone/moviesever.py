@@ -40,7 +40,7 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 import requests
 
-glob_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0'
+glob_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
 premium = False
 keckse = {}
 BASE_URL = 'http://moviesever.com'
@@ -155,9 +155,9 @@ class movieseverParsing(MPScreen, ThumbsHelper):
 		self.getLastPage(data, '', 'class="pagination"><span>.*?von\s(.*?)</span>')
 
 		if self.genre == "Filme":
-			m = re.findall('<article id="post-.*?" class="item movies"><div class="poster"><a href="(.*?)"><img src="(.*?)" alt="(.*?)">', data)
+			m = re.findall('<article id="post-.*?" class="item movies"><div class="poster"><img src="(.*?)" alt="(.*?)">.*?<a href="(.*?)">', data)
 			if m:
-				for (url, bild, title) in m:
+				for (bild, title, url) in m:
 					self.streamList.append((decodeHtml(title), url, bild))
 		else:
 			m = re.findall('<div class="image"><div class="poster"><a href="http://moviesever.com/.*?"><img src="(.*?)"/>.*?</div><div class="title"><a href="(.*?)">(.*?)</a>', data)
@@ -166,7 +166,7 @@ class movieseverParsing(MPScreen, ThumbsHelper):
 					self.streamList.append((decodeHtml(title), url, bild))
 
 		if len(self.streamList) == 0:
-			self.streamList.append((_('Parsing error!'), None))
+			self.streamList.append((_('Parsing error!'), None, None))
 			self.keyLocked = True
 		else:
 			self.keyLocked = False
@@ -231,7 +231,8 @@ class movieseverStreams(MPScreen):
 
 	def parseData(self, data):
 		self.streamList = []
-		links = re.findall('"link":"(.*?)"', data, re.S)
+		parse = re.findall('class="movies-template(.*?)class="poster', data, re.S)
+		links = re.findall('iframe width="100." height="420px" class="metaframe rptss" src="(.*?)"', parse[0], re.S)
 		prem = re.findall('class="options" href="#option-\d.*?</b>\s{0,10}(.*?)\s{0,10}<span', data, re.S)
 		if links and prem:
 			stream_count = 1
@@ -249,16 +250,31 @@ class movieseverStreams(MPScreen):
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		stream_name = self['liste'].getCurrent()[0][0]
 		movie_crypt = self['liste'].getCurrent()[0][1]
 		if not movie_crypt: return
-		post_data = {'link': movie_crypt}
-		spezialagent = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'}
-		raw_data = requests.post('http://play.seriesever.net/me/moviesever.php', data=post_data, headers=spezialagent)
-		data = (raw_data.text)
-		streams = re.findall('"link":"(http.*?)"', data, re.S)
-		if streams:
-			stream_url = str(streams[-1].replace('\/','/'))
-			self.session.open(SimplePlayer, [(self.genre, stream_url, self.cover)], cover=True, showPlaylist=False, ltype='moviesever')
+
+		if 'play.seriesever.net' in movie_crypt:
+			getPage(movie_crypt, agent=glob_agent).addCallback(self.getStreamData).addErrback(self.dataError)
+		elif movie_crypt.startswith('http'):
+			get_stream_link(self.session).check_link(movie_crypt, self.got_link)
+		else:
+			post_data = {'link': movie_crypt}
+			spezialagent = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'}
+			raw_data = requests.post('http://play.seriesever.net/me/moviesever.php', data=post_data, headers=spezialagent)
+			data = (raw_data.text)
+			streams = re.findall('"link":"(http.*?)"', data, re.S)
+			if streams:
+				stream_url = str(streams[-1].replace('\/','/'))
+				self.session.open(SimplePlayer, [(self.genre, stream_url, self.cover)], cover=True, showPlaylist=False, ltype='moviesever')
+			else:
+				self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
+
+	def getStreamData(self, data):
+		stream = re.findall('iframe.*?src="(.*?)"', data, re.S)
+		if stream:
+			get_stream_link(self.session).check_link(stream[0], self.got_link)
 		else:
 			self.session.open(MessageBoxExt, _("Stream not found, try another Stream Hoster."), MessageBoxExt.TYPE_INFO, timeout=5)
+
+	def got_link(self, url):
+		self.session.open(SimplePlayer, [(self.genre, url, self.cover)], cover=True, showPlaylist=False, ltype='moviesever')

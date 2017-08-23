@@ -50,15 +50,17 @@ class TnAflixGenreScreen(MPScreen):
 		if self.mode == "tnaflix":
 			self.portal = "TnAflix.com"
 			self.baseurl = "https://www.tnaflix.com"
+			self.default_cover = "file://%s/tnaflix.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "empflix":
 			self.portal = "Empflix.com"
 			self.baseurl = "https://www.empflix.com"
+			self.default_cover = "file://%s/empflix.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -107,6 +109,10 @@ class TnAflixGenreScreen(MPScreen):
 				self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 				self.ml.moveToIndex(0)
 				self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(self.default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

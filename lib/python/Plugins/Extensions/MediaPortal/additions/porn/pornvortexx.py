@@ -38,6 +38,7 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+default_cover = "file://%s/pornvortexx.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class PornVortexxGenreScreen(MPScreen):
 
@@ -88,11 +89,11 @@ class PornVortexxGenreScreen(MPScreen):
 				Title = title.replace(' ','').replace('\n','')
 				self.genreliste.append((Title, url, img))
 		self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Popular (All Time)", "http://pornvortexx.com/topvideos.html?page=", None))
-		self.genreliste.insert(0, ("Most Popular (Last 10 days)", "http://pornvortexx.com/topvideos.html?do=recent&page=", None))
-		self.genreliste.insert(0, ("Top Rated", "http://pornvortexx.com/topvideos.html?do=rating&page=", None))
-		self.genreliste.insert(0, ("Most Recent", "http://pornvortexx.com/newvideos.html?page=", None))
-		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+		self.genreliste.insert(0, ("Most Popular (All Time)", "http://pornvortexx.com/topvideos.html?page=", default_cover))
+		self.genreliste.insert(0, ("Most Popular (Last 10 days)", "http://pornvortexx.com/topvideos.html?do=recent&page=", default_cover))
+		self.genreliste.insert(0, ("Top Rated", "http://pornvortexx.com/topvideos.html?do=rating&page=", default_cover))
+		self.genreliste.insert(0, ("Most Recent", "http://pornvortexx.com/newvideos.html?page=", default_cover))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
 		self.showInfos()

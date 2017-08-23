@@ -47,7 +47,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
-default_cover = "https://s3.amazonaws.com/uploads.uservoice.com/logo/design_setting/226367/original/red__2.jpg"
+default_cover = "file://%s/redtube.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class redtubeGenreScreen(MPScreen):
 
@@ -258,4 +258,4 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 				url = 'http:' + url
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='redtube')
+			self.session.open(SimplePlayer, [(Title, url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='redtube')

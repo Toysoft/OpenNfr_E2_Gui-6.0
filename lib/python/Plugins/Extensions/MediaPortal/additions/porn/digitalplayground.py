@@ -41,7 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 BASE_NAME = "DigitalPlayground.com"
-default_cover = "http://staticwebp-hw-dp.dvdcdn.com/assetv3_files/DigitalPlayground/DigitalPlaygroundCom/Common/common/global/img/dp_new_main_logo_white.png"
+default_cover = "file://%s/digitalplayground.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class digitalplaygroundGenreScreen(MPScreen):
 

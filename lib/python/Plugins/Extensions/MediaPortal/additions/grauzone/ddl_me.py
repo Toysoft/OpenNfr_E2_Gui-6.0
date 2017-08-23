@@ -297,6 +297,8 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 		else:
 			if self.genreSearch:
 				mg = re.search("<div id='view'(.*?)class=\"clear\">", data)
+				if not 'class="heading"' in data:
+					mg = None
 			else:
 				mg = re.search("<div id='view'(.*?)class='clear'>", data)
 

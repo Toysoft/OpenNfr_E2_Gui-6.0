@@ -1,11 +1,49 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
 IPhone5Agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3'
-MyHeaders= {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
+MyHeaders= {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 			'Accept-Language':'en-US,en;q=0.5'}
+default_cover = "file://%s/beeg.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 config.mediaportal.beeg_apikey = ConfigText(default="1764", fixed_size=False)
 config.mediaportal.beeg_salt = ConfigText(default="Q3A5Bc6oJ934nAXedx3nyM", fixed_size=False)
@@ -16,9 +54,9 @@ class beegGenreScreen(MPScreen):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 
 		with open(path, "r") as f:
 			self.skin = f.read()
@@ -76,6 +114,10 @@ class beegGenreScreen(MPScreen):
 			else:
 				self.keyLocked = False
 				message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def getkeys(self):
 		self.looplock = True
@@ -117,7 +159,7 @@ class beegGenreScreen(MPScreen):
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
 			self.suchString = callback.replace(' ', '+')
-			Link = 'http://api2.beeg.com/api/v6/%s/index/search/$PAGE$/mobile?query=%s' % (config.mediaportal.beeg_apikey.value, self.suchString)
+			Link = self.suchString
 			Name = "--- Search ---"
 			self.session.open(beegFilmScreen, Link, Name)
 
@@ -174,7 +216,11 @@ class beegFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		url = self.Link.replace('$PAGE$', '%s' % str(self.page-1))
+		if re.match(".*Search", self.Name):
+			url = 'http://api2.beeg.com/api/v6/%s/index/search/$PAGE$/mobile?query=%s' % (config.mediaportal.beeg_apikey.value, self.Link)
+			url = url.replace('$PAGE$', '%s' % str(self.page-1))
+		else:
+			url = self.Link.replace('$PAGE$', '%s' % str(self.page-1))
 		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
@@ -204,7 +250,7 @@ class beegFilmScreen(MPScreen, ThumbsHelper):
 			return
 		url = self['liste'].getCurrent()[0][1]
 		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getVideoPage).addErrback(self.dataError)
-		
+
 	def getVideoPage(self, data):
 		streamlinks = re.findall('\d{3}p":"(.*?)"', data , re.S)
 		if streamlinks:

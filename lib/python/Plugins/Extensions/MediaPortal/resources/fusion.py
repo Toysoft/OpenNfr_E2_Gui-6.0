@@ -8,12 +8,12 @@ fusionConfig = {
 	'dmax' : {
 		'url': 'http://m.app.dmax.de',
 		'token': 'XoVA15ecuocTY5wBbxNImXVFbQd72epyxxVcH3ZVmOA.',
-		'logo': 'http://www.dmax.de/wp-content/themes/dni_wp_theme_dmax_de/img/logo-trans.png'
+		'logo': "file://%s/dmax.png" % (config.mediaportal.iconcachepath.value + "logos")
 		},
 	'tlc' : {
 		'url': 'http://m.app.tlc.de',
 		'token': 'XoVA15ecuocTY5wBbxNImXVFbQd72epyxxVcH3ZVmOA.',
-		'logo': 'http://www.tlc.de/wp-content/themes/dni_wp_theme_tlc_de/img/logo.png'
+		'logo': "file://%s/tlc.png" % (config.mediaportal.iconcachepath.value + "logos")
 		}
 	}
 

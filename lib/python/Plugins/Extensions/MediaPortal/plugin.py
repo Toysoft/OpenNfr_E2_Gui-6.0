@@ -188,8 +188,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="815"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.1.5"))
+config.mediaportal.version = NoSave(ConfigText(default="818"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="8.1.8"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -360,6 +360,32 @@ for x in root:
 					exec("from additions."+modfile+" import *")
 				exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
 
+try:
+	xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+	for file in os.listdir(xmlpath):
+		if file.endswith(".xml") and file != "additions.xml":
+			useraddition = xmlpath + file
+
+			conf = xml.etree.cElementTree.parse(useraddition)
+			for x in conf.getroot():
+				if x.tag == "set" and x.get("name") == 'additions_user':
+					root =  x
+			for x in root:
+				if x.tag == "plugin":
+					if x.get("type") == "mod":
+						modfile = x.get("modfile")
+						if modfile == "music.canna" and not mechanizeModule:
+							pass
+						else:
+							if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
+								sys.path.append('/etc/enigma2/mp_override')
+								exec("from "+modfile.split('.')[1]+" import *")
+							else:
+								exec("from additions."+modfile+" import *")
+							exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
+except:
+	pass
+
 class CheckPathes:
 
 	def __init__(self, session):
@@ -402,6 +428,10 @@ class CheckPathes:
 			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
 
 		res, msg = SimplePlaylistIO.checkPath(config.mediaportal.iconcachepath.value + "icons_zoom/", '', True)
+		if not res:
+			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
+
+		res, msg = SimplePlaylistIO.checkPath(config.mediaportal.iconcachepath.value + "logos/", '', True)
 		if not res:
 			self.session.openWithCallback(self._callback, MessageBoxExt, msg, MessageBoxExt.TYPE_ERROR)
 
@@ -548,7 +578,6 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		self.mediatheken = []
 		self.porn = []
 		self.grauzone = []
-		self.watchlist = []
 		### Allgemein
 		self._separator()
 		self.configlist.append(getConfigListEntry(_("GENERAL"), ))
@@ -667,6 +696,34 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 						else:
 							exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
 
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								modfile = x.get("modfile")
+								gz = x.get("gz")
+								if modfile == "music.canna" and not mechanizeModule:
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
+								else:
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
+		except:
+			pass
+
 		self._separator()
 		self.configlist.append(getConfigListEntry(_("SPORTS"), ))
 		self._separator()
@@ -709,12 +766,6 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 			self._separator()
 			self.grauzone.sort(key=lambda t : t[0].lower())
 			for x in self.grauzone:
-				self.configlist.append((_("Show ")+x[0]+":",x[1], False))
-			self._separator()
-			self.configlist.append(getConfigListEntry("WATCHLIST", ))
-			self._separator()
-			self.watchlist.sort(key=lambda t : t[0].lower())
-			for x in self.watchlist:
 				self.configlist.append((_("Show ")+x[0]+":",x[1], False))
 
 		self._separator()
@@ -815,7 +866,7 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 class MPList(Screen, HelpableScreen):
 
 	def __init__(self, session, lastservice):
-		self.lastservice = lastservice
+		self.lastservice = mp_globals.lastservice = lastservice
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
@@ -926,6 +977,12 @@ class MPList(Screen, HelpableScreen):
 		else:
 			self.icons_data = None
 
+		logo_hashes = grabpage(self.icon_url+"logos/hashes")
+		if logo_hashes:
+			self.logo_data = re.findall('(.*?)\s\*(.*?\.png)', logo_hashes)
+		else:
+			self.logo_data = None
+
 		if not mp_globals.start:
 			self.close(self.session, True, self.lastservice)
 		if config.mediaportal.autoupdate.value:
@@ -957,6 +1014,35 @@ class MPList(Screen, HelpableScreen):
 							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
 							if mod:
 								exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								modfile = x.get("modfile")
+								confcat = x.get("confcat")
+								if modfile == "music.canna" and not mechanizeModule:
+									pass
+								elif not config.mediaportal.showporn.value and confcat == "porn":
+									pass
+								else:
+									gz = x.get("gz")
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+										if mod:
+											exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
+		except:
+			pass
 
 		if len(self.porn) < 1:
 			self['Porn'].hide()
@@ -1050,6 +1136,22 @@ class MPList(Screen, HelpableScreen):
 				if remote_hash != local_hash:
 					ds.run(downloadPage, url, poster_path)
 					poster_path = "%s/images/comingsoon.png" % self.plugin_path
+
+		logo_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "logos", icon)
+		url = self.icon_url+"logos/" + icon + ".png"
+		if not fileExists(logo_path):
+			if self.logo_data:
+				for x,y in self.logo_data:
+					if y == icon+'.png':
+						ds.run(downloadPage, url, logo_path)
+		else:
+			local_hash = hashlib.md5(open(logo_path, 'rb').read()).hexdigest()
+			if self.logo_data:
+				for x,y in self.logo_data:
+					if y == icon+'.png': remote_hash = x
+				if remote_hash != local_hash:
+					ds.run(downloadPage, url, logo_path)
+
 		scale = AVSwitch().getFramebufferScale()
 		if mp_globals.videomode == 2:
 			self.picload.setPara((105, 56, scale[0], scale[1], False, 1, "#FF000000"))
@@ -1464,6 +1566,49 @@ class MPList(Screen, HelpableScreen):
 							exec("self.pornscreen = " + x.get("screen") + "")
 						else:
 							exec("self.session.open(" + x.get("screen") + param + ")")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								confcat = x.get("confcat")
+								if auswahl ==  x.get("name").replace("&amp;","&"):
+									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+									if status:
+										if config.mediaportal.version.value < status[0][1]:
+											if status[0][1] == "9999":
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+											else:
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+											if not config.mediaportal.debugMode.value == "High":
+												return
+									param = ""
+									param1 = x.get("param1")
+									param2 = x.get("param2")
+									kids = x.get("kids")
+									if param1 != "":
+										param = ", \"" + param1 + "\""
+										exec("self.par1 = \"" + x.get("param1") + "\"")
+									if param2 != "":
+										param = param + ", \"" + param2 + "\""
+										exec("self.par2 = \"" + x.get("param2") + "\"")
+									if confcat == "porn":
+										exec("self.pornscreen = " + x.get("screen") + "")
+									elif kids != "1" and config.mediaportal.kidspin.value:
+										exec("self.pornscreen = " + x.get("screen") + "")
+									else:
+										exec("self.session.open(" + x.get("screen") + param + ")")
+		except:
+			pass
+
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
@@ -1617,7 +1762,7 @@ class MPpluginSort(Screen):
 class MPWall(Screen, HelpableScreen):
 
 	def __init__(self, session, lastservice, filter):
-		self.lastservice = lastservice
+		self.lastservice = mp_globals.lastservice = lastservice
 		self.wallbw = False
 		self.wallzoom = False
 
@@ -1644,6 +1789,35 @@ class MPWall(Screen, HelpableScreen):
 							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
 							if mod:
 								y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								modfile = x.get("modfile")
+								confcat = x.get("confcat")
+								if modfile == "music.canna" and not mechanizeModule:
+									pass
+								elif not config.mediaportal.showporn.value and confcat == "porn":
+									pass
+								else:
+									gz = x.get("gz")
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+										if mod:
+											y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+		except:
+			pass
 
 		if len(self.plugin_liste) == 0:
 			self.plugin_liste.append(("","","Mediathek"))
@@ -1872,7 +2046,6 @@ class MPWall(Screen, HelpableScreen):
 			"nextBouquet" :	(self.page_next, _("Next page")),
 			"prevBouquet" :	(self.page_back, _("Previous page")),
 			"menu" : (self.keySetup, _("MediaPortal Setup")),
-			#"leavePlayer": (self.openGlWatchlist, _("Global Watchlist")),
 			config.mediaportal.simplelist_key.value: (self.keySimpleList, _("Open SimpleList"))
 		}, -1)
 
@@ -1928,9 +2101,6 @@ class MPWall(Screen, HelpableScreen):
 		self.onFirstExecBegin.append(self._onFirstExecBegin)
 		self.onFirstExecBegin.append(self.checkPathes)
 		self.onFirstExecBegin.append(self.status)
-
-	def openGlWatchlist(self):
-		self.session.open(globalWatchlist)
 
 	def randomTipp(self):
 		lines = []
@@ -2077,11 +2247,18 @@ class MPWall(Screen, HelpableScreen):
 		else:
 			icons_data = None
 
+
 		icons_data_zoom = None
 		if self.wallzoom:
 			icons_hashes_zoom = grabpage(icon_url+"icons_zoom/hashes")
 			if icons_hashes_zoom:
 				icons_data_zoom = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes_zoom)
+
+		logo_hashes = grabpage(icon_url+"logos/hashes")
+		if logo_hashes:
+			logo_data = re.findall('(.*?)\s\*(.*?\.png)', logo_hashes)
+		else:
+			logo_data = None
 
 		for x in range(1,len(self.plugin_liste)+1):
 			postername = self.plugin_liste[int(x)-1][1]
@@ -2121,6 +2298,21 @@ class MPWall(Screen, HelpableScreen):
 						if remote_hash != local_hash:
 							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
+
+			logo_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "logos", postername)
+			url = icon_url+"logos/" + postername + ".png"
+			if not fileExists(logo_path):
+				if logo_data:
+					for a,b in logo_data:
+						if b == postername+'.png':
+							ds.run(downloadPage, url, logo_path)
+			else:
+				local_hash = hashlib.md5(open(logo_path, 'rb').read()).hexdigest()
+				if logo_data:
+					for a,b in logo_data:
+						if b == postername+'.png': remote_hash = a
+					if remote_hash != local_hash:
+						ds.run(downloadPage, url, logo_path)
 
 			scale = AVSwitch().getFramebufferScale()
 			if mp_globals.videomode == 2:
@@ -2317,6 +2509,49 @@ class MPWall(Screen, HelpableScreen):
 							exec("self.pornscreen = " + x.get("screen") + "")
 						else:
 							exec("self.session.open(" + x.get("screen") + param + ")")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								confcat = x.get("confcat")
+								if auswahl ==  x.get("name").replace("&amp;","&"):
+									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+									if status:
+										if config.mediaportal.version.value < status[0][1]:
+											if status[0][1] == "9999":
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+											else:
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+											if not config.mediaportal.debugMode.value == "High":
+												return
+									param = ""
+									param1 = x.get("param1")
+									param2 = x.get("param2")
+									kids = x.get("kids")
+									if param1 != "":
+										param = ", \"" + param1 + "\""
+										exec("self.par1 = \"" + x.get("param1") + "\"")
+									if param2 != "":
+										param = param + ", \"" + param2 + "\""
+										exec("self.par2 = \"" + x.get("param2") + "\"")
+									if confcat == "porn":
+										exec("self.pornscreen = " + x.get("screen") + "")
+									elif kids != "1" and config.mediaportal.kidspin.value:
+										exec("self.pornscreen = " + x.get("screen") + "")
+									else:
+										exec("self.session.open(" + x.get("screen") + param + ")")
+		except:
+			pass
+
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
@@ -2607,7 +2842,7 @@ class MPWall(Screen, HelpableScreen):
 class MPWall2(Screen, HelpableScreen):
 
 	def __init__(self, session, lastservice, filter):
-		self.lastservice = lastservice
+		self.lastservice = mp_globals.lastservice = lastservice
 		self.wallbw = False
 		self.plugin_liste = []
 		self.plugin_path = mp_globals.pluginPath
@@ -2638,6 +2873,35 @@ class MPWall2(Screen, HelpableScreen):
 							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
 							if mod:
 								y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								modfile = x.get("modfile")
+								confcat = x.get("confcat")
+								if modfile == "music.canna" and not mechanizeModule:
+									pass
+								elif not config.mediaportal.showporn.value and confcat == "porn":
+									pass
+								else:
+									gz = x.get("gz")
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+										if mod:
+											y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+		except:
+			pass
 
 		if len(self.plugin_liste) == 0:
 			self.plugin_liste.append(("","","Mediathek"))
@@ -2998,6 +3262,13 @@ class MPWall2(Screen, HelpableScreen):
 			icons_data = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes)
 		else:
 			icons_data = None
+
+		logo_hashes = grabpage(icon_url+"logos/hashes")
+		if logo_hashes:
+			logo_data = re.findall('(.*?)\s\*(.*?\.png)', logo_hashes)
+		else:
+			logo_data = None
+
 		for p_name, p_picname, p_genre, p_hits, p_sort in self.plugin_liste:
 			remote_hash = ""
 			ds = defer.DeferredSemaphore(tokens=5)
@@ -3037,6 +3308,22 @@ class MPWall2(Screen, HelpableScreen):
 						if remote_hash != local_hash:
 							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
+
+			logo_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "logos", p_picname)
+			url = icon_url+"logos/" + p_picname + ".png"
+			if not fileExists(logo_path):
+				if logo_data:
+					for x,y in logo_data:
+						if y == p_picname+'.png':
+							ds.run(downloadPage, url, logo_path)
+			else:
+				local_hash = hashlib.md5(open(logo_path, 'rb').read()).hexdigest()
+				if logo_data:
+					for x,y in logo_data:
+						if y == p_picname+'.png': remote_hash = x
+					if remote_hash != local_hash:
+						ds.run(downloadPage, url, logo_path)
+
 			row.append((p_name, p_picname, poster_path, p_genre, p_hits, p_sort))
 			posterlist.append(poster_path)
 		self["covercollection"].setList(itemList,posterlist)
@@ -3116,6 +3403,49 @@ class MPWall2(Screen, HelpableScreen):
 							exec("self.pornscreen = " + x.get("screen") + "")
 						else:
 							exec("self.session.open(" + x.get("screen") + param + ")")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								confcat = x.get("confcat")
+								if p_name ==  x.get("name").replace("&amp;","&"):
+									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+									if status:
+										if config.mediaportal.version.value < status[0][1]:
+											if status[0][1] == "9999":
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+											else:
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+											if not config.mediaportal.debugMode.value == "High":
+												return
+									param = ""
+									param1 = x.get("param1")
+									param2 = x.get("param2")
+									kids = x.get("kids")
+									if param1 != "":
+										param = ", \"" + param1 + "\""
+										exec("self.par1 = \"" + x.get("param1") + "\"")
+									if param2 != "":
+										param = param + ", \"" + param2 + "\""
+										exec("self.par2 = \"" + x.get("param2") + "\"")
+									if confcat == "porn":
+										exec("self.pornscreen = " + x.get("screen") + "")
+									elif kids != "1" and config.mediaportal.kidspin.value:
+										exec("self.pornscreen = " + x.get("screen") + "")
+									else:
+										exec("self.session.open(" + x.get("screen") + param + ")")
+		except:
+			pass
+
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
@@ -3332,7 +3662,7 @@ class MPWall2(Screen, HelpableScreen):
 class MPWall3(Screen, HelpableScreen):
 
 	def __init__(self, session, lastservice, filter):
-		self.lastservice = lastservice
+		self.lastservice = mp_globals.lastservice = lastservice
 		self.wallbw = False
 		self.plugin_liste = []
 		self.plugin_path = mp_globals.pluginPath
@@ -3363,6 +3693,35 @@ class MPWall3(Screen, HelpableScreen):
 							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
 							if mod:
 								y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								modfile = x.get("modfile")
+								confcat = x.get("confcat")
+								if modfile == "music.canna" and not mechanizeModule:
+									pass
+								elif not config.mediaportal.showporn.value and confcat == "porn":
+									pass
+								else:
+									gz = x.get("gz")
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+										if mod:
+											y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+		except:
+			pass
 
 		if len(self.plugin_liste) == 0:
 			self.plugin_liste.append(("","","Mediathek"))
@@ -3727,6 +4086,13 @@ class MPWall3(Screen, HelpableScreen):
 			icons_data = re.findall('(.*?)\s\*(.*?\.png)', icons_hashes)
 		else:
 			icons_data = None
+
+		logo_hashes = grabpage(icon_url+"logos/hashes")
+		if logo_hashes:
+			logo_data = re.findall('(.*?)\s\*(.*?\.png)', logo_hashes)
+		else:
+			logo_data = None
+
 		for p_name, p_picname, p_genre, p_hits, p_sort in self.plugin_liste:
 			remote_hash = ""
 			ds = defer.DeferredSemaphore(tokens=5)
@@ -3766,6 +4132,22 @@ class MPWall3(Screen, HelpableScreen):
 						if remote_hash != local_hash:
 							ds.run(downloadPage, url, poster_path)
 							poster_path = "%s/images/comingsoon.png" % self.plugin_path
+
+			logo_path = "%s/%s.png" % (config.mediaportal.iconcachepath.value + "logos", p_picname)
+			url = icon_url+"logos/" + p_picname + ".png"
+			if not fileExists(logo_path):
+				if logo_data:
+					for x,y in logo_data:
+						if y == p_picname+'.png':
+							ds.run(downloadPage, url, logo_path)
+			else:
+				local_hash = hashlib.md5(open(logo_path, 'rb').read()).hexdigest()
+				if logo_data:
+					for x,y in logo_data:
+						if y == p_picname+'.png': remote_hash = x
+					if remote_hash != local_hash:
+						ds.run(downloadPage, url, logo_path)
+
 			row.append(((p_name, p_picname, poster_path, p_genre, p_hits, p_sort),))
 			posterlist.append(((p_name, p_picname, poster_path, p_genre, p_hits, p_sort),))
 
@@ -3846,6 +4228,49 @@ class MPWall3(Screen, HelpableScreen):
 							exec("self.pornscreen = " + x.get("screen") + "")
 						else:
 							exec("self.session.open(" + x.get("screen") + param + ")")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								confcat = x.get("confcat")
+								if p_name ==  x.get("name").replace("&amp;","&"):
+									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+									if status:
+										if config.mediaportal.version.value < status[0][1]:
+											if status[0][1] == "9999":
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+											else:
+												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+											if not config.mediaportal.debugMode.value == "High":
+												return
+									param = ""
+									param1 = x.get("param1")
+									param2 = x.get("param2")
+									kids = x.get("kids")
+									if param1 != "":
+										param = ", \"" + param1 + "\""
+										exec("self.par1 = \"" + x.get("param1") + "\"")
+									if param2 != "":
+										param = param + ", \"" + param2 + "\""
+										exec("self.par2 = \"" + x.get("param2") + "\"")
+									if confcat == "porn":
+										exec("self.pornscreen = " + x.get("screen") + "")
+									elif kids != "1" and config.mediaportal.kidspin.value:
+										exec("self.pornscreen = " + x.get("screen") + "")
+									else:
+										exec("self.session.open(" + x.get("screen") + param + ")")
+		except:
+			pass
+
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
@@ -4137,6 +4562,12 @@ class MPchooseFilter(Screen):
 
 	def loadPage(self):
 		for x in range(1,len(self.dupe)+1):
+			if self.dupe[int(x)-1] == self.old_filter:
+				position = self["menu"+str(x)].instance.position()
+				self["frame"].moveTo(position.x(), position.y(), 1)
+				self["frame"].show()
+				self["frame"].startMoving()
+				self.selektor_index = x
 			filtername = self.dupe[int(x)-1]
 			if filtername == "ALL":
 				name = _("ALL")
@@ -4161,18 +4592,6 @@ class MPchooseFilter(Screen):
 				if pic != None:
 					self["menu"+str(x)].instance.setPixmap(pic)
 					self["menu"+str(x)].show()
-		self.getstartframe()
-
-	def getstartframe(self):
-		x = 1
-		for fname in self.dupe:
-			if fname == self.old_filter:
-				position = self["menu"+str(x)].instance.position()
-				self["frame"].moveTo(position.x(), position.y(), 1)
-				self["frame"].show()
-				self["frame"].startMoving()
-				self.selektor_index = x
-			x += 1
 
 	def moveframe(self):
 		position = self["menu"+str(self.selektor_index)].instance.position()
@@ -4402,94 +4821,6 @@ def _stylemanager(mode):
 	except:
 		printl('Fatal skin.xml error!','','E')
 		pass
-
-class globalWatchlist(MPScreen):
-
-	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
-
-		self["actions"] = ActionMap(["MP_Actions"], {
-			"0" : self.closeAll,
-			"ok" : self.keyOK,
-			"cancel" : self.keyCancel,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft
-		}, -1)
-
-		self['title'] = Label("Last seen Movies/Series")
-		self['ContentTitle'] = Label(_("Stream Selection"))
-		self['name'] = Label("")
-
-		self.streamList = []
-		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self['liste'] = self.ml
-
-		self.keyLocked = False
-		self.onLayoutFinish.append(self.readGlWatchlist)
-
-	def readGlWatchlist(self):
-		self.keyLocked = True
-		self.wlgl_path = config.mediaportal.watchlistpath.value+"mp_global_watchlist"
-		if not fileExists(self.wlgl_path):
-			self.streamList.append(("Global Watchlist is empty!", None, None))
-			self.ml.setList(map(self._defaultlistleft, self.streamList))
-			return
-		try:
-			readGlwl = open(self.wlgl_path,"r")
-			glWldata = readGlwl.read()
-			readGlwl.close()
-
-			for lst in re.findall('"(.*?)"', glWldata):
-				list = lst.split('||')
-				self.streamList.append((list[0], list[1], list))
-			self.keyLocked = False
-		except:
-			self.streamList.append(("Global Watchlist is empty!", None, None))
-		self.ml.setList(map(self._defaultlistleft, self.streamList))
-		self.showInfos()
-
-	def showInfos(self):
-		exist = self['liste'].getCurrent()
-		if self.keyLocked or exist == None:
-			return
-		self.Title = self['liste'].getCurrent()[0][0]
-		self.Cover = self['liste'].getCurrent()[0][1]
-		CoverHelper(self['coverArt']).getCover(self.Cover)
-		self['name'].setText(self.Title)
-
-	def keyOK(self):
-		exist = self['liste'].getCurrent()
-		if self.keyLocked or exist == None:
-			return
-		list = self['liste'].getCurrent()[0][2]
-		open = "self.session.open("
-		count = 0
-		counting = len(list)
-		for each in list:
-			if count == 0 or count == 1:
-				count += 1
-				continue
-			elif count == 2:
-				count += 1
-				open += each+','
-			else:
-				count += 1
-				if counting == count:
-					open += '"'+each+'"'
-				else:
-					open += '"'+each+'",'
-		open += ")"
-		exec(open)
 
 def _hosters():
 	hosters_file = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/resources/hosters.xml"

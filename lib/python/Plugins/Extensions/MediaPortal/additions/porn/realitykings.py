@@ -41,7 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 BASE_NAME = "RealityKings.com"
-default_cover = "http://cdn.hw.assets.realitykings.com/Rk/RealityKingsCom/Tour/assets/img/RKLogo_verti.png"
+default_cover = "file://%s/realitykings.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class realitykingsGenreScreen(MPScreen):
 

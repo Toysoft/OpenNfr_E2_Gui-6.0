@@ -1,19 +1,50 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-class pornoidGenreScreen(MPScreen):
+baseurl = "www.befuck.com"
+default_cover = "file://%s/befuck.png" % (config.mediaportal.iconcachepath.value + "logos")
 
-	def __init__(self, session, mode):
-		self.mode = mode
+class befuckGenreScreen(MPScreen):
 
-		if self.mode == "pornoid":
-			self.portal = "Pornoid.com"
-			self.baseurl = "www.pornoid.com"
-		if self.mode == "befuck":
-			self.portal = "BeFuck.com"
-			self.baseurl = "www.befuck.com"
-
+	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
@@ -36,7 +67,7 @@ class pornoidGenreScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label(self.portal)
+		self['title'] = Label("BeFuck.com")
 		self['ContentTitle'] = Label("Genre:")
 		self['name'] = Label(_("Please wait..."))
 
@@ -51,7 +82,7 @@ class pornoidGenreScreen(MPScreen):
 
 	def loadPage(self):
 		self.filmliste = []
-		url = "http://%s/categories/" % self.baseurl
+		url = "http://%s/categories/" % baseurl
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
@@ -63,10 +94,10 @@ class pornoidGenreScreen(MPScreen):
 					Url = Url + '/'
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 			self.filmliste.sort()
-			self.filmliste.insert(0, ("Most Popular", "http://%s/most-popular/" % self.baseurl, None))
-			self.filmliste.insert(0, ("Top Rated", "http://%s/" % self.baseurl, None))
-			self.filmliste.insert(0, ("Newest", "http://%s/" % self.baseurl, None))
-			self.filmliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.filmliste.insert(0, ("Most Popular", "http://%s/most-popular/" % baseurl, default_cover))
+			self.filmliste.insert(0, ("Top Rated", "http://%s/" % baseurl, default_cover))
+			self.filmliste.insert(0, ("Newest", "http://%s/" % baseurl, default_cover))
+			self.filmliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 			self.keyLocked = False
 			self.showInfos()
@@ -81,7 +112,7 @@ class pornoidGenreScreen(MPScreen):
 			self.suchString = callback.replace(' ', '+')
 			Link = '?q=%s' % self.suchString
 			Name = self['liste'].getCurrent()[0][0]
-			self.session.open(pornoidListScreen, Link, Name, self.portal, self.baseurl)
+			self.session.open(befuckListScreen, Link, Name)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -91,15 +122,13 @@ class pornoidGenreScreen(MPScreen):
 			self.suchen()
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(pornoidListScreen, Link, Name, self.portal, self.baseurl)
+			self.session.open(befuckListScreen, Link, Name)
 
-class pornoidListScreen(MPScreen, ThumbsHelper):
+class befuckListScreen(MPScreen, ThumbsHelper):
 
-	def __init__(self, session, Link, Name, portal, baseurl):
+	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.portal = portal
-		self.baseurl = baseurl
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
@@ -127,7 +156,7 @@ class pornoidListScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label(self.portal)
+		self['title'] = Label("BeFuck.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
 		self['F2'] = Label(_("Page"))
@@ -146,13 +175,12 @@ class pornoidListScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self.filmliste = []
 		if re.match('.*?Search', self.Name):
-			url = 'http://%s/searchpages/%s' % (self.baseurl, self.Link)
+			url = 'http://%s/search/%s/%s' % (baseurl, self.Link, str(self.page))
 		else:
 			url = self.Link + str(self.page) + "/"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
-		data = re.sub(r'<[<!--].*<a href="http://www.pornoid.com/login.php..*-->', "", data)
 		self.getLastPage(data, '<nav\sid="pgn">(.*?)</nav>')
 		raw = re.findall('<div\sclass="ic">.*?href="(http[s]?://\D+/videos/.*?)"\s(?:class=".*?title=|title=)"(.*?)">.*?data-src="(.*?)".*?<span>(.*?)</span>', data, re.S)
 		if raw:
@@ -186,4 +214,4 @@ class pornoidListScreen(MPScreen, ThumbsHelper):
 		if not videoLink:
 			videoLink = re.search('<source\ssrc="(.*?)"', data, re.S)
 		if videoLink:
-			self.session.open(SimplePlayer, [(title, videoLink.group(1).replace('&amp;','&'))], showPlaylist=False, ltype='pornoid')
+			self.session.open(SimplePlayer, [(title, videoLink.group(1).replace('&amp;','&'))], showPlaylist=False, ltype='befuck')

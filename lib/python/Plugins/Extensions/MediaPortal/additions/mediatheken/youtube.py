@@ -122,6 +122,10 @@ class youtubeGenreScreen(MenuHelper):
 			(_('Channels'), '/channels?')
 			]
 
+		self.subCatUserChannelPlaylist = [
+			(_('Videos'), '/videos?')
+			]
+
 		self.subCatUserChannelPopularWorldwide = [
 			(_('Featured'), '/featured?'),
 			]
@@ -354,6 +358,8 @@ class youtubeGenreScreen(MenuHelper):
 				for (name, user) in list:
 					if user.strip().startswith('UC'):
 						self.UserChannels.append((name.strip(), 'https://www.youtube.com/channel/'+user.strip()))
+					elif user.strip().startswith('PL'):
+						self.UserChannels.append((name.strip(), 'gdata.youtube.com/feeds/api/users/'+user.strip()+'/uploads?'))
 					else:
 						self.UserChannels.append((name.strip(), 'https://www.youtube.com/user/'+user.strip()))
 				self.keyLocked = False
@@ -361,7 +367,9 @@ class youtubeGenreScreen(MenuHelper):
 				self.UserChannels.append((_('No channels found!'), ''))
 		self.subCatUserChannels = []
 		for item in self.UserChannels:
-			if item[1] != "":
+			if item[1].replace('gdata.youtube.com/feeds/api/users/', '').startswith('PL'):
+				self.subCatUserChannels.append(self.subCatUserChannelPlaylist)
+			elif item[1] != "":
 				self.subCatUserChannels.append(self.subCatUserChannel)
 			else:
 				self.subCatUserChannels.append(None)
@@ -791,7 +799,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 			"yellow" 	: self.keyTxtPageUp,
 			"blue" 		: self.keyTxtPageDown,
 			"green"		: self.keyGreen,
-			"0"			: self.closeAll,
+			"0"		: self.closeAll,
 			"1" 		: self.key_1,
 			"3" 		: self.key_3,
 			"4" 		: self.key_4,
@@ -857,7 +865,11 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 	def checkAPICallv2(self):
 		m = re.search('/api/users/(.*?)/uploads\?', self.stvLink, re.S)
 		if m:
-			if not m.group(1).startswith('UC'):
+			if m.group(1).startswith('PL'):
+				self.stvLink = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&order=date&playlistId=%s&key=%s" % (m.group(1), APIKEYV3)
+				self.apiUrl = False
+				self.apiUrlv3 = True
+			elif not m.group(1).startswith('UC'):
 				url = 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=%s&key=%s' % (m.group(1), APIKEYV3)
 				return twAgentGetPage(url, agent=agent, headers=self.headers).addCallback(self.parsePlaylistId).addErrback(self.dataError)
 			else:

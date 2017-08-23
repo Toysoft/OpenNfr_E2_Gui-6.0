@@ -45,7 +45,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
-default_cover = "https://pbs.twimg.com/profile_images/577610027491405824/u6hnTtSa.png"
+default_cover = "file://%s/eporner.png" % (config.mediaportal.iconcachepath.value + "logos")
 	
 class epornerGenreScreen(MPScreen):
 

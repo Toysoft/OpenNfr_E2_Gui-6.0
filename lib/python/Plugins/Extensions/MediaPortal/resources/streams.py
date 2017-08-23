@@ -769,9 +769,13 @@ class get_stream_link:
 				link = data
 				getPage(link).addCallback(self.kodik).addErrback(self.errorload)
 
-			elif re.search('(docs|drive)\.google\.com/', data, re.S):
-				link = data
-				mp_globals.player_agent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+			elif re.search('(docs|drive)\.google\.com/|youtube\.googleapis\.com', data, re.S):
+				if 'youtube.googleapis.com' in data:
+					docid = re.search('docid=([\w]+)', data)
+					link = 'https://drive.google.com/file/d/%s/edit' % docid.groups(1)
+				else:
+					link = data
+				mp_globals.player_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
 				self.google_ck = {}
 				getPage(link, agent=mp_globals.player_agent, cookies=self.google_ck).addCallback(self.google).addErrback(self.errorload)
 

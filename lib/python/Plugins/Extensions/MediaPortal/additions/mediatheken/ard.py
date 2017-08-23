@@ -47,11 +47,9 @@ mainLink = "http://www.ardmediathek.de"
 tDef = "Keine Informationen/Angaben"
 isWeg = "Nicht (oder nicht mehr) auf den ARD-Servern vorhanden!"
 placeHolder = ("---","99")
-ardPic = ""
+ardPic = "file://%s/ard.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class ARDGenreScreen(MPScreen):
-
-	ARDPICURL = "http://www.ardmediathek.de/image/00/13/82/72/58/1995897458/16x9/512"
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -81,19 +79,7 @@ class ARDGenreScreen(MPScreen):
 		self.genreliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
-		self.onLayoutFinish.append(self.checkARDPicURL)
-
-	def checkARDPicURL(self):
-		if ardPic == "":
-			getPage(self.ARDPICURL, method='HEAD').addCallback(self.cb_checkARDPicURL, True).addErrback(self.cb_checkARDPicURL)
-		else:
-			self.loadPage()
-
-	def cb_checkARDPicURL(self, response, found=False):
-		if found:
-			global ardPic
-			ardPic = self.ARDPICURL
-		self.loadPage()
+		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
 		self.genreliste = []
@@ -108,8 +94,7 @@ class ARDGenreScreen(MPScreen):
 		self.genreliste.append(("Kategorien  -  Radio", "8"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
-		if ardPic != "":
-			CoverHelper(self['coverArt']).getCover(ardPic)
+		CoverHelper(self['coverArt']).getCover(ardPic)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -224,8 +209,7 @@ class ARDPreSelect(MPScreen):
 
 		self.keyLocked = False
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-		if ardPic != "":
-			CoverHelper(self['coverArt']).getCover(ardPic)
+		CoverHelper(self['coverArt']).getCover(ardPic)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -352,8 +336,7 @@ class ARDPreSelectSender(MPScreen):
 
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
-		if ardPic != "":
-			CoverHelper(self['coverArt']).getCover(ardPic)
+		CoverHelper(self['coverArt']).getCover(ardPic)
 
 	def keyOK(self):
 		if self.keyLocked:

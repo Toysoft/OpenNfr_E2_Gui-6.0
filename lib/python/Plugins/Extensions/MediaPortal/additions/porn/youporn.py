@@ -54,7 +54,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
-default_cover = "http://therealpornwikileaks.com/wp-content/uploads/2017/02/Youporn.png"
+default_cover = "file://%s/youporn.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class youpornGenreScreen(MPScreen):
 

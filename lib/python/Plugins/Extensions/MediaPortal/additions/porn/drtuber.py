@@ -42,7 +42,7 @@ from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoard
 
 BASE_URL = "http://www.drtuber.com"
 dtAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
-default_cover = "https://pbs.twimg.com/media/CuK6txSXgAAJ8oW.jpg"
+default_cover = "file://%s/drtuber.png" % (config.mediaportal.iconcachepath.value + "logos")
 ck = {}
 json_headers = {
 	'Accept':'application/json',

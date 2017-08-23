@@ -5,7 +5,6 @@ from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoard
 
 from kinoxto import *
 from movie4k import *
-from kinokiste import *
 from ddl_me import DDLME_FilmListeScreen
 
 class timdbGenreScreen(MPScreen):

@@ -41,7 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 BASE_NAME = "Brazzers.com"
-default_cover = "http://static.brazzers.com/bzv2/brazzerscom/tour/assets/common/img/logo/brazzers_logo.png"
+default_cover = "file://%s/brazzers.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class brazzersGenreScreen(MPScreen):
 

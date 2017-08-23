@@ -46,7 +46,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
-default_cover = "https://tubecorporate.com/home/img/sites/our_sites_logo_3.png"
+default_cover = "file://%s/hclips.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class hclipsGenreScreen(MPScreen):
 
@@ -86,7 +86,7 @@ class hclipsGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.keyLocked = True
 		url = "http://www.hclips.com/categories/"
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		getPage(url, agent=agent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('class="thumb_holder(.*?)class="cat-text">', data, re.S)
@@ -202,7 +202,7 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 			cx = "007041593788150376897:8pvxilcjx8e"
 			q = "%s%s" % (self.Link,"%20inurl%3A%2F")
 			url = "https://www.googleapis.com/customsearch/v1element?key=%s&num=20&hl=en&prettyPrint=false&cx=%s&q=%s&filter=0&start=%s"%(key,cx,q,start)
-		twAgentGetPage(url, gzip_decoding=True).addCallback(self.loadData).addErrback(self.dataError)
+		twAgentGetPage(url, agent=agent, gzip_decoding=True).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
 		if not re.search('Search', self.Name):
@@ -258,10 +258,10 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 		if Link == None:
 			return
 		self.keyLocked = True
-		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
+		getPage(Link, agent=agent).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall("file':\s'(http[s]?:(?:(?://)|(?:\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*.mp4.*?)\','", data, re.S)
+		videoPage = re.findall("file':\s'(http[s]?:(?:(?://)|(?:\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*.mp4.*?)\',type", data, re.S)
 		if videoPage:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]

@@ -45,7 +45,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
-default_cover = "https://cdn-images.realgfporn.com/media/misc/53f636a254a05.png"
+default_cover = "file://%s/realgfporn.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class realgfpornGenreScreen(MPScreen):
 
@@ -240,4 +240,4 @@ class realgfpornFilmScreen(MPScreen, ThumbsHelper):
 		if videoPage:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, videoPage[0])], showPlaylist=False, ltype='realgfporn')
+			self.session.open(SimplePlayer, [(Title, videoPage[0].replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B'))], showPlaylist=False, ltype='realgfporn')

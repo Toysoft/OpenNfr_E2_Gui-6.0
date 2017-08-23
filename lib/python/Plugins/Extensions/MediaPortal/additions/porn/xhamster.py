@@ -44,13 +44,11 @@ from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
 ck = {}
 favourites = []
 subscriptions = []
+pornstars = []
 xhAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
 base_url = "https://xhamster.com"
 
-if mp_globals.isDreamOS:
-	default_cover = "https://static-ec.xhcdn.com/css/promo/newlogo/images/guide/logo-vertical-color-invert.svg"
-else:
-	default_cover = "https://s3.amazonaws.com/uploads.uservoice.com/logo/design_setting/4667/original/logo_horizontal_color.jpg"
+default_cover = "file://%s/xhamster.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 def writeFavSub():
 	try:
@@ -60,6 +58,8 @@ def writeFavSub():
 			writefavsub.write('"fav";"%s";"%s"\n' % (m[0], m[1]))
 		for m in subscriptions:
 			writefavsub.write('"sub";"%s";"%s"\n' % (m[0], m[1]))
+		for m in pornstars:
+			writefavsub.write('"star";"%s";"%s"\n' % (m[0], m[1]))
 		writefavsub.close()
 	except:
 		pass
@@ -100,6 +100,8 @@ class xhamsterGenreScreen(MPScreen):
 		favourites = []
 		global subscriptions
 		subscriptions = []
+		global pornstars
+		pornstars = []
 		self.wl_path = config.mediaportal.watchlistpath.value+"mp_xhamster_favsub"
 		try:
 			readfavsub = open(self.wl_path,"r")
@@ -107,11 +109,12 @@ class xhamsterGenreScreen(MPScreen):
 			readfavsub.close()
 			for m in re.finditer('"(.*?)";"(.*?)";"(.*?)"\n', rawData):
 				(type, link, name) = m.groups()
-
 				if type == "fav":
 					favourites.append(((link, name)))
 				elif type == "sub":
 					subscriptions.append((link, name))
+				elif type == "star":
+					pornstars.append((link, name))
 		except:
 			pass
 
@@ -130,8 +133,10 @@ class xhamsterGenreScreen(MPScreen):
 		self.genreliste.sort()
 		self.genreliste.insert(0, (400 * "—", None))
 		self.genreliste.insert(0, ("Subscriptions", 'subs'))
-		self.genreliste.insert(0, ("Favourites", 'favs'))
+		self.genreliste.insert(0, ("Favourite Pornstars", 'stars'))
+		self.genreliste.insert(0, ("Favourite Videos", 'favs'))
 		self.genreliste.insert(0, (400 * "—", None))
+		self.genreliste.insert(0, ("Pornstars", '%s/pornstars' % base_url))
 		self.genreliste.insert(0, ("Most Commented (All Time)", '%s/rankings/alltime-top-commented' % base_url))
 		self.genreliste.insert(0, ("Most Commented (Monthly)", '%s/rankings/monthly-top-commented' % base_url))
 		self.genreliste.insert(0, ("Most Commented (Weekly)", '%s/rankings/weekly-top-commented' % base_url))
@@ -158,12 +163,16 @@ class xhamsterGenreScreen(MPScreen):
 		if self.keyLocked:
 			return
 		Name = self['liste'].getCurrent()[0][0]
+		Link = self['liste'].getCurrent()[0][1]
 		if Name == "--- Search ---":
 			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
 		elif Name == "Subscriptions":
 			self.session.open(xhamsterSubscriptionsScreen, Name)
+		elif Name == "Pornstars":
+			self.session.open(xhamsterPornstarsScreen, Link, Name)
+		elif Name == "Favourite Pornstars":
+			self.session.open(xhamsterPornstarsScreen, Link, Name)
 		else:
-			Link = self['liste'].getCurrent()[0][1]
 			if Link:
 				self.session.open(xhamsterFilmScreen, Link, Name)
 
@@ -258,7 +267,7 @@ class xhamsterSubscriptionsScreen(MPScreen):
 			import requests
 			r = requests.head(pic[0])
 			size = int(r.headers['content-length'])
-			if size < 50000:
+			if size < 100000:
 				pic = pic[0]
 			else:
 				pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon-152x152.png"
@@ -269,7 +278,7 @@ class xhamsterSubscriptionsScreen(MPScreen):
 		found = False
 		for t in subscriptions:
 			if t[0] == self.username[0][0]:
-				submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
+				submsg = "\nUser: " + self.username[0][1]
 				self['F1'].setText(_("Unsubscribe"))
 				self.subscribed = True
 				found = True
@@ -307,6 +316,137 @@ class xhamsterSubscriptionsScreen(MPScreen):
 		else:
 			subscriptions.insert(0, ((self.username[0][0], self.username[0][1])))
 		self.pageData()
+		writeFavSub()
+		self.keyLocked = False
+
+class xhamsterPornstarsScreen(MPScreen):
+
+	def __init__(self, session, link, name):
+		self.Link = link
+		self.Name = name
+		self.plugin_path = mp_globals.pluginPath
+		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		if not fileExists(path):
+			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
+		with open(path, "r") as f:
+			self.skin = f.read()
+			f.close()
+
+		MPScreen.__init__(self, session)
+
+		self["actions"] = ActionMap(["MP_Actions"], {
+			"ok" : self.keyOK,
+			"0" : self.closeAll,
+			"cancel" : self.keyCancel,
+			"up" : self.keyUp,
+			"down" : self.keyDown,
+			"right" : self.keyRight,
+			"left" : self.keyLeft,
+			"red" : self.keySubscribe,
+		}, -1)
+
+		self['title'] = Label("xHamster.com")
+		self['ContentTitle'] = Label("Genre: %s" % self.Name)
+		self.keyLocked = True
+		self.subscribed = False
+
+		self.streamList = []
+
+		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self['liste'] = self.ml
+
+		self.onLayoutFinish.append(self.layoutFinished)
+
+	def layoutFinished(self):
+		self.streamList = []
+		self.keyLocked = True
+		if self.Link == "stars":
+			self['Page'].setText('')
+			self.pageData('')
+		else:
+			url = self.Link
+			getPage(url, agent=xhAgent, cookies=ck).addCallback(self.pageData).addErrback(self.dataError)
+
+	def pageData(self, data):
+		if self.Link == "stars":
+			for m in pornstars:
+				self.streamList.append((m[1], m[0]))
+		else:
+			stars = re.findall('href=".*?/pornstars/(.*?)"\s{0,2}>(.*?)</a', data, re.S)
+			for (url, name) in stars:
+				self.streamList.append((name, url))
+		if len(self.streamList) == 0:
+			self.streamList.append((_('No pornstars found!'), None))
+		self.ml.setList(map(self._defaultlistleft, self.streamList))
+		self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		Link = self['liste'].getCurrent()[0][1]
+		if Link:
+			url = "https://xhamster.com/pornstars/" + Link
+			getPage(url, agent=xhAgent, cookies=ck).addCallback(self.showInfos2).addErrback(self.dataError)
+
+	def showInfos2(self, data):
+		self.username = [(self['liste'].getCurrent()[0][1], self['liste'].getCurrent()[0][0])]
+		pic = re.findall('data-thumb="(.*?)">', data, re.S)
+		if pic:
+			get_random = random.randint(0, len(pic)-1)
+			pic = pic[get_random]
+		else:
+			pic = None
+		self['name'].setText(self.username[0][1])
+		global pornstars
+		found = False
+		for t in pornstars:
+			if t[0] == self.username[0][0]:
+				if self.Link == "stars":
+					starmsg = ""
+				else:
+					starmsg = "Favourite"
+				self['F1'].setText(_("Unsubscribe"))
+				self.subscribed = True
+				found = True
+		if not found:
+			starmsg = ""
+			Link = self['liste'].getCurrent()[0][1]
+			if Link:
+				self['F1'].setText(_("Subscribe"))
+			else:
+				self['F1'].setText('')
+			self.subscribed = False
+		self['handlung'].setText(starmsg.strip('\n'))
+		CoverHelper(self['coverArt']).getCover(pic)
+
+	def keyOK(self):
+		if self.keyLocked:
+			return
+		Name = self['liste'].getCurrent()[0][0]
+		Link = self['liste'].getCurrent()[0][1]
+		if Link:
+			url = "https://xhamster.com/pornstars/" + Link
+			self.session.open(xhamsterFilmScreen, url, Name)
+
+	def keySubscribe(self):
+		Link = self['liste'].getCurrent()[0][1]
+		if self.keyLocked:
+			return
+		if not Link:
+			return
+		self.keyLocked = True
+		global pornstars
+		if self.subscribed:
+			star_tmp = []
+			for t in pornstars:
+				if t[0] == self.username[0][0]:
+					continue
+				else:
+					star_tmp.append(((t[0], t[1])))
+			pornstars = star_tmp
+		else:
+			pornstars.insert(0, ((self.username[0][0], self.username[0][1])))
+		self.layoutFinished()
 		writeFavSub()
 		self.keyLocked = False
 
@@ -387,7 +527,10 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 				elif re.match('.*?\/rankings\/', self.Link):
 					url = "%s-%s.html" % (self.Link, str(self.page))
 				elif re.match('.*?\/new\/', self.Link):
-					url = "%s%s.html" % (self.Link, str(self.page))
+					if self.page == 1:
+						url = base_url
+					else:
+						url = "%s%s.html" % (self.Link, str(self.page))
 				elif self.Name == "Related":
 					url = self.Link + str(self.page)
 				else:
@@ -395,7 +538,10 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 						hd = '/hd'
 					else:
 						hd = ''
-					url = "%s%s/%s" % (self.Link, hd, str(self.page))
+					if self.page == 1:
+						url = "%s%s" % (self.Link, hd)
+					else:
+						url = "%s%s/%s" % (self.Link, hd, str(self.page))
 			getPage(url, agent=xhAgent, cookies=ck).addCallback(self.pageData).addErrback(self.dataError)
 
 	def pageData(self, data):
@@ -405,12 +551,16 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 				self.streamList.append((m[1], None, url, "", "", ""))
 		else:
 			self.getLastPage(data, 'class="pager-section"(.*?)</div>')
-			if 'class="date-added"' in data:
-				parse = re.search('class="date-added">(.*?)</html>', data, re.S)
+			if 'video-thumb__date-added' in data:
+				parse = re.search('video-thumb__date-added(.*?)</html>', data, re.S)
 			else:
 				parse = re.search('class="iframe-container"(.*?)</html>', data, re.S)
+				if not parse:
+					parse = re.search('class="category-title"(.*?)</html>', data, re.S)
 			if parse:
 				Liste = re.findall('class="thumb-container"\sdata-href="(.*?)"\sdata-thumb="(.*?)".*?class="duration">(.*?)</div>.*?class="name">(.*?)</div>.*?class="views">(.*?)</div>.*?class="rating">(.*?)</div>', parse.group(1), re.S)
+				if not Liste:
+					Liste = re.findall('class="video-thumb__image-container.*?href="(.*?)".*?image-container__image"\ssrc="(.*?)".*?container__duration">(.*?)</div>.*?video-thumb-info__name.*?>(.*?)</a>.*?thumb-info__views.*?>(.*?)</i>.*?thumb-info__rating.*?>(.*?)</i>', parse.group(1), re.S)
 				if Liste:
 					for (Link, Image, Runtime, Name, Views, Rating) in Liste:
 						Name = stripAllTags(Name).strip()
@@ -447,7 +597,7 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 
 	def showInfos2(self, data):
 		self.videoId = re.findall('"videoId":(\d+),', data, re.S)[0]
-		self.username = re.findall('"entity-author-container__name" href="https://xhamster.com/users/(.*?)"\s.*?itemprop="name">(.*?)</span', data, re.S)
+		self.username = re.findall('"entity-author-container__name" (?:href="https://xhamster.com/users/(.*?)"\s|data-tooltip="User is retired").*?itemprop="name">(.*?)</span', data, re.S)
 		title = self['liste'].getCurrent()[0][0]
 		if self.Link == "favs":
 			pic = re.findall('itemprop="thumbnailUrl" href="(.*?)">', data, re.S)[0]
@@ -460,14 +610,19 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 		found = False
 		global subscriptions
 		for t in subscriptions:
-			if t[0] == self.username[0][0]:
-				submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
-				self['F1'].setText(_("Unsubscribe"))
-				self.subscribed = True
-				found = True
+			if self.username[0][0]:
+				if t[0] == self.username[0][0]:
+					submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
+					self['F1'].setText(_("Unsubscribe"))
+					self.subscribed = True
+					found = True
 		if not found:
-			submsg = "\nUser: " + self.username[0][1]
-			self['F1'].setText(_("Subscribe"))
+			if self.username[0][0]:
+				submsg = "\nUser: " + self.username[0][1]
+				self['F1'].setText(_("Subscribe"))
+			else:
+				submsg = "\nUser: " + self.username[0][1] + " (retired)"
+				self['F1'].setText('')
 			self.subscribed = False
 		found = False
 		global favourites
@@ -525,13 +680,15 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 		if self.subscribed:
 			sub_tmp = []
 			for t in subscriptions:
-				if t[0] == self.username[0][0]:
-					continue
-				else:
-					sub_tmp.append(((t[0], t[1])))
+				if self.username[0][0]:
+					if t[0] == self.username[0][0]:
+						continue
+					else:
+						sub_tmp.append(((t[0], t[1])))
 			subscriptions = sub_tmp
 		else:
-			subscriptions.insert(0, ((self.username[0][0], self.username[0][1])))
+			if self.username[0][0]:
+				subscriptions.insert(0, ((self.username[0][0], self.username[0][1])))
 		self.showInfos()
 		writeFavSub()
 		self.keyLocked = False

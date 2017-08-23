@@ -40,7 +40,6 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
-default_cover = "https://sunstatic.fuckandcdn.com/sun/sunstatic/v31/common/sunporno/img/logo_big.png"
 spAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 json_headers = {
 	'Accept':'application/json',
@@ -48,6 +47,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
+default_cover = "file://%s/sunporno.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class sunpornoGenreScreen(MPScreen):
 

@@ -56,22 +56,22 @@ class fourtubeGenreScreen(MPScreen):
 			self.portal = "4Tube.com"
 			self.baseurl = "www.4tube.com"
 			self.s = "s"
-			self.default_cover = None
+			self.default_cover = "file://%s/4tube.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "fux":
 			self.portal = "fux.com"
 			self.baseurl = "www.fux.com"
 			self.s = ""
-			self.default_cover = None
+			self.default_cover = "file://%s/fux.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "porntube":
 			self.portal = "PornTube.com"
 			self.baseurl = "www.porntube.com"
 			self.s = "s"
-			self.default_cover = None
+			self.default_cover = "file://%s/porntube.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "pornerbros":
 			self.portal = "PornerBros.com"
 			self.baseurl = "www.pornerbros.com"
 			self.s = "s"
-			self.default_cover = "https://cdn1-ht-ui.pornerbros.com/assets/img/layout/mobile/pornerbros-logo-74f8f142ac.png"
+			self.default_cover = "file://%s/pornerbros.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath

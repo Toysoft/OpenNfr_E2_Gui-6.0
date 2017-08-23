@@ -40,14 +40,16 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
-class SRFGenreScreen(MPScreen):
+default_cover = "file://%s/srg.png" % (config.mediaportal.iconcachepath.value + "logos")
+
+class SRGGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -63,7 +65,7 @@ class SRFGenreScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("SRF Channels Player")
+		self['title'] = Label("SRG Play Channels")
 		self['ContentTitle'] = Label("Auswahl des Senders")
 
 		self.genreliste = []
@@ -74,6 +76,7 @@ class SRFGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.genreliste = []
 		self.genreliste.append(('SRF', ''))
 		self.genreliste.append(('RTS', ''))
@@ -86,9 +89,9 @@ class SRFGenreScreen(MPScreen):
 		if self.keyLocked:
 			return
 		channel = self['liste'].getCurrent()[0][0]
-		self.session.open(SRFListScreen, channel)
+		self.session.open(SRGListScreen, channel)
 
-class SRFListScreen(MPScreen, ThumbsHelper):
+class SRGListScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, channel):
 		self.channel = channel
@@ -114,7 +117,7 @@ class SRFListScreen(MPScreen, ThumbsHelper):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("%s Player" % self.channel)
+		self['title'] = Label("Play %s" % self.channel)
 		self['ContentTitle'] = Label("Auswahl der Sendung")
 
 		self.genreliste = []
@@ -166,9 +169,9 @@ class SRFListScreen(MPScreen, ThumbsHelper):
 			return
 		serie = self['liste'].getCurrent()[0][0]
 		streamGenreLink = self['liste'].getCurrent()[0][1]
-		self.session.open(SRFFilmeListeScreen, streamGenreLink, serie, self.channel)
+		self.session.open(SRGFilmeListeScreen, streamGenreLink, serie, self.channel)
 
-class SRFFilmeListeScreen(MPScreen, ThumbsHelper):
+class SRGFilmeListeScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, streamGenreLink, serie, channel):
 		self.streamGenreLink = streamGenreLink
@@ -199,7 +202,7 @@ class SRFFilmeListeScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("%s Player" % self.channel)
+		self['title'] = Label("Play %s" % self.channel)
 		self['ContentTitle'] = Label("Folgen Auswahl")
 		self['F2'] = Label(_("Page"))
 
@@ -262,9 +265,9 @@ class SRFFilmeListeScreen(MPScreen, ThumbsHelper):
 			return
 		staffel = self['liste'].getCurrent()[0][0]
 		urlid = self['liste'].getCurrent()[0][1]
-		self.session.open(SRFStreamScreen, self.serie, staffel, urlid, self.channel)
+		self.session.open(SRGStreamScreen, self.serie, staffel, urlid, self.channel)
 
-class SRFStreamScreen(MPScreen):
+class SRGStreamScreen(MPScreen):
 
 	def __init__(self, session, serie, staffel, urlid, channel):
 		self.serie = serie
@@ -291,7 +294,7 @@ class SRFStreamScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label("%s Player" % self.channel)
+		self['title'] = Label("Play %s" % self.channel)
 		self['ContentTitle'] = Label("Auswahl des Streams - %s" % self.staffel)
 
 		self.genreliste = []
@@ -344,4 +347,4 @@ class SRFStreamScreen(MPScreen):
 		if re.findall('.*?\.m3u8$', url) and not config.mediaportal.use_hls_proxy.value:
 			message = self.session.open(MessageBoxExt, _("If you want to play this stream, you have to activate the HLS-Player in the MP-Setup"), MessageBoxExt.TYPE_INFO, timeout=5)
 		else:
-			self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srf')
+			self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srg')

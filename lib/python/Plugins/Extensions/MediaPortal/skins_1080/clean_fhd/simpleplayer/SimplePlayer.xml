@@ -3,7 +3,7 @@
 	<widget alphatest="on" name="Cover" position="5,5" size="160,240" zPosition="1" />
 	<widget backgroundColor="#20000000" font="mediaportal_clean;30" halign="center" name="seekbartime" position="820,200" size="300,40" transparent="1" foregroundColor="#00ffffff" zPosition="1" />
 	<widget backgroundColor="#00616161" font="mediaportal_clean;30" foregroundColor="#00ffffff" halign="left" position="410,140" render="Label" size="140,40" source="session.CurrentService" transparent="1" zPosition="1">
-		<convert type="MPServicePosition">Position</convert>
+		<convert type="MPServicePosition">Position,ShowHours</convert>
 	</widget>
 	<eLabel backgroundColor="#00000000" position="410,126" size="1100,2" foregroundColor="#00000000" />
 	<widget name="seekbarcursor" position="410,119" size="16,16" zPosition="4" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/skins_1080/clean_fhd/simpleplayer/seekbutton.png" alphatest="on" />
@@ -11,7 +11,7 @@
 		<convert type="MPServicePosition">Gauge</convert>
 	</widget>
 	<widget backgroundColor="#00616161" font="mediaportal_clean;30" foregroundColor="#00ffffff" halign="left" position="1370,140" render="Label" size="140,40" source="session.CurrentService" transparent="1" zPosition="1">
-		<convert type="MPServicePosition">Remaining,Negate</convert>
+		<convert type="MPServicePosition">Remaining,Negate,ShowHours</convert>
 	</widget>
 	<widget backgroundColor="#00616161" font="mediaportal_clean;30" foregroundColor="#00ffffff" halign="center" position="820,140" render="Label" size="300,40" source="session.CurrentService" transparent="1" zPosition="1">
 		<convert type="MPServicePosition">Length,ShowHours</convert>

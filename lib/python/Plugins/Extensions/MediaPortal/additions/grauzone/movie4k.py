@@ -635,9 +635,9 @@ class m4kFilme(MPScreen):
 
 	def loadPageData(self, data):
 		if self.streamGenreName == "Kinofilme":
-			kino = re.findall('<div style="float:left">.*?<a href="(.*?)"><img src="(.*?)" border=0 style="width:105px;max-width:105px;max-height:160px;min-height:140px;" alt=".*?kostenlos" title="(.*?).kostenlos"></a>', data, re.S)
+			kino = re.findall('<div style="float:left">.*?<a href="(.*?)"><img src="(.*?)" border=\"{0,1}0\"{0,1} style="width:105px;max-width:105px;max-height:160px;min-height:140px;" alt=".*?kostenlos" title="(.*?).kostenlos"></a>', data, re.S)
 		else:
-			kino = re.findall('<div style="float: left;">.*?<a href="(.*?)"><img src="(.*?)" alt=".*?" title="(.*?)" border="0" style="width:105px;max-width:105px;max-height:160px;min-height:140px;"></a>', data, re.S)
+			kino = re.findall('<div style="float: left;">.*?<a href="(.*?)"><img src="(.*?)" alt=".*?" title="(.*?)" border=\"{0,1}0\"{0,1} style="width:105px;max-width:105px;max-height:160px;min-height:140px;"></a>', data, re.S)
 		if kino:
 			for url,image,title in kino:
 				url = "%s%s" % (m4k_url, url)
@@ -747,11 +747,6 @@ class m4kStreamListeScreen(MPScreen):
 			self.keyLocked = False
 			self.showInfosData(data)
 			self['name'].setText(self.streamName)
-
-	def showInfos(self):
-		m4kcancel_defer(self.deferreds)
-		downloads = ds.run(twAgentGetPage, self.streamGenreLink, agent=m4k_agent, cookieJar=m4k_cookies, timeout=30).addCallback(self.showInfosData).addErrback(self.dataError)
-		self.deferreds.append(downloads)
 
 	def showInfosData(self, data):
 		image = re.search('<img\ssrc="(http[s]?.*?/thumbs/.*?movie4k-film.jpg)".*?class="moviedescription"', data, re.S)

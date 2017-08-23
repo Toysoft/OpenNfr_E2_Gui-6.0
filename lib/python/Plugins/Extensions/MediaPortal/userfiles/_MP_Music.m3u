@@ -105,8 +105,6 @@ http://m2otv-lh.akamaihd.net/i/m2oTv_1@186074/master.m3u8
 http://ondalatina_tv-lh.akamaihd.net/i/OndaLatinaTv_1@42007/master.m3u8
 #EXTINF:-1,Clubland
 http://rrr.sz.xlcdn.com/?account=AATW&file=clublandtv&type=live&service=wowza&protocol=http&output=playlist.m3u8
-#EXTINF:-1,M6 Music
-http://sslhls.m6tv.cdn.sfr.net/hls-live/livepkgr/_definst_/m6_music_hits_hls_aes/m6_music_hits_hls_aes_856.m3u8
 #EXTINF:-1,NRJ Hits
 http://5.196.138.6:1935/live/nrjbelgique/playlist.m3u8
 #EXTINF:-1,NRJ TV

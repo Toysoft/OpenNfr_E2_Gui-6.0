@@ -179,11 +179,18 @@ class MPScreen(Screen):
 		if not self.mp_hide:
 			self.mp_hide = True
 			self.hide()
+			self.session.nav.playService(mp_globals.lastservice)
 		else:
 			self.mp_hide = False
 			self.show()
+			if config.mediaportal.restorelastservice.value == "1" and not config.mediaportal.backgroundtv.value:
+				self.session.nav.playService(mp_globals.lastservice)
+			else:
+				self.session.nav.stopService()
 
 	def close(self, *args):
+		if self.mp_hide:
+			return
 		Screen.close(self, *args)
 		if len(screenList):
 			screenList.pop()
@@ -196,12 +203,17 @@ class MPScreen(Screen):
 		if self.keyLocked or exist == None:
 			return
 		title = self['liste'].getCurrent()[0][0]
-		if not re.match('.*?----------------------------------------', title):
-			self['name'].setText(title)
+		if not re.match('.*?---------------', title):
+			if not re.match('.*?———————————————', title):
+				self['name'].setText(title)
+			else:
+				self['name'].setText('')
 		else:
 			self['name'].setText('')
 
 	def mp_tmdb(self):
+		if self.mp_hide:
+			return
 		try:
 			exist = self['liste'].getCurrent()
 			if self.keyLocked or exist == None:
@@ -250,7 +262,7 @@ class MPScreen(Screen):
 		if paginationregex == '':
 			lastp = re.search(pageregex, data, re.S)
 			if lastp:
-				lastp = lastp.group(1).replace(",","").replace('.','').strip()
+				lastp = lastp.group(1).replace(",","").replace('.','').replace(' ','').strip()
 				self.lastpage = int(lastp)
 			else:
 				self.lastpage = 1
@@ -259,7 +271,7 @@ class MPScreen(Screen):
 			if lastpparse:
 				lastp = re.search(pageregex, lastpparse.group(1), re.S)
 				if lastp:
-					lastp = lastp.group(1).replace(",","").replace('.','').strip()
+					lastp = lastp.group(1).replace(",","").replace('.','').replace(' ','').strip()
 					self.lastpage = int(lastp)
 				else:
 					self.lastpage = 1
@@ -268,6 +280,8 @@ class MPScreen(Screen):
 		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
 
 	def keyPageNumber(self):
+		if self.mp_hide:
+			return
 		self.session.openWithCallback(self.callbackkeyPageNumber, VirtualKeyBoardExt, title = (_("Enter page number")), text = str(self.page), is_dialog=True)
 
 	def callbackkeyPageNumber(self, answer):
@@ -284,34 +298,48 @@ class MPScreen(Screen):
 				self.loadPage()
 
 	def suchen(self, auto_text_init=False, suggest_func=None):
+		if self.mp_hide:
+			return
 		self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=auto_text_init, suggest_func=suggest_func)
 
 	def keyUpRepeated(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].up()
 
 	def keyDownRepeated(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].down()
 
 	def keyLeftRepeated(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].pageUp()
 
 	def keyRightRepeated(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].pageDown()
 
 	def key_repeatedUp(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self.loadPicQueued()
 
 	def keyPageDown(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		if not self.page < 2:
@@ -319,6 +347,8 @@ class MPScreen(Screen):
 			self.loadPage()
 
 	def keyPageUp(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		if self.page < self.lastpage:
@@ -326,36 +356,50 @@ class MPScreen(Screen):
 			self.loadPage()
 
 	def keyLeft(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].pageUp()
 		self.showInfos()
 
 	def keyRight(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].pageDown()
 		self.showInfos()
 
 	def keyUp(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].up()
 		self.showInfos()
 
 	def keyDown(self):
+		if self.mp_hide:
+			return
 		if self.keyLocked:
 			return
 		self['liste'].down()
 		self.showInfos()
 
 	def keyTxtPageUp(self):
+		if self.mp_hide:
+			return
 		self['handlung'].pageUp()
 
 	def keyTxtPageDown(self):
+		if self.mp_hide:
+			return
 		self['handlung'].pageDown()
 
 	def keyCancel(self):
+		if self.mp_hide:
+			return
 		self.close()
 
 	def keyLetterGlobal(self, key, list):
@@ -410,13 +454,10 @@ class MPScreen(Screen):
 		i = len(screenList)
 		while i > 0:
 			screen, args = screenList.pop()
+			if screen.mp_hide:
+				return
 			screen.mp_close(*args)
 			i -= 1
-
-	def addGlobalWatchtlist(self, list):
-		self.wlgl_path = config.mediaportal.watchlistpath.value+"mp_global_watchlist"
-		with open(self.wlgl_path,"a") as writeGlwl:
-			writeGlwl.write('"%s"\n' % "||".join(list))
 
 ####### defaults
 	def _defaultlistleft(self, entry):

@@ -13,7 +13,7 @@ BASE_URL = "https://www.zdf.de"
 isLost = "Leider nicht (mehr) auf den ZDF-Servern vorhanden (oder ein anderer Grund)."
 NoC = "Keine abspielbaren Inhalte verfügbar"
 helpText2 = "Sendung"+":"+NL+"Clip-Datum"+":"+NL+"Dauer"+":"
-bildchen = "https://www.zdf.de/assets/2400_ZDF-100~384x216"
+bildchen = "file://%s/zdf.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 def soap(data,flag):
 	data = re.sub('itemprop="image" content=""','',data,flags=re.S)
@@ -791,10 +791,21 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		c = b[0]
 		c = c.replace("1496k","3296k")
 		c = c.replace("p13v13","p15v13")
+		url = str(c).replace("https","http")
+		if '.f4m' in url:
+			b = []
+			for x in range (0,5,1):
+				try:
+					b.append((a['priorityList'][0]['formitaeten'][0]['qualities'][x]['audio']['tracks'][0]['uri']))
+				except:
+					break
+			self.keyLocked = False
+			streamName = self['liste'].getCurrent()[0][0]
+			url = str(b[0])
 		playlist = []
-		playlist.append((streamName, str(c).replace("https","http")))
+		playlist.append((streamName, url))
 		try:
-			self.session.open(SimplePlayer, playlist, showPlaylist=False, ltype='zdf')
+			self.session.open(SimplePlayer, playlist, showPlaylist=False, ltype='zdf', forceGST=True)
 		except Exception,e:
 			print str(e)
 			self.keyCancel()

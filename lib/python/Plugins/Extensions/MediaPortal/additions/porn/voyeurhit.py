@@ -39,7 +39,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-default_cover = "https://tubecorporate.com/home/img/sites/our_sites_logo_2.png"
+default_cover = "file://%s/voyeurhit.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class voyeurhitGenreScreen(MPScreen):
 

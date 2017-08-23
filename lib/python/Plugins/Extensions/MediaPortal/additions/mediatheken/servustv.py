@@ -1,9 +1,46 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 baseurl = "http://www.servustv.com"
-basename = "ServusTV"
+stvAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
 
 class sTVGenreScreen(MPScreen):
 
@@ -27,7 +64,7 @@ class sTVGenreScreen(MPScreen):
 			"cancel": self.keyCancel
 		}, -1)
 
-		self['title'] = Label(basename)
+		self['title'] = Label("ServusTV")
 		self['ContentTitle'] = Label("Genre:")
 
 		self.genreliste = []
@@ -91,7 +128,7 @@ class sTVids(MPScreen):
 		}, -1)
 
 		self.keyLocked = True
-		self['title'] = Label(basename)
+		self['title'] = Label("ServusTV")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
 
@@ -108,7 +145,7 @@ class sTVids(MPScreen):
 	def loadPage(self):
 		self.keyLocked = True
 		url = "%s%s" % (self.Link, str(self.page))
-		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
+		getPage(url, agent=stvAgent).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
 		self.getLastPage(data, 'class="org paging(.*?)</ul>', '.*page=(\d+)')
@@ -138,28 +175,17 @@ class sTVids(MPScreen):
 			return
 		self['name'] = Label(_("Please wait..."))
 		url = baseurl + self['liste'].getCurrent()[0][1]
-		getPage(url).addCallback(self.getID).addErrback(self.dataError)
+		getPage(url, agent=stvAgent).addCallback(self.getID).addErrback(self.dataError)
 
 	def getID(self, data):
 		id = re.findall('data-videoid="(.*?)"', data, re.S)[0]
-		url = "http://c.brightcove.com/services/mobile/streaming/index/master.m3u8?videoId=" + id
-		getPage(url).addCallback(self.loadplaylist).addErrback(self.dataError)
+		account = re.findall('data-account="(.*?)"', data, re.S)[0]
+		url = "https://edge.api.brightcove.com/playback/v1/accounts/%s/videos/%s" % (account, id)
+		getPage(url, agent=stvAgent, headers={'Accept':'application/json;pk=BCpkADawqM3hYrTRw2Gi3RgqoRH8EXAdhKTIf0ZYTeLzvF3i0Fns90ytp8xkt58hAXj8NHdlT5Zz2fosHIwHoGkobH6Y7UXotgwSAqCKR5GiZKtI7xkJnKKJ6c47s43U7dCYpDan1-KyDOpS'}).addCallback(self.getVideo).addErrback(self.dataError)
 
-	def loadplaylist(self, data):
-		videoPrio = int(config.mediaportal.videoquali_others.value)
-		if videoPrio == 2:
-			bw = 3000000
-		elif videoPrio == 1:
-			bw = 1500000
-		else:
-			bw = 750000
+	def getVideo(self, data):
+		video = re.findall('"width":\d+,"src":"(.*?)",', data, re.S)
 		title = self['liste'].getCurrent()[0][0]
-		self.bandwith_list = []
-		match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?(http://.*?videoId=\d+)', data, re.S)
-		for each in match_sec_m3u8:
-			bandwith,url = each
-			self.bandwith_list.append((int(bandwith),url))
-		_, best = min((abs(int(x[0]) - bw), x) for x in self.bandwith_list)
 		self['name'].setText(title)
 		self.keyLocked = False
-		self.session.open(SimplePlayer, [(title, best[1])], showPlaylist=False, ltype='servustv')
+		self.session.open(SimplePlayer, [(title, video[-1])], showPlaylist=False, ltype='servustv', forceGST=True)

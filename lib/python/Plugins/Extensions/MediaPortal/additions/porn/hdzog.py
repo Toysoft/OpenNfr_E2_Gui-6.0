@@ -38,28 +38,26 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
-myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+json_headers = {
+	'Accept':'*/*',
+	'Accept-Encoding':'deflate',
+	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
+	'X-Requested-With':'XMLHttpRequest',
+	'Content-Type':'application/x-www-form-urlencoded'
+	}
+default_cover = "file://%s/hdzog.png" % (config.mediaportal.iconcachepath.value + "logos")
 
-class pornktubeGenreScreen(MPScreen):
+class hdzogGenreScreen(MPScreen):
 
-	def __init__(self, session, mode):
-		self.mode = mode
-
-		if self.mode == "pornktube":
-			self.portal = "Pornktube.com"
-			self.baseurl = "www.pornktube.com"
-			self.s = "s"
-		if self.mode == "hdreporn":
-			self.portal = "HDReporn.com"
-			self.baseurl = "www.hdreporn.com"
-			self.s = ""
-
+	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -76,8 +74,9 @@ class pornktubeGenreScreen(MPScreen):
 			"left" : self.keyLeft
 		}, -1)
 
-		self['title'] = Label(self.portal)
+		self['title'] = Label("HDZog.com")
 		self['ContentTitle'] = Label("Genre:")
+
 		self.keyLocked = True
 		self.suchString = ''
 
@@ -89,27 +88,29 @@ class pornktubeGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://%s/" % self.baseurl
-		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
+		url = "http://www.hdzog.com/categories/"
+		getPage(url, agent=agent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="showcat">(.*?)</div>', data, re.S)
-		if not parse:
-			parse = re.search('id="cats">(.*?)</div>', data, re.S)
-		if parse:
-			Cats = re.findall('<li(?:\sclass="morecats")?><a href="(/categories/.*?)">(.*?)</a></li>', parse.group(1), re.S|re.I)
-			if Cats:
-				for (Url, Title) in Cats:
-					Url = "http://" + self.baseurl + Url
-					self.genreliste.append((decodeHtml(Title), Url))
-				self.genreliste.sort()
-		self.genreliste.insert(0, ("Most Popular", 'http://%s/most-popular/' % self.baseurl))
-		self.genreliste.insert(0, ("Top Rated", 'http://%s/top-rated/' % self.baseurl))
-		self.genreliste.insert(0, ("Newest", 'http://%s/latest-updates/' % self.baseurl))
-		self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
-		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-		self.ml.moveToIndex(0)
-		self.keyLocked = False
+		Cats = re.findall('href="(http[s]?://www.hdzog.com/category.*?)".*?img\s(?:class="thumb"\s|)src="(.*?)".*?class="title">(.*?)</span', data, re.S)
+		if Cats:
+			for (Url, Image, Title) in Cats:
+				if "no-thumb-yet.jpg" in Image:
+					Image = default_cover
+				self.genreliste.append((Title, Url, Image))
+			self.genreliste.sort()
+			self.genreliste.insert(0, ("Longest", "http://www.hdzog.com/longest/", default_cover))
+			self.genreliste.insert(0, ("Most Popular", "http://www.hdzog.com/popular/", default_cover))
+			self.genreliste.insert(0, ("Newest", "http://www.hdzog.com/new/", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
+			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+			self.ml.moveToIndex(0)
+			self.keyLocked = False
+			self.showInfos()
+
+	def showInfos(self):
+		Image = self['liste'].getCurrent()[0][2]
+		CoverHelper(self['coverArt']).getCover(Image)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -119,22 +120,20 @@ class pornktubeGenreScreen(MPScreen):
 			self.suchen()
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(pornktubeFilmScreen, Link, Name, self.portal, self.baseurl)
+			self.session.open(hdzogFilmScreen, Link, Name)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
-			self.suchString = callback.replace(' ', '+')
-			Link = '%s' % (self.suchString)
 			Name = "--- Search ---"
-			self.session.open(pornktubeFilmScreen, Link, Name, self.portal, self.baseurl)
+			self.suchString = callback
+			Link = self.suchString.replace(' ', '+')
+			self.session.open(hdzogFilmScreen, Link, Name)
 
-class pornktubeFilmScreen(MPScreen, ThumbsHelper):
+class hdzogFilmScreen(MPScreen, ThumbsHelper):
 
-	def __init__(self, session, Link, Name, portal, baseurl):
+	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.portal = portal
-		self.baseurl = baseurl
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
@@ -161,7 +160,7 @@ class pornktubeFilmScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label(self.portal)
+		self['title'] = Label("HDZog.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
 
@@ -180,50 +179,64 @@ class pornktubeFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		if re.match(".*?Search", self.Name):
-			url = "http://%s/search/%s/?q=%s" % (self.baseurl, str(self.page), self.Link)
+		if re.match(".*Search", self.Name):
+			url = "http://www.hdzog.com/search/%s/?q=%s" % (str(self.page), self.Link)
 		else:
-			url = "%s%s/" % (self.Link, str(self.page))
-		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
+			if self.page == 1:
+				url = self.Link
+			else:
+				url = "%s%s/" % (self.Link, str(self.page))
+		getPage(url, agent=agent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, 'class="pagination">(.*?)</div>')
-		Movies = re.findall('class="(?:vid_)?info">.*?<a href="(.*?)"(?:\stitle=".*?")?><img src="(.*?)"\salt="(.*?)".*?div class="(?:vlength|time)">(.*?)</div>', data, re.S)
+		self.getLastPage(data, 'class="pagination"(.*?)</div><!-- poagination -->')
+		Movies = re.findall('href="(http[s]?://www.hdzog.com/videos/.*?)".*?img\ssrc="(.*?)"\salt="(.*?)".*?class="time">(.*?)</span.*?class="added">(.*?)</span', data, re.S)
 		if Movies:
-			for (Url, Image, Title, Runtime) in Movies:
-				Url = "http://" + self.baseurl + Url
-				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime))
+			for (Url, Image, Title, Runtime, Added) in Movies:
+				if not Url.startswith('http'):
+					Url = 'http://www.hdzog.com' + Url
+				Added = Added.replace('Added: ','')
+				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Added))
 		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No videos found!'), '', None, ''))
+			self.filmliste.append((_('No videos found!'), None, None, '', ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
-		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, int(self.lastpage), mode=1)
+		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
 		self.showInfos()
 
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]
-		url = self['liste'].getCurrent()[0][1]
 		pic = self['liste'].getCurrent()[0][2]
 		runtime = self['liste'].getCurrent()[0][3]
-		self['handlung'].setText("Runtime: %s" % runtime)
+		added = self['liste'].getCurrent()[0][4]
 		self['name'].setText(title)
+		self['handlung'].setText("Runtime: %s\nAdded: %s" % (runtime, added))
 		CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
 		Link = self['liste'].getCurrent()[0][1]
-		self.keyLocked = True
-		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
+		if Link:
+			self.keyLocked = True
+			getPage(Link, agent=agent).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		url = re.findall('file:."(http.*?.mp4)",(?:"default":true,)?\slabel:\s"(.*?)"', data, re.S)
-		if url[0][1] == "ULTRA HD 4K":
-			url = url[1][0]
-		else:
-			url = url[0][0]
+		try:
+			import execjs
+			node = execjs.get("Node")
+			decstring = re.findall('sources\[\d\]={type:\'mp4\',file:([a-zA-Z0-9]+)\(', data, re.S)
+			decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
+			video_url = re.findall('(var video_url.*?;)', data, re.S)
+			js = decoder[0] + "\n" + video_url[0] + "\n" + "vidurl = (%s(video_url));" % decstring[0] + "\n" + "return vidurl;"
+			url = str(node.exec_(js))
+			print url
+		except:
+			printl('nodejs not found',self,'E')
+			self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+			url = None
 		if url:
 			self.keyLocked = False
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='pornktube')
+			Title = self['liste'].getCurrent()[0][0]
+			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='hdzog')

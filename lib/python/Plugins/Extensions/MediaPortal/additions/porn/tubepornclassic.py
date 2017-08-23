@@ -43,7 +43,7 @@ from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoard
 tcAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
 baseurl = "http://de.tubepornclassic.com"
-default_cover = "https://tubecorporate.com/home/img/sites/our_sites_logo_8.png"
+default_cover = "file://%s/tubepornclassic.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class tubepornclassicGenreScreen(MPScreen):
 
@@ -99,7 +99,7 @@ class tubepornclassicGenreScreen(MPScreen):
 
 	def showInfos(self):
 		CoverHelper(self['coverArt']).getCover(default_cover)
-		
+
 	def keyOK(self):
 		if self.keyLocked:
 			return
@@ -169,10 +169,11 @@ class tubepornclassicFilmScreen(MPScreen, ThumbsHelper):
 		if not re.search('Search', self.Name):
 			url = "%s%s/" % (self.Link, str(self.page))
 		else:
-			url = "%s/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (baseurl, self.Link, self.page)
+			url = "http://tubepornclassic.com/search/%s/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&from_videos=%s" % (self.Link, self.page)
 		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
+		data = data.replace('http://tubepornclassic.com/videos', 'http://de.tubepornclassic.com/videos')
 		self.getLastPage(data, 'class="pagination"(.*?)</div>', '.*>\s{0,80}(\d+)\s{0,80}<')
 		Movies = re.findall('class="item.*?<a\shref="(http://[a-z]{2,3}.tubepornclassic.com/videos/.*?)"\stitle="(.*?)".*?class="thumb.*?data-original="(.*?)".*?class="duration">(.*?)</div.*?class="added">(.*?)</div.*?class="views ico ico-eye">(.*?)</div', data, re.S)
 		if Movies:

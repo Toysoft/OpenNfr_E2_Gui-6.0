@@ -1,6 +1,45 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+
+default_cover = "file://%s/dachix.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class dachixGenreScreen(MPScreen):
 
@@ -49,12 +88,12 @@ class dachixGenreScreen(MPScreen):
 				Url = "http://www.dachix.com" + Url + "/videos"
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 			self.filmliste.sort()
-			self.filmliste.insert(0, ("Longest", "http://www.dachix.com/videos?sort=longest", None))
-			self.filmliste.insert(0, ("Most Popular", "http://www.dachix.com/videos?sort=popular", None))
-			self.filmliste.insert(0, ("Most Viewed", "http://www.dachix.com/videos?sort=viewed", None))
-			self.filmliste.insert(0, ("Top Rated", "http://www.dachix.com/videos?sort=rated", None))
-			self.filmliste.insert(0, ("Most Recent", "http://www.dachix.com/videos", None))
-			self.filmliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.filmliste.insert(0, ("Longest", "http://www.dachix.com/videos?sort=longest", default_cover))
+			self.filmliste.insert(0, ("Most Popular", "http://www.dachix.com/videos?sort=popular", default_cover))
+			self.filmliste.insert(0, ("Most Viewed", "http://www.dachix.com/videos?sort=viewed", default_cover))
+			self.filmliste.insert(0, ("Top Rated", "http://www.dachix.com/videos?sort=rated", default_cover))
+			self.filmliste.insert(0, ("Most Recent", "http://www.dachix.com/videos", default_cover))
+			self.filmliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 			self.keyLocked = False
 			self.showInfos()

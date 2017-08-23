@@ -38,6 +38,7 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+default_cover = "file://%s/atv.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class atvGenreScreen(MPScreen, ThumbsHelper):
 
@@ -75,6 +76,7 @@ class atvGenreScreen(MPScreen, ThumbsHelper):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.filmliste = []
 		url = "http://atv.at/mediathek"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)

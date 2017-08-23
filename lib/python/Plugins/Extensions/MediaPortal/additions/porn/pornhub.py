@@ -45,6 +45,7 @@ from Plugins.Extensions.MediaPortal.resources.DelayedFunction import DelayedFunc
 
 config.mediaportal.pornhub_username = ConfigText(default="pornhubUserName", fixed_size=False)
 config.mediaportal.pornhub_password = ConfigPassword(default="pornhubPassword", fixed_size=False)
+config.mediaportal.pornhub_cdnfix = ConfigYesNo(default=False)
 
 base_url = 'https://www.pornhub.com'
 
@@ -59,7 +60,7 @@ json_headers = {
 	'Content-Type':'application/x-www-form-urlencoded',
 	}
 
-default_cover = "http://blacksportsonline.com/home/wp-content/uploads/2015/08/pornhub-logo.jpg"
+default_cover = "file://%s/pornhub.png" % (config.mediaportal.iconcachepath.value + "logos")
 token = ''
 nodejs = True
 
@@ -306,6 +307,7 @@ class pornhubSetupScreen(Screen, ConfigListScreenExt):
 
 		self.list.append(getConfigListEntry(_("Username:"), config.mediaportal.pornhub_username))
 		self.list.append(getConfigListEntry(_("Password:"), config.mediaportal.pornhub_password))
+		self.list.append(getConfigListEntry(_("CDN fix (please don't use this option as default):"), config.mediaportal.pornhub_cdnfix))
 
 		self["config"].setList(self.list)
 
@@ -1248,6 +1250,16 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			if not match:
 				match = re.findall('quality":"240","videoUrl"."(.*?)"', data, re.S)
 			fetchurl = urllib2.unquote(match[0]).replace('\/','/')
+
+			# retry till we get a good working cdn streamurl
+			if config.mediaportal.pornhub_cdnfix.value:
+				if re.match('.*?bv.phncdn.com', fetchurl, re.S):
+					self.count += 1
+					if self.count < 20:
+						self.keyOK()
+						printl('CDN retry: '+str(self.count),self,'A')
+						return
+
 			Title = self['liste'].getCurrent()[0][0]
 			mp_globals.player_agent = phAgent
 			self.session.open(SimplePlayer, [(Title, fetchurl)], showPlaylist=False, ltype='pornhub')

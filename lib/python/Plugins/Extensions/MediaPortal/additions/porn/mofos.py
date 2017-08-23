@@ -41,7 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 myagent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 BASE_NAME = "Mofos.com"
-default_cover = "http://i3.mfspics.com/cdn_x/mf/tour/images/actions/disclaimer/mf-logo.png"
+default_cover = "file://%s/mofos.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class mofosGenreScreen(MPScreen):
 

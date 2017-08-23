@@ -38,6 +38,7 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+default_cover = "file://%s/paradisehill.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class paradisehillGenreScreen(MPScreen):
 
@@ -46,9 +47,9 @@ class paradisehillGenreScreen(MPScreen):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 
 		with open(path, "r") as f:
 			self.skin = f.read()
@@ -87,14 +88,18 @@ class paradisehillGenreScreen(MPScreen):
 				Url = Url + "?page="
 				self.genreliste.append((Title, Url, Count))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Popular (All Time)", "/popular/?page=", None))
-			self.genreliste.insert(0, ("Popular (Monthly)", "/popular/?filter=month&page=", None))
-			self.genreliste.insert(0, ("Popular (Weekly)", "/popular/?filter=week&page=", None))
-			self.genreliste.insert(0, ("Popular (Daily)", "/popular/?filter=day&page=", None))
-			self.genreliste.insert(0, ("Newest", "/porn/?page=", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Popular (All Time)", "/popular/?page=", default_cover))
+			self.genreliste.insert(0, ("Popular (Monthly)", "/popular/?filter=month&page=", default_cover))
+			self.genreliste.insert(0, ("Popular (Weekly)", "/popular/?filter=week&page=", default_cover))
+			self.genreliste.insert(0, ("Popular (Daily)", "/popular/?filter=day&page=", default_cover))
+			self.genreliste.insert(0, ("Newest", "/porn/?page=", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

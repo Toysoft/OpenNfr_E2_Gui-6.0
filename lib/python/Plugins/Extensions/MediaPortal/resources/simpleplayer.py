@@ -1029,6 +1029,10 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 	def playStream(self, title, url, **kwargs):
 		if self.ltype == 'youtube' and ".m3u8" in url and mp_globals.isDreamOS:
 			self.youtubelive = True
+		elif self.ltype == 'chaturbate' and ".m3u8" in url and mp_globals.isDreamOS:
+			self.youtubelive = True
+		elif self.ltype == 'zdf' and ".m3u8" in url and mp_globals.isDreamOS:
+			self.youtubelive = True
 		if not url:
 			self.dataError('[SP]: no URL given!')
 		elif url.startswith('#SERVICE'):

@@ -49,7 +49,7 @@ json_headers = {
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/json',
 	}
-default_cover = "https://s3.amazonaws.com/uploads.uservoice.com/logo/design_setting/164750/original/tube8logo-tumblr.png"
+default_cover = "file://%s/tube8.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class tube8GenreScreen(MPScreen):
 

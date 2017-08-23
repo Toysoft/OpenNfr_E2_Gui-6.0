@@ -42,6 +42,19 @@ from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoard
 
 CONFIG = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/additions/additions.xml"
 
+favourites = []
+
+def writeFavourites():
+	try:
+		wl_path = config.mediaportal.watchlistpath.value+"mp_2s4p"
+		writefavsub = open(wl_path, 'w')
+		favourites.sort(key=lambda t : t.lower())
+		for m in favourites:
+			writefavsub.write('%s\n' % m)
+		writefavsub.close()
+	except:
+		pass
+
 class toSearchForPorn(MPScreen, SearchHelper):
 
 	def __init__(self, session):
@@ -91,7 +104,7 @@ class toSearchForPorn(MPScreen, SearchHelper):
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
-		self.onLayoutFinish.append(self.Searches)
+		self.onLayoutFinish.append(self.readFavourites)
 
 	def goToNumber(self, num):
 		self.keyNumberGlobal(num, self.genreliste)
@@ -100,18 +113,27 @@ class toSearchForPorn(MPScreen, SearchHelper):
 	def goToLetter(self, key):
 		self.keyLetterGlobal(key, self.genreliste)
 
-	def Searches(self):
+	def readFavourites(self):
+		global favourites
+		favourites = []
+		self.wl_path = config.mediaportal.watchlistpath.value+"mp_2s4p"
+		try:
+			rawData = open(self.wl_path,"r")
+			for m in rawData:
+				favourites.append(((m.strip())))
+			rawData.close()
+		except:
+			pass
+		self.layoutFinished()
+
+	def layoutFinished(self):
 		self.genreliste = []
 		self['liste'] = self.ml
-		if not fileExists(config.mediaportal.watchlistpath.value+"mp_2s4p"):
-			open(config.mediaportal.watchlistpath.value+"mp_2s4p","w").close()
-		if fileExists(config.mediaportal.watchlistpath.value+"mp_2s4p"):
-			fobj = open(config.mediaportal.watchlistpath.value+"mp_2s4p","r")
-			for line in fobj:
-				self.genreliste.append((line, None))
-			fobj.close()
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-			self.keyLocked = False
+		for fav in favourites:
+			self.genreliste.append((fav,None))
+		self.genreliste.sort(key=lambda t : t[0].lower())
+		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.keyLocked = False
 
 	def SearchAdd(self):
 		suchString = ""
@@ -119,20 +141,26 @@ class toSearchForPorn(MPScreen, SearchHelper):
 
 	def SearchAdd1(self, suchString):
 		if suchString is not None and suchString != "":
-			self.genreliste.append((suchString,None))
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+			favourites.append(((suchString)))
+			self.layoutFinished()
+			writeFavourites()
 
 	def SearchEdit(self):
 		if len(self.genreliste) > 0:
-			suchString = self['liste'].getCurrent()[0][0].rstrip()
+			suchString = self['liste'].getCurrent()[0][0]
 			self.session.openWithCallback(self.SearchEdit1, VirtualKeyBoardExt, title = (_("Enter Search")), text = suchString, is_dialog=True)
 
 	def SearchEdit1(self, suchString):
 		if suchString is not None and suchString != "":
 			pos = self['liste'].getSelectedIndex()
 			self.genreliste.pop(pos)
-			self.genreliste.insert(pos,(suchString,None))
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+			self.genreliste.append((suchString,None))
+			global favourites
+			favourites = []
+			for x in self.genreliste:
+				favourites.append(((x[0])))
+			self.layoutFinished()
+			writeFavourites()
 
 	def SearchCallback(self, suchString):
 		if suchString is not None and suchString != "":
@@ -142,14 +170,19 @@ class toSearchForPorn(MPScreen, SearchHelper):
 		if self.keyLocked:
 			return
 		if len(self.genreliste) > 0:
-			self.SearchCallback(self['liste'].getCurrent()[0][0].rstrip())
+			self.SearchCallback(self['liste'].getCurrent()[0][0])
 
 	def keyRed(self):
 		if self.keyLocked:
 			return
 		if len(self.genreliste) > 0:
 			self.genreliste.pop(self['liste'].getSelectedIndex())
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+			global favourites
+			favourites = []
+			for x in self.genreliste:
+				favourites.append(((x[0])))
+			self.layoutFinished()
+			writeFavourites()
 
 	def keyGreen(self):
 		if self.keyLocked:
@@ -160,21 +193,6 @@ class toSearchForPorn(MPScreen, SearchHelper):
 		if self.keyLocked:
 			return
 		self.SearchEdit()
-
-	def keyCancel(self):
-		if self.keyLocked:
-			return
-		self.genreliste.sort(key=lambda t : t[0].lower())
-		fobj_out = open(config.mediaportal.watchlistpath.value+"mp_2s4p","w")
-		x = len(self.genreliste)
-		if x > 0:
-			for c in range(x):
-				writeback = self.genreliste[c][0].rstrip()+"\n"
-				fobj_out.write(writeback)
-			fobj_out.close()
-		else:
-			os.remove(config.mediaportal.watchlistpath.value+"mp_2s4p")
-		self.close()
 
 class toSearchForPornBrowse(MPScreen):
 
@@ -229,6 +247,30 @@ class toSearchForPornBrowse(MPScreen):
 							if mod:
 								exec("self.genreliste.append((\""+x.get("name").replace("&amp;","&")+"\", None))")
 
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								if x.get("confcat") == "porn" and x.get("search") == "1":
+									gz = x.get("gz")
+									if not config.mediaportal.showgrauzone.value and gz == "1":
+										pass
+									else:
+										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+										if mod:
+											exec("self.genreliste.append((\""+x.get("name").replace("&amp;","&")+"\", None))")
+		except:
+			pass
+
 		self.genreliste.sort(key=lambda t : t[0].lower())
 		self.keyLocked = False
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
@@ -237,7 +279,6 @@ class toSearchForPornBrowse(MPScreen):
 		if self.keyLocked:
 			return
 		auswahl = self['liste'].getCurrent()[0][0]
-		self.suchString = self.suchString.rstrip()
 
 		conf = xml.etree.cElementTree.parse("/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/additions/additions.xml")
 		for x in conf.getroot():
@@ -251,9 +292,7 @@ class toSearchForPornBrowse(MPScreen):
 								modfile = x.get("modfile")
 								modfile = "Plugins.Extensions.MediaPortal.additions.%s.%s" % (modfile.split(".")[0], modfile.split(".")[1])
 								exec("from "+modfile+" import *")
-								exec("self.suchString = self.suchString.replace(\" \",\""+x.get("delim")+"\")")
+								exec("self.suchString = self.suchString")
 								exec("Name = \"2Search4Porn - %s\" % (self.suchString)")
-								exec("Link = \""+x.get("searchurl").replace("&amp;","&")+"\" % (self.suchString)")
-								print "Name: "+ Name
-								print "Link: "+ Link
+								exec("Link = \""+x.get("searchurl").replace("&amp;","&")+"\" % (self.suchString.replace(\" \",\""+x.get("delim")+"\"))")
 								exec("self.session.open("+x.get("searchscreen")+", Link, Name"+x.get("searchparam").replace("&quot;","\"")+")")

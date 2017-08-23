@@ -40,15 +40,16 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
 BASE_NAME = "PornoRips"
+default_cover = "file://%s/pornorips.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class pornoRipsGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -82,6 +83,10 @@ class pornoRipsGenreScreen(MPScreen):
 		self.genreliste.append(("Classic/Vintage", "http://pornorips.com/category/classic-porn/"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
+		self.showInfos()
+
+	def showInfos(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
