@@ -187,5 +187,4 @@ class sTVids(MPScreen):
 		video = re.findall('"width":\d+,"src":"(.*?)",', data, re.S)
 		title = self['liste'].getCurrent()[0][0]
 		self['name'].setText(title)
-		self.keyLocked = False
 		self.session.open(SimplePlayer, [(title, video[-1])], showPlaylist=False, ltype='servustv', forceGST=True)

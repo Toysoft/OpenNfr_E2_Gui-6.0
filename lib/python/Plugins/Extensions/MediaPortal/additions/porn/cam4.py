@@ -39,12 +39,13 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-BASEURL = "https://chaturbate.com/"
+BASEURL = "https://cam4.com/"
 
-config.mediaportal.chaturbate_filter = ConfigText(default="all", fixed_size=False)
-default_cover = "file://%s/chaturbate.png" % (config.mediaportal.iconcachepath.value + "logos")
+config.mediaportal.cam4_filter = ConfigText(default="all", fixed_size=False)
+default_cover = "file://%s/cam4.png" % (config.mediaportal.iconcachepath.value + "logos")
+cam4Agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4"
 
-class chaturbateGenreScreen(MPScreen):
+class cam4GenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -65,9 +66,9 @@ class chaturbateGenreScreen(MPScreen):
 			"yellow": self.keyFilter
 		}, -1)
 
-		self.filter = config.mediaportal.chaturbate_filter.value
+		self.filter = config.mediaportal.cam4_filter.value
 
-		self['title'] = Label("Chaturbate.com")
+		self['title'] = Label("Cam4.com")
 		self['ContentTitle'] = Label("Genre:")
 		self['F3'] = Label(self.filter)
 
@@ -78,47 +79,18 @@ class chaturbateGenreScreen(MPScreen):
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
-		self.onLayoutFinish.append(self.layoutFinished)
+		self.onLayoutFinish.append(self.genreData)
 
-	def layoutFinished(self):
+	def genreData(self):
 		CoverHelper(self['coverArt']).getCover(default_cover)
-		if config.mediaportal.chaturbate_filter.value == "all":
-			filter = ""
-		else:
-			filter = config.mediaportal.chaturbate_filter.value + "/"
-		url = BASEURL + 'tags/' + filter
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
-
-	def genreData(self, data):
-		self.genreliste = []
-		parse = re.search('id="tag_table">(.*?)class="paging">', data, re.S)
-		if parse:
-			tags = re.findall('class="tag_row">.{0,5}<span class="tag">.{0,5}<a\shref="(.*?)"\stitle="(.*?)"', parse.group(1), re.S)
-		if tags:
-			for (Url, Title) in tags:
-				self.genreliste.append(("#"+Title, Url.strip('/')))
-		self.genreliste.sort()
-		self.genreliste.insert(0, ("Exhibitionist", "exhibitionist-cams"))
-		self.genreliste.insert(0, ("Other Region", "other-region-cams"))
-		self.genreliste.insert(0, ("South American", "south-american-cams"))
-		self.genreliste.insert(0, ("Asian", "asian-cams"))
-		self.genreliste.insert(0, ("Philippines", "philippines-cams"))
-		self.genreliste.insert(0, ("Euro Russian", "euro-russian-cams"))
-		self.genreliste.insert(0, ("North American", "north-american-cams"))
-		self.genreliste.insert(0, ("Mature (50+)", "mature-cams"))
-		self.genreliste.insert(0, ("30 to 50", "30to50-cams"))
-		self.genreliste.insert(0, ("20 to 30", "20to30-cams"))
-		self.genreliste.insert(0, ("18 to 21", "18to21-cams"))
-		self.genreliste.insert(0, ("Teen (18+)", "teen-cams"))
-		self.genreliste.insert(0, ("HD", "hd-cams"))
-		if (self.filter == "female" or self.filter == "couple"):
-			self.genreliste.insert(0, ("Couple", "couple-cams"))
-			self.genreliste.insert(0, ("Female", "female-cams"))
-		elif self.filter == "male":
-			self.genreliste.insert(0, ("Male", "male-cams"))
-		elif self.filter == "trans":
-			self.genreliste.insert(0, ("Transsexual", "trans-cams"))
-		self.genreliste.insert(0, ("Featured", ""))
+		self.genreliste.append(("Trending", ""))
+		self.genreliste.append(("Couple", ""))
+		self.genreliste.append(("USA", "&country=us"))
+		self.genreliste.append(("Germany", "&country=de"))
+		self.genreliste.append(("Brazil", "&country=br"))
+		self.genreliste.append(("Italy", "&country=it"))
+		self.genreliste.append(("Spain", "&country=es"))
+		self.genreliste.append(("France", "&country=fr"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
 
@@ -127,42 +99,35 @@ class chaturbateGenreScreen(MPScreen):
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		Link = self['liste'].getCurrent()[0][1]
-		self.session.open(chaturbateFilmScreen, Link, Name)
+		self.session.open(cam4FilmScreen, Link, Name)
 
 	def keyFilter(self):
 		if self.filter == "all":
 			self.filter = "female"
-			config.mediaportal.chaturbate_filter.value = "female"
+			config.mediaportal.cam4_filter.value = "female"
 		elif self.filter == "female":
-			self.filter = "couple"
-			config.mediaportal.chaturbate_filter.value = "couple"
-		elif self.filter == "couple":
 			self.filter = "male"
-			config.mediaportal.chaturbate_filter.value = "male"
+			config.mediaportal.cam4_filter.value = "male"
 		elif self.filter == "male":
-			self.filter = "trans"
-			config.mediaportal.chaturbate_filter.value = "trans"
-		elif self.filter == "trans":
+			self.filter = "shemale"
+			config.mediaportal.cam4_filter.value = "shemale"
+		elif self.filter == "shemale":
 			self.filter = "all"
-			config.mediaportal.chaturbate_filter.value = "all"
-		else:
-			self.filter = "all"
-			config.mediaportal.chaturbate_filter.value = "all"
+			config.mediaportal.cam4_filter.value = "all"
 
-		config.mediaportal.chaturbate_filter.save()
+		config.mediaportal.cam4_filter.save()
 		configfile.save()
 		self['F3'].setText(self.filter)
-		self.layoutFinished()
 
-class chaturbateFilmScreen(MPScreen, ThumbsHelper):
+class cam4FilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		if config.mediaportal.chaturbate_filter.value == "all":
+		if config.mediaportal.cam4_filter.value == "all":
 			self.filter = ""
 		else:
-			self.filter = config.mediaportal.chaturbate_filter.value + "/"
+			self.filter = config.mediaportal.cam4_filter.value
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
@@ -199,7 +164,7 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("Chaturbate.com")
+		self['title'] = Label("Cam4.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F1'] = Label(_("Text-"))
 		self['F2'] = Label(_("Page"))
@@ -208,7 +173,7 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
-		self.lastpage = 1
+		self.lastpage = 999
 
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -220,13 +185,10 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		if self.Name == "Featured":
-			url = BASEURL + "?page=%s" % self.page
+		if self.Name == "Couple":
+			url = BASEURL + "directoryCams?directoryJson=true&online=true&url=true&broadcastType=male_female_group&page=%s" % self.page
 		else:
-			if self.Name == "Female" or self.Name == "Couple" or self.Name == "Male" or self.Name == "Transsexual" or "tag/" in self.Link:
-				url = BASEURL + "%s/?page=%s" % (self.Link, self.page)
-			else:
-				url = BASEURL + "%s/%s?page=%s" % (self.Link, self.filter, self.page)
+			url = BASEURL + "directoryCams?directoryJson=true&online=true&url=true&gender=%s%s&page=%s" % (self.filter, self.Link, self.page)
 		self.filmQ.put(url)
 		if not self.eventL.is_set():
 			self.eventL.set()
@@ -234,15 +196,23 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadPageData(self, data):
 		self.ml.moveToIndex(0)
-		self.getLastPage(data, 'class="paging">(.*?)</ul>')
-		Movies = re.findall('<li>.<a\shref="(.*?)".*?<img\ssrc=".*?".*?gender(\w)">(\d+)</span>.*?<li\stitle(?:="(.*?)"|)>.*?location.*?>(.*?)</li>.*?class="cams">(.*?)</li>.*?</div>.*?</li>', data, re.S)
-		if Movies:
-			for (Url, Gender, Age, Description, Location, Viewers) in Movies:
-				if not Description:
-					Description = ""
-				Title = Url.strip('\/')
-				Image = "https://cbjpeg.stream.highwebmedia.com/stream?room=" + Url.strip('\/') + "&f=" + str(random.random())
-				self.filmliste.append((Title, Url, Image, decodeHtml(Description), Gender, Age, decodeHtml(Location), Viewers))
+		self['page'].setText(str(self.page))
+		jsondata = json.loads(data)
+		for node in jsondata["users"]:
+			Title = str(node["username"])
+			Url = BASEURL + str(node["username"])
+			Image = str(node["snapshotImageLink"]).replace('200x150','400x300')
+			Gender = str(node["gender"])
+			Location = str(node["countryCode"])
+			from Plugins.Extensions.MediaPortal.resources import iso3166
+			Location = str(iso3166.countries.get(Location))
+			Location = re.search('.*?name=u\'(.*?)\'', Location, re.S).group(1)
+			Viewers = str(node["viewers"])
+			Couple = str(node["broadcastType"]).replace('_',' ')
+			Preference = str(node["sexPreference"])
+			Status = str(node["statusMessage"])
+			if not node["mobile"] and not node["vrStream"] and not str(node["source"])=="mobile":
+				self.filmliste.append((Title, Url, Image, Gender, Location, Viewers, Couple, Preference, Status))
 		if len(self.filmliste):
 			self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -261,35 +231,30 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		if Url == None:
 			return
 		title = self['liste'].getCurrent()[0][0]
-		desc = self['liste'].getCurrent()[0][3]
-		gender = self['liste'].getCurrent()[0][4]
-		age = self['liste'].getCurrent()[0][5]
-		location = self['liste'].getCurrent()[0][6]
-		viewers = self['liste'].getCurrent()[0][7]
+		gender = self['liste'].getCurrent()[0][3]
+		location = self['liste'].getCurrent()[0][4]
+		viewers = self['liste'].getCurrent()[0][5]
+		type = self['liste'].getCurrent()[0][6]
+		preference = self['liste'].getCurrent()[0][7]
+		status = self['liste'].getCurrent()[0][8]
 		self['name'].setText(title)
-		if gender == "f":
-			gender = "female"
-		elif gender == "m":
-			gender = "male"
-		elif gender == "c":
-			gender = "couple"
-		elif gender == "s":
-			gender = "transsexual"
-		self['handlung'].setText("Age: %s, Gender: %s, Location: %s\n%s\n%s" % (age, gender, location, viewers, desc))
+		self['handlung'].setText("Gender: %s\nPreference: %s\nType: %s\nLocation: %s\nViewers: %s\n%s" % (gender, preference, type, location, viewers, status))
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
 		name = self['liste'].getCurrent()[0][0]
 		self['name'].setText(_('Please wait...'))
-		url = "https://chaturbate.com/" + name
-		getPage(url).addCallback(self.play_stream).addErrback(self.dataError)
+		url = BASEURL + name
+		getPage(url, agent=cam4Agent).addCallback(self.play_stream).addErrback(self.dataError)
 
 	def play_stream(self, data):
-		url = re.findall('(http[s]?://edge.*?.stream.highwebmedia.com.*?m3u8)', data)
+		url = re.findall('hlsUrl: \'(http.*?)\'', data, re.S)
 		if url:
+			url = url[-1] + '?referer=cam4.com&timestamp=%s' % str(int(time()*1000))
 			title = self['liste'].getCurrent()[0][0]
 			self['name'].setText(title)
-			self.session.open(SimplePlayer, [(title, url[0])], showPlaylist=False, ltype='chaturbate', forceGST=True)
+			mp_globals.player_agent = cam4Agent
+			self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='cam4', forceGST=True)
 		else:
 			self.session.open(MessageBoxExt, _("Cam is currently offline."), MessageBoxExt.TYPE_INFO)

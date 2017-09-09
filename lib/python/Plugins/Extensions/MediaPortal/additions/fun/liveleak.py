@@ -111,6 +111,8 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 			"down"  : self.keyDown,
 			"left"  : self.keyLeft,
 			"right" : self.keyRight,
+			"blue" :  self.keyTxtPageDown,
+			"red" :  self.keyTxtPageUp,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown
 		}, -1)
@@ -120,6 +122,8 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 		self.lastpage = 999
 		self['title'] = Label("LiveLeak.com")
 		self['ContentTitle'] = Label("Auswahl: %s" %self.Name)
+		self['F1'] = Label(_("Text-"))
+		self['F4'] = Label(_("Text+"))
 
  		self['Page'] = Label(_("Page:"))
 		self['page'] = Label("1")

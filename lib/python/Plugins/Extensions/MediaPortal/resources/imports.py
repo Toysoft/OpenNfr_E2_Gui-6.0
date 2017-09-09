@@ -41,6 +41,21 @@ from Components.Input import Input
 
 from Screens.InfoBar import MoviePlayer, InfoBar
 from Screens.InfoBarGenerics import InfoBarSeek, InfoBarNotifications
+
+try:
+	from Screens.InfoBarGenerics import InfoBarServiceErrorPopupSupport
+except:
+	class InfoBarServiceErrorPopupSupport:
+		def __init__(self):
+			pass
+
+try:
+	from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
+except:
+	class InfoBarGstreamerErrorPopupSupport:
+		def __init__(self):
+			pass
+
 from Screens.Screen import Screen
 from Screens.Standby import TryQuitMainloop
 from Screens.NumericalTextInputHelpDialog import NumericalTextInputHelpDialog

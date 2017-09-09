@@ -171,7 +171,7 @@ class freeomovieFilmListeScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		self.getLastPage(data, "class='wp-pagenavi'>(.*?)</div>")
+		self.getLastPage(data, 'class="wp-pagenavi">(.*?)</div>')
 		movies = re.findall('class="boxtitle">.*?<a href="(.*?)".*?title="(.*?)".*?<img src="(.*?)"', data, re.S)
 		if movies:
 			self.filmliste = []

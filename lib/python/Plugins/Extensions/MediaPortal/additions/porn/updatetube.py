@@ -1,4 +1,41 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
@@ -10,15 +47,23 @@ class updatetubeGenreScreen(MPScreen):
 		if self.mode == "updatetube":
 			self.portal = "UpdateTube.com"
 			self.baseurl = "www.updatetube.com"
+			self.default_cover = "file://%s/updatetube.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "pinkrod":
 			self.portal = "Pinkrod.com"
 			self.baseurl = "www.pinkrod.com"
+			self.default_cover = "file://%s/pinkrod.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "hotshame":
 			self.portal = "hotshame.com"
 			self.baseurl = "www.hotshame.com"
+			self.default_cover = "file://%s/hotshame.png" % (config.mediaportal.iconcachepath.value + "logos")
 		if self.mode == "thenewporn":
 			self.portal = "TheNewPorn.com"
 			self.baseurl = "www.thenewporn.com"
+			self.default_cover = "file://%s/thenewporn.png" % (config.mediaportal.iconcachepath.value + "logos")
+		if self.mode == "pornsharing":
+			self.portal = "PornSharing.com"
+			self.baseurl = "www.pornsharing.com"
+			self.default_cover = "file://%s/pornsharing.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
@@ -53,27 +98,38 @@ class updatetubeGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		self['name'].setText(_('Please wait...'))
+		CoverHelper(self['coverArt']).getCover(self.default_cover)
 		self.keyLocked = True
 		url = "http://%s/categories/" % self.baseurl
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="cat">(.*?)clearfix', data, re.S)
-		Cats = re.findall('class="ic">.*?<a\shref="(.*?)".*?<img\ssrc="(.*?)"\salt="(.*?)"/>', parse.group(1), re.S)
+		parse = re.search('class="cat(?:egories|)">(.*?)class="(?:clr|clearfix)"', data, re.S)
+		Cats = re.findall('class="(?:ic|item)">.*?<a\shref="(.*?)"(?:\sclass="img3"|)\stitle="(.*?)".*?<img.*?src="(.*?)">', parse.group(1), re.S)
 		if Cats:
-			for (Url, Image, Title) in Cats:
-				self.genreliste.append((Title.title(), Url, Image))
+			for (Url, Title, Image) in Cats:
+				Title = Title.replace('HD ','').replace(' Sex','')
+				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Popular", "http://%s/most-popular/" % self.baseurl, None))
-			self.genreliste.insert(0, ("Top Rated", "http://%s/top-rated/" % self.baseurl, None))
-			#self.genreliste.insert(0, ("Newest", "http://%s/" % self.baseurl, None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
-			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
-			self.ml.moveToIndex(0)
-			self.keyLocked = False
-			self.showInfos()
+		if self.mode == "pornsharing":
+			most = "videos/viewed"
+			rated = "videos/rated"
+		else:
+			most = "most-popular"
+			rated = "top-rated"
+		self.genreliste.insert(0, ("Most Popular", "http://%s/%s" % (self.baseurl, most), self.default_cover))
+		self.genreliste.insert(0, ("Top Rated", "http://%s/%s" % (self.baseurl, rated), self.default_cover))
+		self.genreliste.insert(0, ("Newest", "http://%s" % self.baseurl, self.default_cover))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", self.default_cover))
+		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
+		self.ml.moveToIndex(0)
+		self.keyLocked = False
+		self.showInfos()
 
 	def showInfos(self):
+		title = self['liste'].getCurrent()[0][0]
+		self['name'].setText(title)
 		Image = self['liste'].getCurrent()[0][2]
 		CoverHelper(self['coverArt']).getCover(Image)
 
@@ -153,18 +209,12 @@ class updatetubeFilmScreen(MPScreen, ThumbsHelper):
 		elif self.page == 1:
 			url = "%s" % (self.Link)
 		else:
-			url = "%s%s/" % (self.Link, str(self.page))
+			url = "%s/%s" % (self.Link, str(self.page))
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		lastp = re.search('class="info">.*?of\s(.*?[0-9])\sitems', data, re.S)
-		if lastp:
-			lastp = round((float(lastp.group(1)) / 40) + 0.5)
-			self.lastpage = int(lastp)
-		else:
-			self.lastpage = 1
-		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-		Movies = re.findall('class="ic">.*?<a\shref="(.*?)".*?title="(.*?)"\sclass="lnk">.*?<img\ssrc="(.*?)"', data, re.S)
+		self.getLastPage(data, '(?:id="pgn">|class="pagination">)(.*?)</nav>', '.*\/(\d+)')
+		Movies = re.findall('class="(?:ic|item)".*?href="(.*?)"(?:\sclass="img"|).*?title="(.*?)"(?:\sclass="lnk"|)>.*?data-src="(.*?)"', data, re.S)
 		if Movies:
 			for (Url, Title, Image) in Movies:
 				self.filmliste.append((decodeHtml(Title), Url, Image))
@@ -188,9 +238,8 @@ class updatetubeFilmScreen(MPScreen, ThumbsHelper):
 		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall('video_url:.*?\'(.*?.mp4)\/', data, re.S)
+		videoPage = re.findall('<source src="(.*?)"', data, re.S)
 		if videoPage:
-			for url in videoPage:
-				self.keyLocked = False
-				Title = self['liste'].getCurrent()[0][0]
-				self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='updatetube')
+			self.keyLocked = False
+			Title = self['liste'].getCurrent()[0][0]
+			self.session.open(SimplePlayer, [(Title, videoPage[-1].replace('&amp;','&'))], showPlaylist=False, ltype='updatetube')

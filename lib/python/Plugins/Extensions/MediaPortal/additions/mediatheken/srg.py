@@ -347,4 +347,4 @@ class SRGStreamScreen(MPScreen):
 		if re.findall('.*?\.m3u8$', url) and not config.mediaportal.use_hls_proxy.value:
 			message = self.session.open(MessageBoxExt, _("If you want to play this stream, you have to activate the HLS-Player in the MP-Setup"), MessageBoxExt.TYPE_INFO, timeout=5)
 		else:
-			self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srg')
+			self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srg', forceGST=True)

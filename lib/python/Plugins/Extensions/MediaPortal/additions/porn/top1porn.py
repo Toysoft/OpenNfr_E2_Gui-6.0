@@ -256,7 +256,11 @@ class topPornFilmAuswahlScreen(MPScreen):
 		if streams:
 			for (stream, hostername) in streams:
 				if isSupportedHoster(hostername, True):
-					hostername = hostername.replace('www.','').replace('embed.','').replace('play.','')
+					if hostername == "embedlink.info":
+						hostername = "mega3x.net"
+						stream = stream.replace('http://embedlink.info/mega3x.php?url=','http://mega3x.net/embed-')
+					else:
+						hostername = hostername.replace('www.','').replace('embed.','').replace('play.','')
 					self.filmliste.append((hostername, stream))
 		if self.altcounter == 0:
 			if len(self.filmliste) == 0:

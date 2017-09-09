@@ -376,6 +376,8 @@ class SimpleSeekHelper:
 			self.percent = 100.0
 
 	def numberKeySeek(self, val):
+		if self.ltype == 'dmax.de':
+			return
 		if self.length:
 			length = float(self.length[1])
 			if length > 0.0:
@@ -765,7 +767,7 @@ class SimplePlayerPVRState(Screen):
 		self["speed"] = Label()
 		self["statusicon"] = MultiPixmap()
 
-class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, SimplePlayerResume, InfoBarMenu, InfoBarBase, InfoBarSeek, InfoBarNotifications, InfoBarServiceNotifications, InfoBarPVRState, InfoBarShowHide, InfoBarAudioSelection, InfoBarSubtitleSupport, InfoBarSimpleEventView):
+class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, SimplePlayerResume, InfoBarMenu, InfoBarBase, InfoBarSeek, InfoBarNotifications, InfoBarServiceNotifications, InfoBarPVRState, InfoBarShowHide, InfoBarAudioSelection, InfoBarSubtitleSupport, InfoBarSimpleEventView, InfoBarServiceErrorPopupSupport, InfoBarGstreamerErrorPopupSupport):
 
 	ALLOW_SUSPEND = True
 	ctr = 0
@@ -834,6 +836,11 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		InfoBarAudioSelection.__init__(self)
 		InfoBarSubtitleSupport.__init__(self)
 		InfoBarSimpleEventView.__init__(self)
+		try:
+			InfoBarServiceErrorPopupSupport.__init__(self)
+			InfoBarGstreamerErrorPopupSupport.__init__(self)
+		except:
+			pass
 
 		self.allowPiP = False
 		InfoBarSeek.__init__(self)
@@ -953,19 +960,28 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		from enigma import iServiceInformation
 		currPlay = self.session.nav.getCurrentService()
 		sTagAudioCodec = currPlay.info().getInfoString(iServiceInformation.sTagAudioCodec)
-		self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagAudioCodec, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+		try:
+			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
+		except:
+			self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagAudioCodec, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
 
 	def __evVideoDecodeError(self):
 		from enigma import iServiceInformation
 		currPlay = self.session.nav.getCurrentService()
 		sTagVideoCodec = currPlay.info().getInfoString(iServiceInformation.sTagVideoCodec)
-		self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagVideoCodec, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+		try:
+			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
+		except:
+			self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagVideoCodec, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
 
 	def __evPluginError(self):
 		from enigma import iServiceInformation
 		currPlay = self.session.nav.getCurrentService()
 		message = currPlay.info().getInfoString(iServiceInformation.sUser+12)
-		self.session.open(MessageBoxExt, message, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+		try:
+			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
+		except:
+			self.session.open(MessageBoxExt, message, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
 
 	def __evStreamingSrcError(self):
 		if isinstance(self, SimplePlayerResume):
@@ -973,7 +989,10 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		from enigma import iServiceInformation
 		currPlay = self.session.nav.getCurrentService()
 		message = currPlay.info().getInfoString(iServiceInformation.sUser+12)
-		self.session.open(MessageBoxExt, _("Streaming error: %s") % message, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+		try:
+			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
+		except:
+			self.session.open(MessageBoxExt, _("Streaming error: %s") % message, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
 
 	def _evEmbeddedCoverArt(self):
 		self.hasEmbeddedCoverArt = True
@@ -1027,12 +1046,14 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		reactor.callLater(2, self.playNextStream, config.mediaportal.sp_on_movie_eof.value)
 
 	def playStream(self, title, url, **kwargs):
-		if self.ltype == 'youtube' and ".m3u8" in url and mp_globals.isDreamOS:
-			self.youtubelive = True
-		elif self.ltype == 'chaturbate' and ".m3u8" in url and mp_globals.isDreamOS:
-			self.youtubelive = True
-		elif self.ltype == 'zdf' and ".m3u8" in url and mp_globals.isDreamOS:
-			self.youtubelive = True
+		#if self.ltype == 'youtube' and ".m3u8" in url and mp_globals.isDreamOS:
+		#	self.youtubelive = False
+		#elif self.ltype == 'chaturbate' and ".m3u8" in url and mp_globals.isDreamOS:
+		#	self.youtubelive = False
+		#elif self.ltype == 'cam4' and ".m3u8" in url and mp_globals.isDreamOS:
+		#	self.youtubelive = False
+		#elif self.ltype == 'zdf' and ".m3u8" in url and mp_globals.isDreamOS:
+		#	self.youtubelive = False
 		if not url:
 			self.dataError('[SP]: no URL given!')
 		elif url.startswith('#SERVICE'):
@@ -1260,6 +1281,8 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			self.playRandom(config.mediaportal.sp_on_movie_stop.value)
 
 	def seekFwd(self):
+		if self.ltype == 'dmax.de':
+			return
 		if self.isTSVideo:
 			InfoBarSeek.seekFwd(self)
 		elif self.seekBarShown and not self.seekBarLocked:
@@ -1270,6 +1293,8 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			self.playNextStream(config.mediaportal.sp_on_movie_stop.value)
 
 	def seekBack(self):
+		if self.ltype == 'dmax.de':
+			return
 		if self.isTSVideo:
 			InfoBarSeek.seekBack(self)
 		elif self.seekBarShown and not self.seekBarLocked:

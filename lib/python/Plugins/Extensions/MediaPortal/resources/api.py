@@ -23,18 +23,15 @@ from urllib import quote
 from urllib2 import urlopen, Request, HTTPError, URLError
 
 API_URL = 'http://app.4players.de/services/app/data.php'
-USER_AGENT = 'VuBox4PlayersApi'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36'
 
 SYSTEMS = (
-    '360', 'PC-CDROM', 'iPhone', 'iPad', 'Android', '3DS', 'NDS', 'Wii_U',
-    'PlayStation3', 'PlayStation4', 'PSP', 'PS_Vita', 'Spielkultur',
-    'WindowsPhone7', 'XBox', 'Wii', 'PlayStation2',
+    '360', 'PC-CDROM', 'iPhone', 'iPad', 'Android', '3DS', 'N3DS', 'NDS', 'Wii_U',
+    'PlayStation3', 'PlayStation4', 'PSP', 'PS_Vita', 'PlaystationVR', 'Spielkultur', 'HTCVive', 'OculusRift',
+    'WindowsPhone7', 'XBox', 'XBoxOne', 'Wii', 'Wii_U', 'Switch', 'PlayStation2', 'Mac', 'Linux', 'VirtualReality',
 )
 
-class NetworkError(Exception):
-    pass
-
-class VuBox4PlayersApi(object):
+class ForPlayersApi(object):
 
     LIMIT = 50
 
@@ -98,12 +95,8 @@ class VuBox4PlayersApi(object):
             search_string,  # search_string
             limit  # limit
         )
-        try:
-            games = self.__api_call('getSpieleBySuchbegriff', *params)['GameInfo']
-            print 'Games: ', games
-            return self.__format_games(games)
-        except:
-            print 'Keine Daten gefunden bei Suche nach: %s' % search_string
+        games = self.__api_call('getSpieleBySuchbegriff', *params)['GameInfo']
+        return self.__format_games(games)
 
     def _get_game_info(self, game_id):
         params = (
@@ -117,9 +110,11 @@ class VuBox4PlayersApi(object):
             'id': video['id'],
             'video_title': video['beschreibung'],
             'rating': video['rating'],
+            'play_count': video['counter'],
             'ts': video['datum'],
             'date': self.__format_date(video['datum']),
             'duration': self.__format_duration(video['laufzeit']),
+            'duration_str': video['laufzeit'],
             'thumb': self.__format_thumb(video['thumb']),
             'game': self.__format_game(video['spielinfo']),
             'streams': {
@@ -146,7 +141,6 @@ class VuBox4PlayersApi(object):
         return games
 
     def __format_game(self, game_info):
-        print 'format game'
         if not isinstance(game_info, list):
             game_id = game_info['id']
             if game_id in self._game_infos:
@@ -183,34 +177,29 @@ class VuBox4PlayersApi(object):
     @staticmethod
     def __format_duration(duration_str):
         if ':' in duration_str:
-            time = re.search('(\d+):.*?(\d+)', duration_str)
-            if time:
-                sec = int(int(time.group(1)) * 60 + int(time.group(2)))
-            else:
-                sec = 0
-        else:
-            sec = 0
-        return sec
+            try:
+                m, s = duration_str.split(' ')[0].split(':', 1)
+                return int(int(m) * 60 + int(s))
+            except:
+                print "error"
+        return 0
 
     @staticmethod
     def __api_call(method, *params):
         parts = [API_URL, method] + [quote(str(p)) for p in params]
         url = '/'.join(parts)
-        req = Request(url)
-        req.add_header('User Agent', USER_AGENT)
         log('Opening URL: %s' % url)
+	headers = {'User-Agent': USER_AGENT}
+	req = Request(url, headers=headers)
         try:
             response = urlopen(req).read()
-            print 'nach response'
+	    log('got %d bytes' % len(response))
+	    json_data = json.loads(response)
+            return json_data
         except HTTPError, error:
-            print 'httperrro'
-            raise NetworkError('HTTPError: %s' % error)
+            print 'HTTPError: %s' % error
         except URLError, error:
-            print 'urlerror'
-            raise NetworkError('URLError: %s' % error)
-        log('got %d bytes' % len(response))
-        json_data = json.loads(response)
-        return json_data
-
+            print 'URLError: %s' % error
+ 
 def log(msg):
-    print '[VuBox4PlayersApi]: %s' % msg
+    print '[ForPlayersApi]: %s' % msg

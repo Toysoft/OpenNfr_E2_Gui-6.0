@@ -293,7 +293,7 @@ class faapyFilmScreen(MPScreen, ThumbsHelper):
 		getPage(Link).addCallback(self.getVideoUrl).addErrback(self.dataError)
 
 	def getVideoUrl(self, data):
-		videoUrl = re.findall("video_url:\s'(.*?)',", data, re.S)
+		videoUrl = re.findall('file:\s"(.*?)",', data, re.S)
 		if videoUrl:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]

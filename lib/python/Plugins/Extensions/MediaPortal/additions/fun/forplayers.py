@@ -1,19 +1,58 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
-from Plugins.Extensions.MediaPortal.resources.api import VuBox4PlayersApi, NetworkError, SYSTEMS
+from Plugins.Extensions.MediaPortal.resources.api import ForPlayersApi, SYSTEMS
 
-api = VuBox4PlayersApi()
+api = ForPlayersApi()
+
+default_cover = "file://%s/4players.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class forPlayersGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -28,12 +67,13 @@ class forPlayersGenreScreen(MPScreen):
 		self['title'] = Label("4Players")
 		self['ContentTitle'] = Label(_("Selection:"))
 		self.selectionListe = []
-		self.searchTxt = []
+		self.suchString = ''
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.selectionListe.append(("Aktuelle Videos", "1"))
 		self.selectionListe.append(("Meistgesehene Videos", "2"))
 		self.selectionListe.append(("Letzte Reviews", "3"))
@@ -44,17 +84,16 @@ class forPlayersGenreScreen(MPScreen):
 		self.selectionLink = self['liste'].getCurrent()[0][1]
 		print 'SelektionLink: ', self.selectionLink
 		if self.selectionLink == "4":
-			self.searchTxt = []
 			limit = int(150)
 			api.set_systems(SYSTEMS)
-			self.session.openWithCallback(self.mySearch, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = "", is_dialog=True, auto_text_init=False)
+			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False)
 		else:
 			self.session.open(forPlayersVideoScreen, self.selectionLink, '')
 
-	def mySearch(self, callback = None):
-		if callback != None:
-			self.searchTxt = callback
-			self.session.open(forPlayersVideoScreen, self.selectionLink, self.searchTxt)
+	def SuchenCallback(self, callback = None, entry = None):
+		if callback is not None and len(callback):
+			self.suchString = callback
+			self.session.open(forPlayersVideoScreen, self.selectionLink, self.suchString)
 
 class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 
@@ -81,7 +120,8 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 			"down"  : self.keyDown,
 			"left"  : self.keyLeft,
 			"right" : self.keyRight,
-			"info"  : self.keyInfo,
+			"blue" :  self.keyTxtPageDown,
+			"red" :  self.keyTxtPageUp,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown
 		}, -1)
@@ -90,6 +130,8 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 		self.lastpage = 999
 		self.keyLocked = True
 		self['title'] = Label("4Players")
+		self['F1'] = Label(_("Text-"))
+		self['F4'] = Label(_("Text+"))
 
  		self['Page'] = Label(_("Page:"))
 		self['page'] = Label("1")
@@ -101,6 +143,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 		self.onLayoutFinish.append(self.loadVideos)
 
 	def loadVideos(self):
+		self['page'].setText(str(self.page))
 		if self.selectionLink == '1':
 			try:
 				limit = int(50)
@@ -109,7 +152,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 				self.videosQueue.append((self.page, videos))
 				self.juengstTS = min((v['ts'] for v in videos))
 				self.showData(videos)
-			except NetworkError:
+			except:
 				self.videosListe.append(('4Players nicht verfügbar....', "", "", ""))
 				self.ml.setList(map(self._defaultlistleft, self.videosListe))
 		elif self.selectionLink == '2':
@@ -118,7 +161,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 				api.set_systems(SYSTEMS)
 				videos = api.get_popular_videos(limit)
 				self.showData(videos)
-			except NetworkError:
+			except:
 				self.videosListe.append(('4Players nicht verfügbar....', "", "", ""))
 				self.ml.setList(map(self._defaultlistleft, self.videosListe))
 		elif self.selectionLink == '3':
@@ -127,7 +170,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 				api.set_systems(SYSTEMS)
 				videos = api.get_latest_reviews(older_than=0)
 				self.showData(videos)
-			except NetworkError:
+			except:
 				self.videosListe.append(('4Players nicht verfügbar....', "", "", ""))
 				self.ml.setList(map(self._defaultlistleft, self.videosListe))
 		elif self.selectionLink == "4":
@@ -141,9 +184,9 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 						self.ml.setList(map(self._defaultlistleft, self.videosListe))
 					else:
 						self.showSearchData(videos)
-				except NetworkError:
+				except:
 					self.videosListe.append(('Keine Videos gefunden....', "", "", ""))
-			except NetworkError:
+			except:
 				self.videosListe.append(('4Players nicht verfügbar....', "", "", ""))
 				self.ml.setList(map(self._defaultlistleft, self.videosListe))
 
@@ -153,7 +196,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 			gameID = video['id']
 			videoPic = video['thumb']
 			gameStudio = video['studio']
-			self.videosListe.append((gameTitel, "empty", str(videoPic), gameTitel, gameID, gameStudio, 2))
+			self.videosListe.append((gameTitel, "empty", str(videoPic), gameTitel, gameID, gameStudio, gameTitel))
 		self.ml.setList(map(self._defaultlistleft, self.videosListe))
 		self.keyLocked = False
 
@@ -169,6 +212,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 			videoTitleConv = gameTitle + ' - ' + videoTitle + ' ' + '(' + videoDate + ')'
 			self.videosListe.append((videoTitleConv, videoStreamUrl, str(videoPic), videoTitle, gameId, gameStudio, gameTitle))
 		self.ml.setList(map(self._defaultlistleft, self.videosListe))
+		self.ml.moveToIndex(0)
 		self.keyLocked = False
 		self.th_ThumbsQuery(self.videosListe, 0, 1, 2, None, None, self.page, 999, mode=1)
 		self.showInfos()
@@ -177,8 +221,10 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 		Title = self['liste'].getCurrent()[0][0]
 		Image = self['liste'].getCurrent()[0][2]
 		self['name'].setText(str(Title))
-		self['page'].setText(str(self.page))
+		if self.selectionLink == '1':
+			self['page'].setText(str(self.page))
 		CoverHelper(self['coverArt']).getCover(Image)
+		self.keyInfo()
 
 	def loadPage(self):
 		if self.selectionLink == '1':
@@ -196,7 +242,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 						self.juengstTS = min((v['ts'] for v in videos))
 						self.videosQueue.append((self.page, videos))
 						self.showData(videos)
-				except NetworkError:
+				except:
 						self.videosListe.append(('4Players nicht verfügbar....', "", "", ""))
 						self.ml.setList(map(self._defaultlistleft, self.videosListe))
 
@@ -223,15 +269,19 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 				text.append('USK: ' + str(system['usk']))
 				text.append('\n')
 		sText = ''.join(text)
-		self.session.open(MessageBoxExt,_(sText), MessageBoxExt.TYPE_INFO)
+		self['handlung'].setText(sText)
+		#self.session.open(MessageBoxExt,sText, MessageBoxExt.TYPE_INFO)
 
 	def keyOK(self):
 		playersUrl = self['liste'].getCurrent()[0][1]
 		if playersUrl == "empty":
 			game_id = self['liste'].getCurrent()[0][4]
 			game_id_int = int(game_id)
-			searchVideos = api.get_videos_by_game(older_than=0, game_id=game_id)
-			self.session.open(forPlayersSearchListScreen, searchVideos)
+			try:
+				searchVideos = api.get_videos_by_game(older_than=0, game_id=game_id)
+				self.session.open(forPlayersSearchListScreen, searchVideos)
+			except:
+				pass
 		else:
 			streamUrl = str(playersUrl)
 			playersTitle = self['liste'].getCurrent()[0][3]
@@ -263,13 +313,16 @@ class forPlayersSearchListScreen(MPScreen, ThumbsHelper):
 			"down"  : self.keyDown,
 			"left"  : self.keyLeft,
 			"right" : self.keyRight,
-			"info"  : self.keyInfo,
+			"blue" :  self.keyTxtPageDown,
+			"red" :  self.keyTxtPageUp,
 		}, -1)
 
 		self.page = 1
 		self.lastpage = 999
 		self.keyLocked = True
 		self['title'] = Label("4Players")
+		self['F1'] = Label(_("Text-"))
+		self['F4'] = Label(_("Text+"))
 
  		self['Page'] = Label(_("Page:"))
 		self['page'] = Label("1")
@@ -303,6 +356,7 @@ class forPlayersSearchListScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(str(Title))
 		self['page'].setText(str(self.page))
 		CoverHelper(self['coverArt']).getCover(Image)
+		self.keyInfo()
 
 	def keyInfo(self):
 		text = []
@@ -327,7 +381,8 @@ class forPlayersSearchListScreen(MPScreen, ThumbsHelper):
 				text.append('USK: ' + str(system['usk']))
 				text.append('\n')
 		sText = ''.join(text)
-		self.session.open(MessageBoxExt,_(sText), MessageBoxExt.TYPE_INFO)
+		self['handlung'].setText(sText)
+		#self.session.open(MessageBoxExt,sText, MessageBoxExt.TYPE_INFO)
 
 	def keyOK(self):
 		playersUrl = self['liste'].getCurrent()[0][1]

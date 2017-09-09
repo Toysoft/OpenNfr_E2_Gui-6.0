@@ -1,6 +1,45 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+
+default_cover = "file://%s/wetplace.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class wetplaceGenreScreen(MPScreen):
 
@@ -38,6 +77,7 @@ class wetplaceGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.keyLocked = True
 		url = "http://www.wetplace.com/categories/"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
@@ -50,10 +90,10 @@ class wetplaceGenreScreen(MPScreen):
 				Title = Title.replace(' ','').replace('\n','')
 				self.genreliste.append((Title.title(), Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Popular", "http://www.wetplace.com/most-popular/", None))
-			self.genreliste.insert(0, ("Top Rated", "http://www.wetplace.com/top-rated/", None))
-			#self.genreliste.insert(0, ("Newest", "http://www.wetplace.com/", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Most Popular", "http://www.wetplace.com/most-popular", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "http://www.wetplace.com/top-rated", default_cover))
+			self.genreliste.insert(0, ("Newest", "http://www.wetplace.com", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False
@@ -135,20 +175,14 @@ class wetplaceFilmScreen(MPScreen, ThumbsHelper):
 		if search:
 			url = 'http://www.wetplace.com/search/%s/%s' % (str(self.page), str(search.group(1)))
 		else:
-			url = "%s%s/" % (self.Link, str(self.page))
+			url = "%s/%s" % (self.Link, str(self.page))
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		lastp = re.search('sd.tmp.items_total\s=\s(.*?[0-9]);', data, re.S)
-		if lastp:
-			lastp = round((float(lastp.group(1)) / 24) + 0.5)
-			self.lastpage = int(lastp)
-		else:
-			self.lastpage = 1
-		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-		Movies = re.findall('alt="(.*?)".*?data-inset="(.*?)".*?background-image.*?url\((.*?)\)', data, re.S)
+		self.getLastPage(data, 'id="pgn">(.*?)</nav>', '.*\/(\d+)')
+		Movies = re.findall('<article>.*?href="(.*?)"\stitle="(.*?)".*?data-src="(.*?)"', data, re.S)
 		if Movies:
-			for (Title, Url, Image) in Movies:
+			for (Url, Title, Image) in Movies:
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.ml.moveToIndex(0)
@@ -170,9 +204,8 @@ class wetplaceFilmScreen(MPScreen, ThumbsHelper):
 		getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall("video_url:\s'(.*?.mp4)/'", data, re.S)
+		videoPage = re.findall('<source src="(.*?)"', data, re.S)
 		if videoPage:
-			for url in videoPage:
-				self.keyLocked = False
-				Title = self['liste'].getCurrent()[0][0]
-				self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='wetplace')
+			self.keyLocked = False
+			Title = self['liste'].getCurrent()[0][0]
+			self.session.open(SimplePlayer, [(Title, videoPage[-1].replace('&amp;','&'))], showPlaylist=False, ltype='wetplace')

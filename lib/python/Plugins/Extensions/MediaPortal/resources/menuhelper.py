@@ -358,12 +358,8 @@ class MenuHelper(MPScreen):
 			genreLink = self['liste'].getCurrent()[0][1]
 			if self.mh_menuLevel in range(self.mh_menuMaxLevel+1):
 				if self.mh_menuLevel == 0:
-					if self.mh_red_label:
-						self['F1'].setText(_('Exit'))
 					self.mh_genreName[self.mh_menuLevel] = genreName
 				else:
-					if self.mh_red_label:
-						self['F1'].setText(_('Back'))
 					self.mh_genreName[self.mh_menuLevel] = ':'+genreName
 
 				self.mh_genreUrl[self.mh_menuLevel] = genreLink

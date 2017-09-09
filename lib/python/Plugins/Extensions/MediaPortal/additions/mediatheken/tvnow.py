@@ -304,9 +304,9 @@ class tvnowEpisodenScreen(MPScreen, ThumbsHelper):
 			try:
 				for nodex in node["container"]["movies"]["items"]:
 					try:
-						if nodex["free"]:
+						if nodex["free"] and not nodex["isDrm"]:
 							try:
-								image = "http://autoimg.rtl.de/rtlnow/%s/660x660/formatimage.jpg" % nodex["pictures"]["default"][0]["id"]
+								image = "http://ais.tvnow.de/rtlnow/%s/660x660/formatimage.jpg" % nodex["pictures"]["default"][0]["id"]
 							except:
 								image = self.Image
 							try:
@@ -336,11 +336,13 @@ class tvnowEpisodenScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_("Selection:") + " " + self.Name + ":" + Name)
 
 	def keyOK(self):
+		exist = self['liste'].getCurrent()
+		if self.keyLocked or exist == None:
+			return
 		id = self['liste'].getCurrent()[0][1]
-		if self.keyLocked or id == None:
+		if not id:
 			return
 		url = 'http://api.tvnow.de/v3/movies/%s?fields=manifest' % id
-		print url
 		getPage(url, agent=nowAgent).addCallback(self.get_stream).addErrback(self.dataError)
 
 	def get_stream(self, data):
@@ -349,7 +351,7 @@ class tvnowEpisodenScreen(MPScreen, ThumbsHelper):
 		dashclear = nowdata["manifest"]["dashclear"]
 		url = str(dashclear.replace('dash', 'hls').replace('.mpd','fairplay.m3u8'))
 		getPage(url, agent=nowAgent).addCallback(self.loadplaylist, url).addErrback(self.dataError)
-		
+
 	def loadplaylist(self, data, baseurl):
 		videoPrio = int(config.mediaportal.videoquali_others.value)
 		if videoPrio == 2:
@@ -357,14 +359,14 @@ class tvnowEpisodenScreen(MPScreen, ThumbsHelper):
 		elif videoPrio == 1:
 			bw = 950000
 		else:
-			bw = 600000		
+			bw = 600000
 		self.bandwith_list = []
 		match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n(.*?m3u8)', data, re.S)
 		for each in match_sec_m3u8:
 			bandwith,url = each
 			self.bandwith_list.append((int(bandwith),url))
 		_, best = min((abs(int(x[0]) - bw), x) for x in self.bandwith_list)
-		
+
 		url = baseurl.replace('fairplay.m3u8', '') + best[1]
 		Name = self['liste'].getCurrent()[0][0]
 		mp_globals.player_agent = nowAgent

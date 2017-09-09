@@ -41,6 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import TwAgentHelper
 from Plugins.Extensions.MediaPortal.resources.packer import unpack, detect
 default_cover = "file://%s/hqporner.png" % (config.mediaportal.iconcachepath.value + "logos")
+hqAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
 class hqpornerGenreScreen(MPScreen):
 
@@ -143,7 +144,7 @@ class hqpornerSubGenreScreen(MPScreen):
 
 	def loadPage(self):
 		url = "http://hqporner.com/" + self.Link
-		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
+		getPage(url, agent=hqAgent).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		raw = re.findall('class="box\sfeature">\s+<a href="(.*?)".*?img\ssrc="(.*?)"[\s]?alt="(.*?)"', data, re.S)
@@ -221,7 +222,7 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 			url = "http://hqporner.com/?s=%s&p=%s" % (self.Link, str(self.page))
 		else:
 			url = self.Link + "/" + str(self.page)
-		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
+		getPage(url, agent=hqAgent).addCallback(self.parseData).addErrback(self.dataError)
 
 	def parseData(self, data):
 		if re.match('.*?NO RESULTS ON YOUR REQUEST', data, re.S|re.I):
@@ -234,6 +235,8 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 			if raw:
 				for (link, image, title, age) in raw:
 					link = "http://hqporner.com" + link
+					if image.startswith('//'):
+						image = 'http:' + image
 					title = title.title()
 					self.filmliste.append((decodeHtml(title), link, image, age))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -247,7 +250,7 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(title)
 		coverUrl = self['liste'].getCurrent()[0][2]
 		age = self['liste'].getCurrent()[0][3]
-		self['handlung'].setText("Date: %s" % age)
+		self['handlung'].setText("Runtime: %s" % age)
 		CoverHelper(self['coverArt']).getCover(coverUrl)
 
 	def keyOK(self):
@@ -256,25 +259,32 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 		Link = self['liste'].getCurrent()[0][1]
 		if Link == None:
 			return
-		getPage(Link).addCallback(self.get_url).addErrback(self.dataError)
+		getPage(Link, agent=hqAgent, headers={'Referer': 'http://hqporner.com'}).addCallback(self.get_url).addErrback(self.dataError)
 
 	def get_url(self, data):
-		Link = re.findall('<iframe\swidth="\d+"\sheight="\d+"\ssrc="(http://(.*?)\/.*?)"', data)
-		if Link and re.match('http://hqporner.com', Link[0][0]):
-			getPage(Link[0][0]).addCallback(self.getVideoLink).addErrback(self.dataError)
-		elif Link and re.match('http://bemywife\.cc', Link[0][0]):
-			getPage(Link[0][0]).addCallback(self.bemywife).addErrback(self.dataError)
-		elif Link and re.match('http://mydaddy\.cc', Link[0][0]):
-			getPage(Link[0][0]).addCallback(self.mydaddy).addErrback(self.dataError)
-		elif Link and re.match('http://5\.79\.64\.169', Link[0][0]):
-			getPage(Link[0][0]).addCallback(self.leaseweb).addErrback(self.dataError)
-		elif Link and isSupportedHoster(Link[0][1].replace('www.',''), True):
-			get_stream_link(self.session).check_link(Link[0][0], self.got_link)
+		Link = re.findall('<iframe\swidth="\d+"\sheight="\d+"\ssrc="((?:http:|)//(.*?)\/.*?)"', data, re.S)
+		if Link:
+			if Link[0][0].startswith('//'):
+				url = 'http:' + Link[0][0]
+			else:
+				url = Link[0][0]
+			if re.match('.*?//hqporner.com', url):
+				getPage(url, agent=hqAgent).addCallback(self.getVideoLink).addErrback(self.dataError)
+			elif re.match('.*?//bemywife\.cc', url):
+				getPage(url, agent=hqAgent).addCallback(self.bemywife).addErrback(self.dataError)
+			elif re.match('.*?//mydaddy\.cc', url):
+				getPage(url, agent=hqAgent).addCallback(self.mydaddy).addErrback(self.dataError)
+			elif re.match('.*?//hqwo\.cc', url):
+				getPage(url, agent=hqAgent).addCallback(self.leaseweb).addErrback(self.dataError)
+			elif re.match('.*?//5\.79\.64\.169', url):
+				getPage(url, agent=hqAgent).addCallback(self.leaseweb).addErrback(self.dataError)
+			elif isSupportedHoster(Link[0][1].replace('www.',''), True):
+				get_stream_link(self.session).check_link(url, self.got_link)
 		else:
 			message = self.session.open(MessageBoxExt, _("No supported streams found!"), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def bemywife(self, data):
-		stream_url = re.findall('file:\s"(.*?(\d+).mp4)"', data)
+		stream_url = re.findall('file:\s"(.*?(\d+).mp4)"', data, re.S)
 		if stream_url:
 			stream_url.sort(key=lambda t : t[1], reverse=False)
 			if 'http://' in stream_url[-1][0]:
@@ -289,23 +299,23 @@ class hqpornerListScreen(MPScreen, ThumbsHelper):
 		stream_url = re.findall('file:\s"(.*?(\d+).mp4)"', data)
 		if stream_url:
 			stream_url.sort(key=lambda t : t[1], reverse=False)
-			if 'http://' in stream_url[-1][0]:
-				link = stream_url[-1][0]
+			if stream_url[-1][0].startswith('//'):
+				link = 'http:' + stream_url[-1][0]
 			else:
-				link = "http://mydaddy.cc" + stream_url[-1][0]
+				link = stream_url[-1][0]
 			self.got_link(link)
 		else:
 			message = self.session.open(MessageBoxExt, _("No supported streams found!"), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def leaseweb(self, data):
-		stream_url = re.findall('src="(http://[\d\.]+/runplayer/.*?)"', data)
+		stream_url = re.findall('src=["|\'](http://[A-Za-z0-9\.]+/runplayer/.*?)["|\']', data, re.S)
 		if stream_url:
-			getPage(stream_url[0]).addCallback(self.leaseweblink).addErrback(self.dataError)
+			getPage(stream_url[0], agent=hqAgent).addCallback(self.leaseweblink).addErrback(self.dataError)
 		else:
 			message = self.session.open(MessageBoxExt, _("No supported streams found!"), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def leaseweblink(self, data):
-		stream_url = re.findall('file":\s"(.*?mp4)"', data)
+		stream_url = re.findall('file":\s"(.*?mp4)"', data, re.S)
 		if stream_url:
 			self.got_link(stream_url[-1])
 		else:

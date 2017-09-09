@@ -95,6 +95,7 @@ class redtubeGenreScreen(MPScreen):
 		if Cats:
 			for (Url, Title, Image) in Cats:
 				Url = "http://www.redtube.com" + Url + '?page='
+				Title = Title.replace('&amp;','&')
 				if Image.startswith('//'):
 					Image = 'http:' + Image
 				self.genreliste.append((Title, Url, Image))

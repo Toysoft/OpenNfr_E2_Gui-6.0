@@ -13,12 +13,7 @@ from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPag
 try:
 	from Plugins.Extensions.MediaPortal.resources import cfscrape
 except:
-	try:
-		from Plugins.Extensions.MediaPortal.resources import cfscrape_old as cfscrape
-	except:
-		cfscrapeModule = False
-	else:
-		cfscrapeModule = True
+	cfscrapeModule = False
 else:
 	cfscrapeModule = True
 

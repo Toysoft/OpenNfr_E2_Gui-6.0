@@ -39,12 +39,21 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-BASEURL = "https://chaturbate.com/"
+BASEURL = "https://en.bongacams.com/"
 
-config.mediaportal.chaturbate_filter = ConfigText(default="all", fixed_size=False)
-default_cover = "file://%s/chaturbate.png" % (config.mediaportal.iconcachepath.value + "logos")
+default_cover = "file://%s/bongacams.png" % (config.mediaportal.iconcachepath.value + "logos")
+bongacamsAgent = "Mozilla/5.0 (iPad; CPU OS 8_1_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12B466 Safari/600.1.4"
+ck = {}
+json_headers = {
+	'Accept':'application/json',
+	'Accept-Language':'en,en-US;q=0.7,en;q=0.3',
+	'X-Requested-With':'XMLHttpRequest',
+	'Content-Type':'application/x-www-form-urlencoded',
+	'Referer':'https://en.bongacams.com/',
+	'Origin':'https://en.bongacams.com',
+	}
 
-class chaturbateGenreScreen(MPScreen):
+class bongacamsGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
@@ -62,14 +71,11 @@ class chaturbateGenreScreen(MPScreen):
 			"ok" : self.keyOK,
 			"0" : self.closeAll,
 			"cancel" : self.keyCancel,
-			"yellow": self.keyFilter
 		}, -1)
 
-		self.filter = config.mediaportal.chaturbate_filter.value
 
-		self['title'] = Label("Chaturbate.com")
+		self['title'] = Label("BongaCams.com")
 		self['ContentTitle'] = Label("Genre:")
-		self['F3'] = Label(self.filter)
 
 		self.keyLocked = True
 		self.suchString = ''
@@ -82,43 +88,17 @@ class chaturbateGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		CoverHelper(self['coverArt']).getCover(default_cover)
-		if config.mediaportal.chaturbate_filter.value == "all":
-			filter = ""
-		else:
-			filter = config.mediaportal.chaturbate_filter.value + "/"
-		url = BASEURL + 'tags/' + filter
-		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
+		getPage(BASEURL).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		self.genreliste = []
-		parse = re.search('id="tag_table">(.*?)class="paging">', data, re.S)
-		if parse:
-			tags = re.findall('class="tag_row">.{0,5}<span class="tag">.{0,5}<a\shref="(.*?)"\stitle="(.*?)"', parse.group(1), re.S)
-		if tags:
-			for (Url, Title) in tags:
-				self.genreliste.append(("#"+Title, Url.strip('/')))
+		parse = re.search('categories_list(.*?)class="panel_item">', data, re.S)
+		Cats = re.findall('href="\/(.*?)">(.*?)</a', parse.group(1), re.S)
+		if Cats:
+			for (Url, Title) in Cats:
+				self.genreliste.append((Title, Url))
 		self.genreliste.sort()
-		self.genreliste.insert(0, ("Exhibitionist", "exhibitionist-cams"))
-		self.genreliste.insert(0, ("Other Region", "other-region-cams"))
-		self.genreliste.insert(0, ("South American", "south-american-cams"))
-		self.genreliste.insert(0, ("Asian", "asian-cams"))
-		self.genreliste.insert(0, ("Philippines", "philippines-cams"))
-		self.genreliste.insert(0, ("Euro Russian", "euro-russian-cams"))
-		self.genreliste.insert(0, ("North American", "north-american-cams"))
-		self.genreliste.insert(0, ("Mature (50+)", "mature-cams"))
-		self.genreliste.insert(0, ("30 to 50", "30to50-cams"))
-		self.genreliste.insert(0, ("20 to 30", "20to30-cams"))
-		self.genreliste.insert(0, ("18 to 21", "18to21-cams"))
-		self.genreliste.insert(0, ("Teen (18+)", "teen-cams"))
-		self.genreliste.insert(0, ("HD", "hd-cams"))
-		if (self.filter == "female" or self.filter == "couple"):
-			self.genreliste.insert(0, ("Couple", "couple-cams"))
-			self.genreliste.insert(0, ("Female", "female-cams"))
-		elif self.filter == "male":
-			self.genreliste.insert(0, ("Male", "male-cams"))
-		elif self.filter == "trans":
-			self.genreliste.insert(0, ("Transsexual", "trans-cams"))
-		self.genreliste.insert(0, ("Featured", ""))
+		self.genreliste.insert(0, ("Couple", "couples"))
+		self.genreliste.insert(0, ("Female", "females"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
 
@@ -127,42 +107,13 @@ class chaturbateGenreScreen(MPScreen):
 			return
 		Name = self['liste'].getCurrent()[0][0]
 		Link = self['liste'].getCurrent()[0][1]
-		self.session.open(chaturbateFilmScreen, Link, Name)
+		self.session.open(bongacamsFilmScreen, Link, Name)
 
-	def keyFilter(self):
-		if self.filter == "all":
-			self.filter = "female"
-			config.mediaportal.chaturbate_filter.value = "female"
-		elif self.filter == "female":
-			self.filter = "couple"
-			config.mediaportal.chaturbate_filter.value = "couple"
-		elif self.filter == "couple":
-			self.filter = "male"
-			config.mediaportal.chaturbate_filter.value = "male"
-		elif self.filter == "male":
-			self.filter = "trans"
-			config.mediaportal.chaturbate_filter.value = "trans"
-		elif self.filter == "trans":
-			self.filter = "all"
-			config.mediaportal.chaturbate_filter.value = "all"
-		else:
-			self.filter = "all"
-			config.mediaportal.chaturbate_filter.value = "all"
-
-		config.mediaportal.chaturbate_filter.save()
-		configfile.save()
-		self['F3'].setText(self.filter)
-		self.layoutFinished()
-
-class chaturbateFilmScreen(MPScreen, ThumbsHelper):
+class bongacamsFilmScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		if config.mediaportal.chaturbate_filter.value == "all":
-			self.filter = ""
-		else:
-			self.filter = config.mediaportal.chaturbate_filter.value + "/"
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
@@ -199,7 +150,7 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 			"green" : self.keyPageNumber
 		}, -1)
 
-		self['title'] = Label("Chaturbate.com")
+		self['title'] = Label("BongaCams.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F1'] = Label(_("Text-"))
 		self['F2'] = Label(_("Page"))
@@ -220,29 +171,30 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		if self.Name == "Featured":
-			url = BASEURL + "?page=%s" % self.page
+		if self.Link == "couples":
+			livetab = "couples"
+			category = ""
 		else:
-			if self.Name == "Female" or self.Name == "Couple" or self.Name == "Male" or self.Name == "Transsexual" or "tag/" in self.Link:
-				url = BASEURL + "%s/?page=%s" % (self.Link, self.page)
-			else:
-				url = BASEURL + "%s/%s?page=%s" % (self.Link, self.filter, self.page)
+			livetab = "females"
+			category = self.Link
+		url = BASEURL + "tools/listing_v3.php?tag=&page=" + str(self.page) + "&lang=&countryId=&countryLangs=&online_only=1&category=" + category + "&livetab=" + livetab + "&pageCount=&mls_width=&_save=1&model_search%5Bper_page%5D=20&model_search%5Bdisplay%5D=auto&model_search%5Bth_type%5D=live&mls_th_per_row=5&model_search%5Bbase_sort%5D=camscore"
 		self.filmQ.put(url)
 		if not self.eventL.is_set():
 			self.eventL.set()
-			self.loadPageQueued()
+			self.loadPageQueued(headers=json_headers)
 
 	def loadPageData(self, data):
 		self.ml.moveToIndex(0)
-		self.getLastPage(data, 'class="paging">(.*?)</ul>')
-		Movies = re.findall('<li>.<a\shref="(.*?)".*?<img\ssrc=".*?".*?gender(\w)">(\d+)</span>.*?<li\stitle(?:="(.*?)"|)>.*?location.*?>(.*?)</li>.*?class="cams">(.*?)</li>.*?</div>.*?</li>', data, re.S)
-		if Movies:
-			for (Url, Gender, Age, Description, Location, Viewers) in Movies:
-				if not Description:
-					Description = ""
-				Title = Url.strip('\/')
-				Image = "https://cbjpeg.stream.highwebmedia.com/stream?room=" + Url.strip('\/') + "&f=" + str(random.random())
-				self.filmliste.append((Title, Url, Image, decodeHtml(Description), Gender, Age, decodeHtml(Location), Viewers))
+		jsondata = json.loads(data)
+		self.lastpage = jsondata["page_count"]
+		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
+		for node in jsondata["models"]:
+			Title = str(node["display_name"])
+			Url = str(node["username"])
+			Image = 'http:' + str(node["live_image"])
+			Status = str(node["about_me"])
+			if not node["is_away"] and not str(node["room"])=="private" and not str(node["room"])=="vip":
+				self.filmliste.append((Title, Url, Image, Status))
 		if len(self.filmliste):
 			self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -261,35 +213,30 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		if Url == None:
 			return
 		title = self['liste'].getCurrent()[0][0]
-		desc = self['liste'].getCurrent()[0][3]
-		gender = self['liste'].getCurrent()[0][4]
-		age = self['liste'].getCurrent()[0][5]
-		location = self['liste'].getCurrent()[0][6]
-		viewers = self['liste'].getCurrent()[0][7]
+		status = self['liste'].getCurrent()[0][3]
 		self['name'].setText(title)
-		if gender == "f":
-			gender = "female"
-		elif gender == "m":
-			gender = "male"
-		elif gender == "c":
-			gender = "couple"
-		elif gender == "s":
-			gender = "transsexual"
-		self['handlung'].setText("Age: %s, Gender: %s, Location: %s\n%s\n%s" % (age, gender, location, viewers, desc))
+		self['handlung'].setText(status)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		name = self['liste'].getCurrent()[0][0]
+		self.username = self['liste'].getCurrent()[0][1]
 		self['name'].setText(_('Please wait...'))
-		url = "https://chaturbate.com/" + name
-		getPage(url).addCallback(self.play_stream).addErrback(self.dataError)
+		url = BASEURL + self.username
+		getPage(url, agent=bongacamsAgent, cookies=ck).addCallback(self.getStream).addErrback(self.dataError)
+
+	def getStream(self, data):
+		amf = re.search('.*?MobileChatService\(\'\/(.*?)\'\+\$', data, re.S).group(1)
+		url = BASEURL + amf + str(random.randint(2100000, 3200000))
+		getPage(url, agent=bongacamsAgent, cookies=ck, method='POST', postdata='method=getRoomData&args%5B%5D='+self.username+'&args%5B%5D=false', headers=json_headers).addCallback(self.play_stream).addErrback(self.dataError)
 
 	def play_stream(self, data):
-		url = re.findall('(http[s]?://edge.*?.stream.highwebmedia.com.*?m3u8)', data)
+		url = re.findall('"videoServerUrl":"(.*?)"', data, re.S)
 		if url:
+			url = 'https:' + url[-1].replace('\/','/') + '/hls/stream_' + self.username + '/chunks.m3u8'
 			title = self['liste'].getCurrent()[0][0]
 			self['name'].setText(title)
-			self.session.open(SimplePlayer, [(title, url[0])], showPlaylist=False, ltype='chaturbate', forceGST=True)
+			mp_globals.player_agent = bongacamsAgent
+			self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='bongacams', forceGST=True)
 		else:
 			self.session.open(MessageBoxExt, _("Cam is currently offline."), MessageBoxExt.TYPE_INFO)

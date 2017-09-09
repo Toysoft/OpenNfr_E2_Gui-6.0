@@ -120,6 +120,13 @@ except:
 			mp_globals.fakeScale = False
 
 try:
+	import requests
+except:
+	requestsModule = False
+else:
+	requestsModule = True
+
+try:
 	import mechanize
 except:
 	mechanizeModule = False
@@ -188,8 +195,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="818"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="8.1.8"))
+config.mediaportal.version = NoSave(ConfigText(default="901"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.1"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -4838,6 +4845,7 @@ def _status(data):
 		for (plugin, version, status) in statusdata:
 			mp_globals.status.append((plugin,version,status))
 
+from resources.simple_lru_cache import SimpleLRUCache
 mp_globals.lruCache = SimpleLRUCache(50, config.mediaportal.watchlistpath.value + 'mp_lru_cache')
 mp_globals.yt_lruCache = SimpleLRUCache(100, config.mediaportal.watchlistpath.value + 'mp_yt_lru_cache')
 

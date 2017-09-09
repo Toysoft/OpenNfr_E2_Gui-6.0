@@ -1,4 +1,41 @@
 ﻿# -*- coding: utf-8 -*-
+###############################################################################################
+#
+#    MediaPortal for Dreambox OS
+#
+#    Coded by MediaPortal Team (c) 2013-2017
+#
+#  This plugin is open source but it is NOT free software.
+#
+#  This plugin may only be distributed to and executed on hardware which
+#  is licensed by Dream Property GmbH. This includes commercial distribution.
+#  In other words:
+#  It's NOT allowed to distribute any parts of this plugin or its source code in ANY way
+#  to hardware which is NOT licensed by Dream Property GmbH.
+#  It's NOT allowed to execute this plugin and its source code or even parts of it in ANY way
+#  on hardware which is NOT licensed by Dream Property GmbH.
+#
+#  This applies to the source code as a whole as well as to parts of it, unless
+#  explicitely stated otherwise.
+#
+#  If you want to use or modify the code or parts of it,
+#  you have to keep OUR license and inform us about the modifications, but it may NOT be
+#  commercially distributed other than under the conditions noted above.
+#
+#  As an exception regarding execution on hardware, you are permitted to execute this plugin on VU+ hardware
+#  which is licensed by satco europe GmbH, if the VTi image is used on that hardware.
+#
+#  As an exception regarding modifcations, you are NOT permitted to remove
+#  any copy protections implemented in this plugin or change them for means of disabling
+#  or working around the copy protections, unless the change has been explicitly permitted
+#  by the original authors. Also decompiling and modification of the closed source
+#  parts is NOT permitted.
+#
+#  Advertising with this plugin is NOT allowed.
+#  For other uses, permission from the authors is necessary.
+#
+###############################################################################################
+
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 import Queue
@@ -7,26 +44,7 @@ from Plugins.Extensions.MediaPortal.resources.youtubelink import YoutubeLink
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
-HWNET_Version = "Hans-Wurst.net v0.90"
-
-HWNET_siteEncoding = 'utf-8'
-
-"""
-Sondertastenbelegung:
-
-Genre Auswahl:
-	KeyCancel		: Menu Up / Exit
-	KeyOK			: Menu Down / Select
-
-Doku Auswahl:
-	Bouquet +/-				: Seitenweise blättern in 1er Schritten Up/Down
-	'1', '4', '7',
-	'3', 6', '9'			: blättern in 2er, 5er, 10er Schritten Down/Up
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-
-Stream Auswahl:
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-"""
+HWNET_Version = "Hans-Wurst.net"
 
 class show_HWNET_Genre(MenuHelper):
 
@@ -39,10 +57,9 @@ class show_HWNET_Genre(MenuHelper):
 		self.onLayoutFinish.append(self.mh_initMenu)
 
 	def mh_parseData(self, data):
-		print 'parseData:'
 		menu = re.search('class="tagcloud">(.*?)</div><div', data, re.S)
 		if menu:
-			entrys = re.findall("<a href='http://www.hans-wurst.net(.*?)/'.*?>(.*?)</a>", menu.group(1))
+			entrys = re.findall('<a href="http://www.hans-wurst.net(.*?)/".*?>(.*?)</a>', menu.group(1))
 		else:
 			entrys = []
 
@@ -50,7 +67,6 @@ class show_HWNET_Genre(MenuHelper):
 
 	def mh_callGenreListScreen(self):
 		genreurl = self.mh_baseUrl+self.mh_genreUrl[0]
-		print 'GenreURL:',genreurl
 		self.session.open(HWNET_FilmListeScreen, genreurl, self.mh_genreTitle)
 
 class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
@@ -63,7 +79,6 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		print path
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -88,12 +103,6 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 			"leftRepeated" : self.keyLeftRepeated,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"1" : self.key_1,
-			"3" : self.key_3,
-			"4" : self.key_4,
-			"6" : self.key_6,
-			"7" : self.key_7,
-			"9" : self.key_9,
 			"0"	: self.closeAll,
 			"blue" :  self.keyTxtPageDown,
 			"red" :  self.keyTxtPageUp
@@ -121,7 +130,7 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self.dokusListe = []
 		self.page = 0
-		self.pages = 0;
+		self.lastpage = 0;
 
 		self.setGenreStrTitle()
 
@@ -132,39 +141,32 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 
 	def setGenreStrTitle(self):
 		genreName = "%s%s" % (self.genreTitle,self.genreName)
-		#print genreName
 		self['ContentTitle'].setText(genreName)
 
 	def loadPage(self):
-		print "loadPage:"
 		url = "%s/seite/%d/" % (self.genreLink, max(self.page,1))
 
 		if self.page:
-			self['page'].setText("%d / %d" % (self.page,self.pages))
+			self['page'].setText("%d / %d" % (self.page,self.lastpage))
 
 		self.filmQ.put(url)
 		if not self.eventL.is_set():
 			self.eventL.set()
 			self.loadPageQueued()
-		print "eventL ",self.eventL.is_set()
 
 	def loadPageQueued(self):
-		print "loadPageQueued:"
 		self['name'].setText(_('Please wait...'))
 		while not self.filmQ.empty():
 			url = self.filmQ.get_nowait()
-		print url
 		twAgentGetPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def dataError(self, error):
 		self.eventL.clear()
-		print "dataError:"
 		printl(error,self,"E")
 		self.dokusListe.append((_("No dokus found!"),"","",""))
 		self.ml.setList(map(self._defaultlistleft, self.dokusListe))
 
 	def loadPageData(self, data):
-		print "loadPageData:"
 		self.dokusListe = []
 		a = 0
 		l = len(data)
@@ -186,23 +188,20 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 				break
 
 		if self.dokusListe:
-			print "Dokus found !"
 			if not self.page:
 				m = re.search('>Seite 1 von (\d+)<', data)
 				if m:
-					self.pages = int(m.group(1))
+					self.lastpage = int(m.group(1))
 				else:
-					self.pages = 1
+					self.lastpage = 1
 				self.page = 1
 
-			print "Page: %d / %d" % (self.page,self.pages)
-			self['page'].setText("%d / %d" % (self.page,self.pages))
+			self['page'].setText("%d / %d" % (self.page,self.lastpage))
 
 			self.ml.setList(map(self._defaultlistleft, self.dokusListe))
-			self.th_ThumbsQuery(self.dokusListe, 0, 1, 2, None, None, self.page, self.pages, mode=1)
+			self.th_ThumbsQuery(self.dokusListe, 0, 1, 2, None, None, self.page, self.lastpage, mode=1)
 			self.loadPicQueued()
 		else:
-			print "No dokus found!"
 			self.dokusListe.append((_("No dokus found!"),"","",""))
 			self.ml.setList(map(self._defaultlistleft, self.dokusListe))
 			if self.filmQ.empty():
@@ -211,17 +210,11 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 				self.loadPageQueued()
 
 	def loadPic(self):
-		print "loadPic:"
-
 		if self.picQ.empty():
 			self.eventP.clear()
-			print "picQ is empty"
 			return
 
 		if self.updateP:
-			print "Pict. or descr. update in progress"
-			print "eventP: ",self.eventP.is_set()
-			print "updateP: ",self.updateP
 			return
 
 		while not self.picQ.empty():
@@ -231,27 +224,20 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(streamName)
 		streamPic = self['liste'].getCurrent()[0][2]
 		desc = self['liste'].getCurrent()[0][3]
-		#print "streamName: ",streamName
-		#print "streamPic: ",streamPic
-		#print "streamUrl: ",streamUrl
 		self.getHandlung(desc)
 		self.updateP = 1
 		CoverHelper(self['coverArt'], self.ShowCoverFileExit).getCover(streamPic)
 
 	def getHandlung(self, desc):
-		print "getHandlung:"
 		if desc == None:
-			print "No Infos found !"
 			self['handlung'].setText(_("No further information available!"))
 			return
 		self.setHandlung(desc)
 
 	def setHandlung(self, data):
-		print "setHandlung:"
 		self['handlung'].setText(decodeHtml(data))
 
 	def ShowCoverFileExit(self):
-		print "showCoverExitFile:"
 		self.updateP = 0;
 		self.keyLocked	= False
 		if not self.filmQ.empty():
@@ -261,12 +247,10 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 			self.loadPic()
 
 	def loadPicQueued(self):
-		print "loadPicQueued:"
 		self.picQ.put(None)
 		if not self.eventP.is_set():
 			self.eventP.set()
 		self.loadPic()
-		print "eventP: ",self.eventP.is_set()
 
 	def keyOK(self):
 		if (self.keyLocked|self.eventL.is_set()):
@@ -277,113 +261,23 @@ class HWNET_FilmListeScreen(MPScreen, ThumbsHelper):
 			playIdx = self['liste'].getSelectedIndex()
 			)
 
-	def keyUpRepeated(self):
-		#print "keyUpRepeated"
-		if self.keyLocked:
-			return
-		self['liste'].up()
-
-	def keyDownRepeated(self):
-		#print "keyDownRepeated"
-		if self.keyLocked:
-			return
-		self['liste'].down()
-
-	def key_repeatedUp(self):
-		#print "key_repeatedUp"
-		if self.keyLocked:
-			return
-		self.loadPicQueued()
-
-	def keyLeftRepeated(self):
-		if self.keyLocked:
-			return
-		self['liste'].pageUp()
-
-	def keyRightRepeated(self):
-		if self.keyLocked:
-			return
-		self['liste'].pageDown()
-
-	def keyPageDown(self):
-		#print "keyPageDown()"
-		self.keyPageDownFast(1)
-
-	def keyPageUp(self):
-		#print "keyPageUp()"
-		self.keyPageUpFast(1)
-
-	def keyPageUpFast(self,step):
-		if self.keyLocked:
-			return
-		#print "keyPageUpFast: ",step
-		oldpage = self.page
-		if (self.page + step) <= self.pages:
-			self.page += step
-		else:
-			self.page = 1
-		#print "Page %d/%d" % (self.page,self.pages)
-		if oldpage != self.page:
-			self.loadPage()
-
-	def keyPageDownFast(self,step):
-		if self.keyLocked:
-			return
-		print "keyPageDownFast: ",step
-		oldpage = self.page
-		if (self.page - step) >= 1:
-			self.page -= step
-		else:
-			self.page = self.pages
-		#print "Page %d/%d" % (self.page,self.pages)
-		if oldpage != self.page:
-			self.loadPage()
-
-	def key_1(self):
-		#print "keyPageDownFast(2)"
-		self.keyPageDownFast(2)
-
-	def key_4(self):
-		#print "keyPageDownFast(5)"
-		self.keyPageDownFast(5)
-
-	def key_7(self):
-		#print "keyPageDownFast(10)"
-		self.keyPageDownFast(10)
-
-	def key_3(self):
-		#print "keyPageUpFast(2)"
-		self.keyPageUpFast(2)
-
-	def key_6(self):
-		#print "keyPageUpFast(5)"
-		self.keyPageUpFast(5)
-
-	def key_9(self):
-		#print "keyPageUpFast(10)"
-		self.keyPageUpFast(10)
-
 class HWNETPlayer(SimplePlayer):
 
 	def __init__(self, session, playList, playIdx):
-		print "HWNETPlayer:"
-		SimplePlayer.__init__(self, session, playList, playIdx=playIdx, playAll=True, listTitle="FUNNY-VIDEOCLIPS.DE", ltype='funny-videoclips.de')
+		SimplePlayer.__init__(self, session, playList, playIdx=playIdx, playAll=True, listTitle="Hans-Wurst.net", ltype='hanswurst')
 
 	def getVideo(self):
 		url = self.playList[self.playIdx][1]
 		twAgentGetPage(url).addCallback(self.parseStream).addErrback(self.dataError)
 
 	def parseStream(self, data):
-		print "parseStream:"
 		m2 = re.search('//www.youtube.*?com/(embed|v)/(.*?)(\?|" |&amp)', data)
 		if m2:
-			print "Streams found"
 			dhVideoId = m2.group(2)
 			dhTitle = self.playList[self.playIdx][0]
 			imgurl =  self.playList[self.playIdx][2]
 			YoutubeLink(self.session).getLink(self.playStream, self.ytError, dhTitle, dhVideoId, imgurl=imgurl)
 		else:
-			print "No stream found"
 			self.dataError("Kein abspielbarer Videostream gefunden!")
 
 	def ytError(self, error):

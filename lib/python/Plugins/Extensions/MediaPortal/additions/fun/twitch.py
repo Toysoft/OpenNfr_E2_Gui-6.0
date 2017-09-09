@@ -261,4 +261,4 @@ class twitchStreamQuality(MPScreen):
 			return
 		url = self['liste'].getCurrent()[0][1]
 		title = self.game + " - " + self.channel
-		self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='twitch')
+		self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='twitch', forceGST=True)

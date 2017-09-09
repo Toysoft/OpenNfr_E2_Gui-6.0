@@ -332,6 +332,8 @@ class youtubeGenreScreen(MenuHelper):
 			('VEVO Music', 'https://www.youtube.com/user/VEVO'),
 			('KinoCheck', 'https://www.youtube.com/user/KinoCheck'),
 			('Rocket Beans TV', 'https://www.youtube.com/user/ROCKETBEANSTV'),
+			('Daheimkino', 'https://www.youtube.com/user/Daheimkino'),
+			('E2WORLD', 'https://www.youtube.com/channel/UC95hFgcA4hzKcOQHiEFX3UA'),
 			]
 		self.SelectedChannels.sort(key=lambda t : t[0].lower())
 		self.subCatSelectedChannels = []
@@ -1042,10 +1044,12 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		self.filmliste = []
 		if self.apiUrlv3:
 			def getThumbnail(thumbnails):
-				if 'medium' in thumbnails:
-					return str(thumbnails['medium']['url'])
+				if 'standard' in thumbnails:
+					return str(thumbnails['standard']['url'])
 				elif 'high' in thumbnails:
 					return str(thumbnails['high']['url'])
+				elif 'medium' in thumbnails:
+					return str(thumbnails['medium']['url'])
 				else:
 					return str(thumbnails['default']['url'])
 
@@ -1204,6 +1208,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 
 					if img and img.startswith('//'):
 						img = 'http:' + img
+					img = img.replace('&amp;','&')
 
 					desc = ''
 					if not vidcnt and 'list=' in vid and not '/videos?' in self.stvLink:

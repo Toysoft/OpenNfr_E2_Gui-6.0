@@ -83,7 +83,7 @@ class naughtyamericaGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.genreliste = []
 		self.keyLocked = True
-		url = "http://tour.naughtyamerica.com/fantasy/%s" % self.catmode
+		url = "https://tour.naughtyamerica.com/fantasy/%s" % self.catmode
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
@@ -99,7 +99,7 @@ class naughtyamericaGenreScreen(MPScreen):
 					Url = Url + "?page="
 					self.genreliste.append((decodeHtml(Title), Url, None))
 			self.genreliste.sort()
-		self.genreliste.insert(0, ("Newest", 'http://tour.naughtyamerica.com/new-porn-videos?page=', None))
+		self.genreliste.insert(0, ("Newest", 'https://tour.naughtyamerica.com/new-porn-videos?page=', None))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
@@ -186,7 +186,7 @@ class naughtyamericaFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://tour.naughtyamerica.com/search?term=%s&page=%s" % (self.Link, str(self.page))
+			url = "https://tour.naughtyamerica.com/search?term=%s&page=%s" % (self.Link, str(self.page))
 		else:
 			url = "%s%s" % (self.Link, str(self.page))
 		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
@@ -194,10 +194,12 @@ class naughtyamericaFilmScreen(MPScreen, ThumbsHelper):
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination(.*?)</div>', '.*(?:\/|>)(\d+)')
 		parse = re.search('content-main(.*?)(id="fantasySideBar"|id="wrapper-footer)', data, re.S)
-		Movies = re.findall('a\shref="(http://tour.naughtyamerica.com.*?)"\stitle="(.*?)".*?img.*?src="(.*?)"(.*?)class="entry-date">(.*?)</p', parse.group(1), re.S)
+		Movies = re.findall('a\shref="(https?://tour.naughtyamerica.com.*?)"\stitle="(.*?)".*?img.*?src="(.*?)"(.*?)class="entry-date">(.*?)</p', parse.group(1), re.S)
 		if Movies:
 			for (Url, Title, Image, VrCheck, Date) in Movies:
 				if not "vr-icon" in VrCheck:
+					if Image.startswith('//'):
+						Image = 'http:' + Image
 					self.filmliste.append((decodeHtml(Title), Url, Image, Date))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None, ''))

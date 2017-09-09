@@ -830,5 +830,5 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		if streamLink:
 			playlist = []
 			playlist.append((streamName, streamLink))
-			self.session.open(SimplePlayer, playlist, showPlaylist=False, ltype='zdf')
+			self.session.open(SimplePlayer, playlist, showPlaylist=False, ltype='zdf', forceGST=True)
 			self['name'].setText("Sendung / Thema"+"\n' "+self['liste'].getCurrent()[0][4]+" '")

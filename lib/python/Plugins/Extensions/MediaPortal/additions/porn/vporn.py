@@ -314,7 +314,7 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pages">(.*?)</div>')
-		Movies = re.findall('thumbsArr\[.*?class="thumb">.*?<a\shref="(.*?)".*?class="time">(.*?)</span>.*?<img\ssrc="(.*?)"\salt="(.*?)".*?alt="Views">(\d+)', data, re.S)
+		Movies = re.findall('thumbsArr\[.*?class="thumb">.*?<a\s{1,2}href="(.*?)".*?class="time">(.*?)</span>.*?<img\ssrc="(.*?)"\salt="(.*?)".*?alt="Views">(\d+)', data, re.S)
 		if Movies:
 			for (Url, Runtime, Image, Title, Views) in Movies:
 				Runtime = stripAllTags(Runtime).strip()

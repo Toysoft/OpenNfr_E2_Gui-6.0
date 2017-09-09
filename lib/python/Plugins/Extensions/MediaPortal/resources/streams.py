@@ -85,6 +85,7 @@ class get_stream_link:
 	from hosters.auengine import auengine
 	from hosters.bestreams import bestreams, bestreamsCalllater, bestreamsPostData
 	from hosters.bitshare import bitshare, bitshare_start
+	from hosters.datoporn import datoporn
 	from hosters.divxpress import divxpress, divxpressPostdata
 	from hosters.epornik import epornik
 	from hosters.exashare import exashare
@@ -667,6 +668,10 @@ class get_stream_link:
 			elif re.search("mega3x.com|mega3x.net", data, re.S):
 				link = data
 				getPage(link).addCallback(self.mega3x).addErrback(self.errorload)
+
+			elif re.search("dato.porn", data, re.S):
+				link = data
+				getPage(link).addCallback(self.datoporn).addErrback(self.errorload)
 
 			elif re.search("uptostream.com", data, re.S):
 				link = data

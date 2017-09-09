@@ -328,7 +328,25 @@ class youtubeUrl(object):
 		except:
 			self.__callBack(url)
 	else:
-		self.__callBack(url)
+		self.yt_dwnld_agent.getWebPage(url).addCallback(self.parseM3U8Playlist).addErrback(self.dataError)
+
+  def parseM3U8Playlist(self, data):
+	bandwith_list = []
+	match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n(.*?m3u8)', data, re.S)
+	videoPrio = int(config.mediaportal.youtubeprio.value)
+	if videoPrio == 2:
+		bw = int(match_sec_m3u8[-1][0])
+	elif videoPrio == 1:
+		bw = int(match_sec_m3u8[-1][0])/2
+	else:
+		bw = int(match_sec_m3u8[-1][0])/3
+	for each in match_sec_m3u8:
+		bandwith,url = each
+		bandwith_list.append((int(bandwith),url))
+	_, best = min((abs(int(x[0]) - bw), x) for x in bandwith_list)
+	url = best[1]
+	url = url.replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B').replace('%3B','%253B')
+	self.__callBack(url)
 
   def getRedirect(self, redir_url, url):
 	if 'Forbidden' in redir_url:
