@@ -373,7 +373,7 @@ class youpornChannelScreen(MPScreen, ThumbsHelper):
 
 	def genreData(self, data):
 		self.getLastPage(data, 'objectPagination =.*?total: (\d+),', '(\d+)')
-		Cats = re.findall('channel-box-image.*?<img\ssrc="(.*?)".*?channel-box-title">.*?href="(.*?)">(.*?)</', data, re.S)
+		Cats = re.findall('channel-box-image.*?<img\ssrc=.*?data-original="(.*?)".*?channel-box-title">.*?href="(.*?)">(.*?)</', data, re.S)
 		if Cats:
 			for (Image, Url, Title) in Cats:
 				Url = "http://www.youporn.com" + Url + 'time/?page='
@@ -458,11 +458,11 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 			if not parse:
 				parse = re.search('class=\'container\'>(.*?)search-suggestions', data, re.S)
 				if not parse:
-					parse = re.search('eight-column\sheading4\'>Most Recent Videos</h2(.*?)class=\'ad-bottom-text', data, re.S)
+					parse = re.search('heading4\'>Most Recent Videos</h2(.*?)class=\'ad-bottom-text', data, re.S)
 					if not parse:
 						parse = re.search('class=\'ad-bottom-text\'>(.*?)class=\'footer', data, re.S)
 		if parse:
-			Movies = re.findall('class=\'video-box.*?<a\shref="(.*?)".*?<img\ssrc=".*?"\salt=\'(.*?)\'.*?data-(?:thumbnail|echo)="(.*?)".*?class=\'video-box-percentage\sup\'>(.*?)</span>.*?class="video-box-duration">(.*?)</span>', parse.group(1), re.S)
+			Movies = re.findall('class=\'video-box.*?<a\shref="(.*?)".*?<img\ssrc=".*?"\salt=\'(.*?)\'.*?data-(?:thumbnail|echo)="(.*?)".*?class=\'video-box-percentage\sup\'>(.*?)</.*?class="video-duration">(.*?)</', parse.group(1), re.S)
 			if Movies:
 				for (Url, Title, Image, Rating, Runtime) in Movies:
 					Url = Url.replace("&amp;","&")

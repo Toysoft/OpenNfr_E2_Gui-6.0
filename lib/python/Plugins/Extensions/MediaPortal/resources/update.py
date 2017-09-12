@@ -81,13 +81,13 @@ class checkupdate:
 			mirror_replace = re.search('(sourceforge.net.*)', self.updateurl)
 			if mirror_replace:
 				self.updateurl = 'http://' + mirror_rand + '.dl.' + mirror_replace.group(1)
-		if config.mediaportal.version.value < remoteversion:
+		if int(config.mediaportal.version.value) < int(remoteversion):
 			if mirror_rand:
 				printl('Random update mirror selected: %s' % mirror_rand,self,'A')
 			printl('Found update url: %s' % self.updateurl,self,'A')
 			if mirror_replace:
 				printl('Generated update url: %s' % self.updateurl,self,'A')
-			self.session.openWithCallback(self.startUpdate,MessageBoxExt,_("An update is available for the MediaPortal Plugin!\nDo you want to download and install it now?"), MessageBoxExt.TYPE_YESNO)
+			self.session.openWithCallback(self.startUpdate,MessageBoxExt,_("An update is available for the MediaPortal Plugin!\nDo you want to download and install it now?"), MessageBoxExt.TYPE_YESNO, timeout=15, default=False)
 			return
 		else:
 			return

@@ -77,7 +77,7 @@ class cczwei(MPScreen):
 		videos = re.findall('class="blockchen">.*?:\sFolge\s(\d+)(.*?)(?:Youtube|H.264|H264).*?(?:</a>|</a><br>)(.*?)<ul', parse.group(1), re.S)
 		if videos:
 			for (folge, urldata, title) in videos:
-				url = re.search('.*?href="https://(?:youtu.be|www.youtube.com/watch\?v=)(.*?)"', urldata, re.S)
+				url = re.search('.*?href="https://(?:youtu.be/|www.youtube.com/watch\?v=)(.*?)"', urldata, re.S)
 				if url:
 					url = url.group(1)
 				else:

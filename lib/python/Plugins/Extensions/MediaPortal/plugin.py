@@ -195,8 +195,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="901"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.1"))
+config.mediaportal.version = NoSave(ConfigText(default="902"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.2"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -1101,7 +1101,7 @@ class MPList(Screen, HelpableScreen):
 	def markDefect(self, dummy=None):
 		reloadit = False
 		for defitem in mp_globals.status:
-			if config.mediaportal.version.value < defitem[1]:
+			if int(config.mediaportal.version.value) < int(defitem[1]):
 				for confcatitem in [self.mediatheken, self.grauzone, self.funsport, self.porn]:
 					lst = list(confcatitem)
 					for n,i in enumerate(lst):
@@ -1550,7 +1550,7 @@ class MPList(Screen, HelpableScreen):
 					if auswahl ==  x.get("name").replace("&amp;","&"):
 						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 						if status:
-							if config.mediaportal.version.value < status[0][1]:
+							if int(config.mediaportal.version.value) < int(status[0][1]):
 								if status[0][1] == "9999":
 									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 								else:
@@ -1590,7 +1590,7 @@ class MPList(Screen, HelpableScreen):
 								if auswahl ==  x.get("name").replace("&amp;","&"):
 									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 									if status:
-										if config.mediaportal.version.value < status[0][1]:
+										if int(config.mediaportal.version.value) < int(status[0][1]):
 											if status[0][1] == "9999":
 												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 											else:
@@ -2493,7 +2493,7 @@ class MPWall(Screen, HelpableScreen):
 					if auswahl ==  x.get("name").replace("&amp;","&"):
 						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 						if status:
-							if config.mediaportal.version.value < status[0][1]:
+							if int(config.mediaportal.version.value) < int(status[0][1]):
 								if status[0][1] == "9999":
 									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 								else:
@@ -2533,7 +2533,7 @@ class MPWall(Screen, HelpableScreen):
 								if auswahl ==  x.get("name").replace("&amp;","&"):
 									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 									if status:
-										if config.mediaportal.version.value < status[0][1]:
+										if int(config.mediaportal.version.value) < int(status[0][1]):
 											if status[0][1] == "9999":
 												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 											else:
@@ -3387,7 +3387,7 @@ class MPWall2(Screen, HelpableScreen):
 					if p_name ==  x.get("name").replace("&amp;","&"):
 						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 						if status:
-							if config.mediaportal.version.value < status[0][1]:
+							if int(config.mediaportal.version.value) < int(status[0][1]):
 								if status[0][1] == "9999":
 									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 								else:
@@ -3427,7 +3427,7 @@ class MPWall2(Screen, HelpableScreen):
 								if p_name ==  x.get("name").replace("&amp;","&"):
 									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 									if status:
-										if config.mediaportal.version.value < status[0][1]:
+										if int(config.mediaportal.version.value) < int(status[0][1]):
 											if status[0][1] == "9999":
 												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 											else:
@@ -4212,7 +4212,7 @@ class MPWall3(Screen, HelpableScreen):
 					if p_name ==  x.get("name").replace("&amp;","&"):
 						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 						if status:
-							if config.mediaportal.version.value < status[0][1]:
+							if int(config.mediaportal.version.value) < int(status[0][1]):
 								if status[0][1] == "9999":
 									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 								else:
@@ -4252,7 +4252,7 @@ class MPWall3(Screen, HelpableScreen):
 								if p_name ==  x.get("name").replace("&amp;","&"):
 									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
 									if status:
-										if config.mediaportal.version.value < status[0][1]:
+										if int(config.mediaportal.version.value) < int(status[0][1]):
 											if status[0][1] == "9999":
 												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
 											else:

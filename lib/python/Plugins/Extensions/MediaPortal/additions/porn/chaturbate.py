@@ -283,13 +283,31 @@ class chaturbateFilmScreen(MPScreen, ThumbsHelper):
 		name = self['liste'].getCurrent()[0][0]
 		self['name'].setText(_('Please wait...'))
 		url = "https://chaturbate.com/" + name
-		getPage(url).addCallback(self.play_stream).addErrback(self.dataError)
+		getPage(url).addCallback(self.getplaylist).addErrback(self.dataError)
 
-	def play_stream(self, data):
+	def getplaylist(self, data):
 		url = re.findall('(http[s]?://edge.*?.stream.highwebmedia.com.*?m3u8)', data)
 		if url:
-			title = self['liste'].getCurrent()[0][0]
-			self['name'].setText(title)
-			self.session.open(SimplePlayer, [(title, url[0])], showPlaylist=False, ltype='chaturbate', forceGST=True)
+			getPage(url[0]).addCallback(self.loadplaylist, url[0]).addErrback(self.dataError)
 		else:
 			self.session.open(MessageBoxExt, _("Cam is currently offline."), MessageBoxExt.TYPE_INFO)
+
+	def loadplaylist(self, data, baseurl):
+		videoPrio = int(config.mediaportal.videoquali_others.value)
+		if videoPrio == 2:
+			bw = 3000000
+		elif videoPrio == 1:
+			bw = 2000000
+		else:
+			bw = 1000000
+		self.bandwith_list = []
+		match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n(.*?m3u8)', data, re.S)
+		for each in match_sec_m3u8:
+			bandwith,url = each
+			self.bandwith_list.append((int(bandwith),url))
+		_, best = min((abs(int(x[0]) - bw), x) for x in self.bandwith_list)
+
+		url = baseurl.replace('playlist.m3u8','') + best[1]
+		title = self['liste'].getCurrent()[0][0]
+		self['name'].setText(title)
+		self.session.open(SimplePlayer, [(title, url)], showPlaylist=False, ltype='chaturbate', forceGST=True)

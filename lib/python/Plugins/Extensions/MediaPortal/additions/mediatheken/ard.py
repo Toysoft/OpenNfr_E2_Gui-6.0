@@ -753,5 +753,7 @@ class ARDStreamScreen(MPScreen, ThumbsHelper):
 			qualitycheck = re.findall('"_quality":(.*?),.*?_stream":"(.*?)"', data, re.S)
 			if qualitycheck:
 				stream = qualitycheck[-1][1]
+		if stream.startswith('//'):
+			stream = 'http:' + stream
 		if stream != "":
 			self.session.open(SimplePlayer, [(self.streamName, stream)], showPlaylist=False, ltype='ard')

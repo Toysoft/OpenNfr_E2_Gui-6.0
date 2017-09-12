@@ -76,6 +76,7 @@ try:
 							if "hls_variant" in uri:
 								getPage(uri).addCallback(self.parseData, service)
 							else:
+								uri = uri.replace('%252F','%2F').replace('%253D','%3D').replace('%252B','%2B').replace('%253B','%3B')
 								service.setResolvedUri(uri, eServiceReference.idDVB)
 						else:
 							service.setResolvedUri(uri, eServiceReference.idGST)
@@ -100,33 +101,39 @@ try:
 			urls = re.findall('hlsvp":"(http.*?\.m3u8)","', data, re.S)
 			if urls:
 				uri = urls[-1]
-			try:
-				if not service.ptrValid():
-					Log.w("Service became invalid!")
-					return
-				if uri:
-					if "hls_variant" in uri:
-						getPage(uri).addCallback(self.parseData, service)
+				try:
+					if not service.ptrValid():
+						Log.w("Service became invalid!")
+						return
+					if uri:
+						if "hls_variant" in uri:
+							getPage(uri).addCallback(self.parseData, service)
+						else:
+							uri = uri.replace('%252F','%2F').replace('%253D','%3D').replace('%252B','%2B').replace('%253B','%3B')
+							service.setResolvedUri(uri, eServiceReference.idDVB)
 					else:
-						service.setResolvedUri(uri, eServiceReference.idDVB)
-				else:
+						service.failedToResolveUri()
+				except:
 					service.failedToResolveUri()
-			except:
+			else:
 				service.failedToResolveUri()
 
 		def parseData(self, data, service):
 			urls = re.findall('(https://.*?itag\/(\d+)\/.*?)\n', data, re.S)
 			if urls:
 				uri = urls[-1][0]
-			try:
-				if not service.ptrValid():
-					Log.w("Service became invalid!")
-					return
-				if uri:
-					service.setResolvedUri(uri, eServiceReference.idDVB)
-				else:
+				try:
+					if not service.ptrValid():
+						Log.w("Service became invalid!")
+						return
+					if uri:
+						uri = uri.replace('%252F','%2F').replace('%253D','%3D').replace('%252B','%2B').replace('%253B','%3B')
+						service.setResolvedUri(uri, eServiceReference.idDVB)
+					else:
+						service.failedToResolveUri()
+				except:
 					service.failedToResolveUri()
-			except:
+			else:
 				service.failedToResolveUri()
 
 except ImportError:
