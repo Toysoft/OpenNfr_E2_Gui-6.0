@@ -100,10 +100,12 @@ class redtubeGenreScreen(MPScreen):
 					Image = 'http:' + Image
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Most Favored", "http://www.redtube.com/mostfavored?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Longest", "http://www.redtube.com/longest?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Most Favorited", "http://www.redtube.com/mostfavored?period=alltime&page=", default_cover))
 			self.genreliste.insert(0, ("Most Viewed", "http://www.redtube.com/mostviewed?period=alltime&page=", default_cover))
 			self.genreliste.insert(0, ("Top Rated", "http://www.redtube.com/top?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/?page=", default_cover))
+			self.genreliste.insert(0, ("Trending", "http://www.redtube.com/hot?page=", default_cover))
+			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/newest?page=", default_cover))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
@@ -218,7 +220,7 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 			parse = re.search('home_page_section_e(.*?)home_page_section_f', data, re.S)
 			if parse:
 				data = parse.group(1)
-		Movies = re.findall('<a\shref="(\/\d+)"\stitle="(.*?)"(?:\sclass="video-thumb|).*?video-duration.*?>(.*?)<.*?data-src="(.*?)".*?views">(.*?)</span>', data, re.S)
+		Movies = re.findall('class="widget-video-holder">.*?<a\shref="(\/\d+)"\stitle="(.*?)"(?:\sclass="video-thumb|).*?video-duration.*?>(.*?)<.*?data-src="(.*?)".*?views">(.*?)</span>', data, re.S)
 		if Movies:
 			for (Url, Title, Runtime, Image, Views) in Movies:
 				if Image.startswith('//'):
@@ -226,6 +228,15 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 				Views = Views.replace(',','').replace(' views','')
 				Runtime = Runtime.strip()
 				self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views))
+		else:
+			Movies = re.findall('class="widget-video-holder (?:videoPreviewBg|)">.*?<a\shref="(\/\d+)"\stitle="(.*?)"(?:\sclass="video-thumb|).*?data-src="(.*?)".*?video-duration.*?>(.*?)<.*?views">(.*?)</span>', data, re.S)
+			if Movies:
+				for (Url, Title, Image, Runtime, Views) in Movies:
+					if Image.startswith('//'):
+						Image = 'http:' + Image
+					Views = Views.replace(',','').replace(' views','')
+					Runtime = Runtime.strip()
+					self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None, '', ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))

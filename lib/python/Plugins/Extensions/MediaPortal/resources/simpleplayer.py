@@ -292,10 +292,9 @@ class SimpleSeekHelper:
 							#self.isMySpass = True
 							pass
 						elif 'eroprofile.com' in self.mySpassPath:
-							self.isEroprofile = True
-							self.isMySpass = True
-						elif 'media.amateurporn.net' in self.mySpassPath:
-							self.isMySpass = True
+							#self.isEroprofile = True
+							#self.isMySpass = True
+							pass
 						elif 'media.hdporn.net' in self.mySpassPath:
 							self.isMySpass = True
 

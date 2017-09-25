@@ -45,7 +45,7 @@ class ThumbsHelper:
 				return
 			self.th_keyShowThumb(self.th_filmList, self.th_filmnamePos, self.th_filmurlPos, self.th_filmimageurlPos, self.th_filmnameaddPos, self.th_pageregex, self.th_filmpage, self.th_filmpages, mode=self.th_mode, pagefix=self.th_pagefix, maxtoken=self.th_maxtoken, coverlink=self.th_coverlink)
 
-	def th_ThumbsQuery(self, th_filmList, th_filmnamePos, th_filmurlPos, th_filmimageurlPos=None, th_filmnameaddPos=None, th_pageregex=None, th_filmpage=1, th_filmpages=999, mode=0 , pagefix=0, maxtoken=16, coverlink=None, agent=None, cookies=None, req=False):
+	def th_ThumbsQuery(self, th_filmList, th_filmnamePos, th_filmurlPos, th_filmimageurlPos=None, th_filmnameaddPos=None, th_pageregex=None, th_filmpage=1, th_filmpages=999, mode=0 , pagefix=0, maxtoken=16, coverlink=None, agent=None, cookies=None):
 		self.th_filmList = th_filmList
 		self.th_filmnamePos = th_filmnamePos
 		self.th_filmurlPos = th_filmurlPos
@@ -58,7 +58,6 @@ class ThumbsHelper:
 		self.th_pagefix = pagefix
 		self.th_maxtoken = maxtoken
 		self.th_coverlink = coverlink
-		self.req = req
 		global thumb_ck
 		thumb_ck = cookies
 		global thumb_agent
@@ -81,7 +80,7 @@ class ThumbsHelper:
 			return
 		self.toShowThumb = True
 		try:
-			self.session.openWithCallback(self.th_showThumbCallback, ShowThumbscreen, self.th_showThumbCallback, th_filmList, th_filmnamePos, th_filmurlPos, th_filmimageurlPos, th_filmnameaddPos, th_pageregex, th_filmpage, th_filmpages, self.req, **kwargs)
+			self.session.openWithCallback(self.th_showThumbCallback, ShowThumbscreen, self.th_showThumbCallback, th_filmList, th_filmnamePos, th_filmurlPos, th_filmimageurlPos, th_filmnameaddPos, th_pageregex, th_filmpage, th_filmpages, **kwargs)
 		except RuntimeError:
 			pass
 
@@ -136,7 +135,7 @@ class ShowThumbscreen(MPScreen):
 
 	NO_COVER_PIC_PATH = "/images/no_coverArt.png"
 
-	def __init__(self, session, callbacknewpage=None, filmList=[], filmnamePos=0, filmurlPos=1, filmimageurlPos=2, filmnameaddPos=3, pageregex=None, filmpage=1, filmpages=999, req=False, **kwargs):
+	def __init__(self, session, callbacknewpage=None, filmList=[], filmnamePos=0, filmurlPos=1, filmimageurlPos=2, filmnameaddPos=3, pageregex=None, filmpage=1, filmpages=999, **kwargs):
 		self._callbacknewpage = callbacknewpage
 		self.filmList = filmList
 		self.filmnamePos = filmnamePos
@@ -147,7 +146,6 @@ class ShowThumbscreen(MPScreen):
 		self.pageregex = pageregex
 		self.filmpage = filmpage
 		self.filmpages = filmpages
-		self.req = req
 		self._no_picPath = "%s/skins/%s%s" % (mp_globals.pluginPath, config.mediaportal.skin.value, self.NO_COVER_PIC_PATH)
 
 		mode = kwargs.get('mode', 0)
@@ -683,19 +681,12 @@ class ShowThumbscreen(MPScreen):
 		if not image:
 			return ('no_cover')
 		else:
-			if self.req and mp_globals.requests:
-				try:
-					import requests
-					requests.cookies.cookiejar_from_dict(thumb_ck, cookiejar=thumb_cookies)
-					headers = {'User-Agent': thumb_agent}
-					response = requests.get(image.replace('\/','/'), stream=True, cookies=thumb_cookies, headers=headers)
-					with open(jpg_store, 'wb') as out_file:
-						shutil.copyfileobj(response.raw, out_file)
-					return jpg_store
-				except:
-					printl("Fallback cover download",self,'A')
-					return downloadPage(image.replace('\/','/'), jpg_store, agent=thumb_agent, cookies=thumb_ck)
-			else:
+			try:
+				from twagenthelper import twDownloadPage
+				import requests
+				requests.cookies.cookiejar_from_dict(thumb_ck, cookiejar=thumb_cookies)
+				return twDownloadPage(image.replace('\/','/'), jpg_store, agent=thumb_agent, cookieJar=thumb_cookies)
+			except:
 				return downloadPage(image.replace('\/','/'), jpg_store, agent=thumb_agent, cookies=thumb_ck)
 
 	def nocoverfound(self, error, url_list, nr):

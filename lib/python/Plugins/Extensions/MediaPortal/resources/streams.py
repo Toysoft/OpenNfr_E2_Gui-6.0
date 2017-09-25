@@ -228,7 +228,8 @@ class get_stream_link:
 					self.prz = 1
 					self.callPremium(link)
 				else:
-					getPage(link, cookies=ck).addCallback(self.streamcloud).addErrback(self.errorload)
+					spezialagent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+					getPage(link, cookies=ck, agent=spezialagent).addCallback(self.streamcloud).addErrback(self.errorload)
 
 			elif re.search('rapidgator.net|rg.to', data, re.S):
 				link = data
@@ -922,9 +923,10 @@ class get_stream_link:
 					else:
 						self.vidlox(data)
 
-			elif re.search('streamango\.com', data, re.S):
+			elif re.search('streamango\.com|streamcherry\.com', data, re.S):
 				link = data.replace('https','http')
-				getPage(link).addCallback(self.streamango).addErrback(self.errorload)
+				spezialagent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+				getPage(link, agent=spezialagent).addCallback(self.streamango).addErrback(self.errorload)
 
 			else:
 				message = self.session.open(MessageBoxExt, _("No supported Stream Hoster, try another one!"), MessageBoxExt.TYPE_INFO, timeout=5)
@@ -1034,16 +1036,20 @@ class get_stream_link:
 	def streamcloud(self, data):
 		id = re.findall('<input type="hidden" name="id".*?value="(.*?)">', data)
 		fname = re.findall('<input type="hidden" name="fname".*?alue="(.*?)">', data)
-		hash = re.findall('<input type="hidden" name="hash" value="(.*?)">', data)
-		if id and fname and hash:
+		if id and fname:
 			url = "http://streamcloud.eu/%s" % id[0]
-			post_data = urllib.urlencode({'op': 'download2', 'usr_login': '', 'id': id[0], 'fname': fname[0], 'referer': '', 'hash': hash[0], 'imhuman':'Weiter+zum+Video'})
-			getPage(url, method='POST', cookies=ck, postdata=post_data, headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.streamcloud_data).addErrback(self.errorload)
+			post_data = urllib.urlencode({'op': 'download1', 'usr_login': '', 'id': id[0], 'fname': fname[0], 'referer': url, 'hash': '', 'imhuman':'Weiter zum Video'})
+			reactor.callLater(10, self.streamcloud_getpage, url, post_data)
+			message = self.session.open(MessageBoxExt, _("Stream starts in 10 sec."), MessageBoxExt.TYPE_INFO, timeout=10)
 		else:
 			self.stream_not_found()
 
+	def streamcloud_getpage(self, url, post_data):
+		spezialagent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+		getPage(url, method='POST', cookies=ck, agent=spezialagent, postdata=post_data, headers={'Content-Type':'application/x-www-form-urlencoded', 'Referer': url, 'Origin':'http://streamcloud.eu'}).addCallback(self.streamcloud_data).addErrback(self.errorload)
+
 	def streamcloud_data(self, data):
-		stream_url = re.findall('file: "(.*?)"', data)
+		stream_url = re.findall('file:\s"(.*?)",', data)
 		if stream_url:
 			self._callback(stream_url[0])
 		elif re.search('This video is encoding now', data, re.S):

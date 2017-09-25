@@ -176,7 +176,7 @@ class bangbrosFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://bangbrothers.net/search/%s/%s" % (self.Link, str(self.page))
+			url = "http://bangbrothers.net/search/videos/%s/%s" % (self.Link, str(self.page))
 		else:
 			if self.page == 1:
 				url = self.Link
@@ -186,12 +186,12 @@ class bangbrosFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagi">(.*?)ePg_spn">Last', '.*\/(\d+)"')
-		Movies = re.findall('class="echThumb"><a title="(.*?)"\s+href="(.*?)".*?class="tTm">(.*?)</b.*?data-rollover-url="(.*?)".*?class="cast-wrapper">(.*?)</div>.*?fa-bus.*?class="faTxt">(.*?)</span.*?fa-calendar.*?class="faTxt">(.*?)</span', data, re.S)
+		parse = re.search('class="middle">(.*?)class="footer">', data, re.S)
+		Movies = re.findall('class="echThumb"><a title="(.*?)"\s{1,5}href="(.*?)" class="thmb_lnk"><span class="thmb_pic hover-rollover"><b class="tTm">(.*?)</b.*?data-initial-image-url="(.*?)".*?class="cast-wrapper">(.*?)</div>.*?fa-bus.*?class="faTxt">(.*?)</span.*?fa-calendar.*?class="faTxt">(.*?)</span', parse.group(1), re.S)
 		if Movies:
 			for (Title, Url, Runtime, Image, Pornstars, Collection, Date) in Movies:
 				if Image.startswith('//'):
 					Image = 'http:' + Image
-				Image = Image + '1.jpg'
 				Url = "http://bangbrothers.net" + Url
 				if not Pornstars == '':
 					Title = stripAllTags(Pornstars.replace('</a><a',', </a><a')).strip() + " - " + Title

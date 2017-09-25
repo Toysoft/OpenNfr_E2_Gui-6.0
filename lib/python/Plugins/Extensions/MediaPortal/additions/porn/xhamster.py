@@ -731,8 +731,8 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 
 	def getRelated(self, data):
 		self.keyLocked = False
-		parse = re.findall('videoRelatedURL":"(.*?)"', data, re.S)
-		RelatedUrl = parse[0].replace('\/','/') + "&page="
+		parse = re.findall('&amp;q=(.*?)">\s+Show all related videos', data, re.S)
+		RelatedUrl = 'https://xhamster.com/search?q=%s&p=' % parse[0]
 		self.session.open(xhamsterFilmScreen, RelatedUrl, "Related")
 
 	def playerData(self, data):

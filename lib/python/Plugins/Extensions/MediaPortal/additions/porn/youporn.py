@@ -217,7 +217,7 @@ class youpornGenreScreen(MPScreen):
 		if not err and type(suggestions) in (str, buffer):
 			suggestions = json.loads(suggestions)
 			for item in suggestions['queries']:
-				li = item
+				li = item.replace('+',' ')
 				list.append(str(li))
 				max_res -= 1
 				if not max_res: break
@@ -498,4 +498,5 @@ class youpornFilmScreen(MPScreen, ThumbsHelper):
 			videoPage = re.findall('\d+","videoUrl":[\"|\'](http[s]?.*?)[\"|\']', parse[-1], re.S)
 			if videoPage:
 				self.keyLocked = False
-				self.session.open(SimplePlayer, [(Title, videoPage[0].replace('\/','/'))], showPlaylist=False, ltype='youporn')
+				url = videoPage[0].replace('\/','/').replace('%2F','%252F').replace('%3D','%253D').replace('%2B','%252B')
+				self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='youporn')

@@ -75,21 +75,17 @@ class sporttotalGenreScreen(MPScreen):
 
 	def loadPage(self):
 		self['name'].setText(_('Please wait...'))
-		url = "http://www.sporttotal.tv//default.aspx"
+		url = "http://www.sporttotal.tv/live"
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		parse = re.search('class="content">(.*?)class="vspacerm', data, re.S)
-		if parse:
-			info = re.findall('class="template".*?class="BegegnungLabel">(.*?)</.*?class="BegegnungLabel2">(.*?)</.*?class="staffelnameLabel">(.*?)</.*?class="Spieldatum">(.*?)</.*?class="Spieldatum">(.*?)</.*?class="LiveLink"\shref="(.*?)"', parse.group(1), re.S)
-			if info:
-				self.genreliste = []
-				for (teamA, teamB, season, date, time, url) in info:
-					match = "%s: %s %s, %s - %s" % (season, date, time, teamA.replace('\/','/'), teamB.replace('\/','/'))
-					url = 'http://www.sporttotal.tv/' + url
-					self.genreliste.append((decodeHtml(match), url))
-			else:
-				self.genreliste.append((_("Currently no streams available"), None))
+		info = re.findall('class="table-link"\sdata-href="(.*?)".*?class="date">(.*?)</.*?class="staffelname">(.*?)</.*?class="teams">(.*?)</', data, re.S)
+		if info:
+			self.genreliste = []
+			for (url, date, season, teams) in info:
+				match = "%s: %s, %s" % (season.strip(), date.strip(), teams.strip())
+				url = 'http://www.sporttotal.tv' + url
+				self.genreliste.append((decodeHtml(match), url))
 		else:
 			self.genreliste.append((_("Currently no streams available"), None))
 		self.ml.setList(map(self._defaultlistleft, self.genreliste))
@@ -109,6 +105,8 @@ class sporttotalGenreScreen(MPScreen):
 
 	def getStream(self, data):
 		streams = re.findall('file:\s"(.*?)",', data, re.S)
+		if not streams:
+			streams = re.findall('<source\ssrc="(.*?)"\stype="video/mp4">', data, re.S)
 		if streams:
 			name = self['liste'].getCurrent()[0][0]
 			self.session.open(SimplePlayer, [(name, streams[0])], showPlaylist=False, ltype='sporttotal', forceGST=True)

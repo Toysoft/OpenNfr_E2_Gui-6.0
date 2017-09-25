@@ -93,14 +93,11 @@ class teamskeetGenreScreen(MPScreen):
 					url = "http://www.teamskeet.com/t1/updates/load?view=newest&changedOrder=0&fltrs[tags]=%s&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=&nats=null" % Tag.replace(' ','+')
 					self.genreliste.append((Tag.title(), url, default_cover))
 			self.genreliste.sort()
-		#self.genreliste.insert(0, ("Series", 'http://www.mofos.com/tour/series/', default_cover))
-		#self.genreliste.insert(0, ("Sites", 'http://www.mofos.com/tour/sites/', default_cover))
-		#self.genreliste.insert(0, ("Girls", 'http://www.mofos.com/tour/girls/all-videos/all-models/all-categories/thismonth/toprated/', default_cover))
 		self.genreliste.insert(0, ("Most Favorited", 'http://www.teamskeet.com/t1/updates/load?view=favorited&fltrs[tags]=&fltrs[site]=ALL&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=', default_cover))
 		self.genreliste.insert(0, ("Most Viewed", 'http://www.teamskeet.com/t1/updates/load?view=views&fltrs[tags]=&fltrs[site]=ALL&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=', default_cover))
 		self.genreliste.insert(0, ("Top Rated", 'http://www.teamskeet.com/t1/updates/load?view=rating&fltrs[tags]=&fltrs[site]=ALL&fltrs[alpha]=&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=DESC&tags_select=&fltrs[title]=', default_cover))
 		self.genreliste.insert(0, ("Most Recent", 'http://www.teamskeet.com/t1/updates/load?view=newest&fltrs[tags]=&fltrs[site]=ALL&changedOrder=0&fltrs[tags]=&fltrs[time]=ALL&fltrs[site]=ALL&order=ASC&tags_select=&fltrs[title]=', default_cover))
-		#self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
@@ -121,15 +118,6 @@ class teamskeetGenreScreen(MPScreen):
 		Name = self['liste'].getCurrent()[0][0]
 		if Name == "--- Search ---":
 			self.suchen()
-		elif Name == "Sites":
-			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(teamskeetSitesScreen, Link, Name)
-		elif Name == "Series":
-			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(teamskeetSitesScreen, Link, Name)
-		elif Name == "Girls":
-			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(teamskeetGirlsScreen, Link, Name)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
 			self.session.open(teamskeetFilmScreen, Link, Name)
@@ -138,165 +126,8 @@ class teamskeetGenreScreen(MPScreen):
 		if callback is not None and len(callback):
 			self.suchString = callback
 			Name = "--- Search ---"
-			Link = self.suchString.replace(' ', '+')
+			Link = self.suchString.replace(' ', '%20')
 			self.session.open(teamskeetFilmScreen, Link, Name)
-
-class teamskeetSitesScreen(MPScreen, ThumbsHelper):
-
-	def __init__(self, session, Link, Name):
-		self.Link = Link
-		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
-		ThumbsHelper.__init__(self)
-
-		self["actions"] = ActionMap(["MP_Actions"], {
-			"ok" : self.keyOK,
-			"0" : self.closeAll,
-			"cancel" : self.keyCancel,
-			"5" : self.keyShowThumb,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown
-		}, -1)
-
-		self['title'] = Label(BASE_NAME)
-		self['ContentTitle'] = Label("Genre: %s" % self.Name)
-
-		self.keyLocked = True
-
-		self.filmliste = []
-		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self['liste'] = self.ml
-
-		self.onLayoutFinish.append(self.loadPage)
-
-	def loadPage(self):
-		self.keyLocked = True
-		self['name'].setText(_('Please wait...'))
-		self.filmliste = []
-		getPage(self.Link, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
-
-	def loadData(self, data):
-		Sites = re.findall('collection-[card|box].*?href="(.*?)".*?img\ssrc="(.*?)".*?alt="(.*?)(?: - Mofos|)".*?scene-count">(.*?)<var', data, re.S)
-		if Sites:
-			for (Url, Image, Title, Scenes) in Sites:
-				Url = "http://www.mofos.com" + Url.replace('/toprated/','/bydate/')
-				Title = Title + " - %s Scenes" % Scenes.strip()
-				self.filmliste.append((decodeHtml(Title), Url, Image))
-		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No sites/series found!'), None, None))
-		self.ml.setList(map(self._defaultlistleft, self.filmliste))
-		self.ml.moveToIndex(0)
-		self.keyLocked = False
-		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, None, None, 1, 1, mode=1)
-		self.showInfos()
-
-	def showInfos(self):
-		title = self['liste'].getCurrent()[0][0]
-		pic = self['liste'].getCurrent()[0][2]
-		self['name'].setText(title)
-		CoverHelper(self['coverArt']).getCover(pic)
-
-	def keyOK(self):
-		if self.keyLocked:
-			return
-		Name = self['liste'].getCurrent()[0][0]
-		Link = self['liste'].getCurrent()[0][1]
-		self.session.open(teamskeetFilmScreen, Link, Name)
-
-class teamskeetGirlsScreen(MPScreen, ThumbsHelper):
-
-	def __init__(self, session, Link, Name):
-		self.Link = Link
-		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
-		ThumbsHelper.__init__(self)
-
-		self["actions"] = ActionMap(["MP_Actions"], {
-			"ok" : self.keyOK,
-			"0" : self.closeAll,
-			"cancel" : self.keyCancel,
-			"5" : self.keyShowThumb,
-			"up" : self.keyUp,
-			"down" : self.keyDown,
-			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"nextBouquet" : self.keyPageUp,
-			"prevBouquet" : self.keyPageDown,
-			"green" : self.keyPageNumber
-		}, -1)
-
-		self['title'] = Label(BASE_NAME)
-		self['ContentTitle'] = Label("Genre: %s" % self.Name)
-		self['F2'] = Label(_("Page"))
-
-		self['Page'] = Label(_("Page:"))
-		self.keyLocked = True
-		self.page = 1
-		self.lastpage = 1
-
-		self.filmliste = []
-		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self['liste'] = self.ml
-
-		self.onLayoutFinish.append(self.loadPage)
-
-	def loadPage(self):
-		self.keyLocked = True
-		self['name'].setText(_('Please wait...'))
-		self.filmliste = []
-		url = "%s%s/" % (self.Link, str(self.page))
-		getPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
-
-	def loadData(self, data):
-		self.getLastPage(data, 'class="pagination">(.*?)</nav>', '.*title="\d+">(\d+)</a>')
-		Girls = re.findall('class="list-model-card.*?href="(.*?)"\stitle="(.*?)".*?src="(.*?.jpg)"', data, re.S)
-		if Girls:
-			for (Url, Title, Image) in Girls:
-				Url = "http://www.mofos.com" + Url
-				Title = Title.lower().title()
-				self.filmliste.append((decodeHtml(Title), Url, Image))
-		if len(self.filmliste) == 0:
-			self.filmliste.append((_('No pornstars found!'), None, None))
-		self.ml.setList(map(self._defaultlistleft, self.filmliste))
-		self.ml.moveToIndex(0)
-		self.keyLocked = False
-		self.th_ThumbsQuery(self.filmliste, 0, 1, 2, self.page, int(self.lastpage), 1, 1, mode=1)
-		self.showInfos()
-
-	def showInfos(self):
-		title = self['liste'].getCurrent()[0][0]
-		pic = self['liste'].getCurrent()[0][2]
-		self['name'].setText(title)
-		CoverHelper(self['coverArt']).getCover(pic)
-
-	def keyOK(self):
-		if self.keyLocked:
-			return
-		Name = self['liste'].getCurrent()[0][0]
-		Link = self['liste'].getCurrent()[0][1]
-		self.session.open(teamskeetFilmScreen, Link, Name)
 
 class teamskeetFilmScreen(MPScreen, ThumbsHelper):
 
@@ -349,10 +180,7 @@ class teamskeetFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			if self.page == 1:
-				url = "http://www.mofos.com/tour/search/videos/%s/" % self.Link
-			else:
-				url = "http://www.mofos.com/tour/search/videos/%s/%s/" % (self.Link, str(self.page))
+			url = "http://teamskeet.com/t1/search/results/?&query=%s&searchType=scenes&fields=title,name,location,producer,story,tags&timeSpan=ALL&sort=rating&page=%s" % (self.Link, str(self.page))
 		else:
 			url = "%s&page=%s" % (self.Link, str(self.page))
 		getPage(url, agent=myagent, cookies=ck, headers={'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://www.teamskeet.com/t1/updates/?site=ts'}).addCallback(self.loadData).addErrback(self.dataError)
@@ -360,9 +188,11 @@ class teamskeetFilmScreen(MPScreen, ThumbsHelper):
 	def loadData(self, data):
 		self.getLastPage(data, 'paging_links"(.*?)</div>')
 		Movies = re.findall('class="(?:white|grey)".*?<a\shref="(.*?)".*?data-original="(.*?)".*?class="info".*?12px;">(.*?)</a', data, re.S)
+		if not Movies:
+			Movies = re.findall('class="play.*?window.location=\'(.*?)\'.*?img\ssrc="(.*?)".*?class="info".*?12px;"\s{0,2}>(.*?)</a', data, re.S)
 		if Movies:
 			for (Url, Image, Title) in Movies:
-				self.filmliste.append((decodeHtml(Title), Url, Image))
+				self.filmliste.append((decodeHtml(Title.strip()), Url, Image))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))

@@ -10,11 +10,9 @@ from Components.config import config
 import mp_globals
 from debuglog import printlog as printl
 from twagenthelper import twDownloadPage
-from cookielib import CookieJar
 
 glob_icon_num = 0
 glob_last_cover = [None, None]
-cookies = CookieJar()
 
 class CoverHelper:
 
@@ -32,10 +30,10 @@ class CoverHelper:
 		self.downloadPath = None
 		self.err_nocover = True
 
-	def downloadPage(self, url, path, agent=None):
+	def downloadPage(self, url, path, agent=None, cookieJar=None):
 		if not agent:
-			agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.82 Safari/537.36"
-		return twDownloadPage(url, path, timeout=10, cookieJar=cookies, agent=agent)
+			agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+		return twDownloadPage(url, path, timeout=15, agent=agent, cookieJar=cookieJar)
 
 	def closeFile(self, result, f):
 		f.close()
@@ -47,11 +45,9 @@ class CoverHelper:
 		else:
 			return data
 
-	def getCover(self, url, download_cb=None, agent=None, cookieJar=None, req=False, mdh=False):
+	def getCover(self, url, download_cb=None, agent=None, cookieJar=None):
 		global glob_icon_num
 		global glob_last_cover
-		global cookies
-		cookies = cookieJar
 		if url:
 			if url.startswith('http'):
 				if glob_last_cover[0] == url and glob_last_cover[1]:
@@ -63,29 +59,11 @@ class CoverHelper:
 					glob_last_cover[0] = url
 					glob_last_cover[1] = None
 					self.downloadPath = self.COVER_PIC_PATH % glob_icon_num
-					if (req and mp_globals.requests) or mdh:
-						try:
-							import requests
-							headers = {'User-Agent': agent, 'Accept-Encoding': 'deflate'}
-							response = requests.get(url, stream=True, cookies=cookies, headers=headers)
-							with open(self.downloadPath, 'wb') as out_file:
-								shutil.copyfileobj(response.raw, out_file)
-							self.showCover(self.downloadPath)
-							if download_cb:
-								self.cb_getCover(self.downloadPath, download_cb)
-						except:
-							printl("Fallback cover download",self,'A')
-							d = self.downloadPage(url, self.downloadPath, agent=agent)
-							d.addCallback(self.showCover)
-							if download_cb:
-								d.addCallback(self.cb_getCover, download_cb)
-							d.addErrback(self.dataErrorP)
-					else:
-						d = self.downloadPage(url, self.downloadPath, agent=agent)
-						d.addCallback(self.showCover)
-						if download_cb:
-							d.addCallback(self.cb_getCover, download_cb)
-						d.addErrback(self.dataErrorP)
+					d = self.downloadPage(url, self.downloadPath, agent=agent, cookieJar=cookieJar)
+					d.addCallback(self.showCover)
+					if download_cb:
+						d.addCallback(self.cb_getCover, download_cb)
+					d.addErrback(self.dataErrorP)
 			elif url.startswith('file://'):
 				self.showCoverFile(url[7:])
 				if download_cb:

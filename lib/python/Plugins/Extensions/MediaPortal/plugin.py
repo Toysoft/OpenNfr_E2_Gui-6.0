@@ -195,8 +195,8 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="902"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.2"))
+config.mediaportal.version = NoSave(ConfigText(default="904"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.4"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
@@ -353,19 +353,19 @@ conf = xml.etree.cElementTree.parse(CONFIG)
 for x in conf.getroot():
 	if x.tag == "set" and x.get("name") == 'additions':
 		root =  x
-for x in root:
-	if x.tag == "plugin":
-		if x.get("type") == "mod":
-			modfile = x.get("modfile")
-			if modfile == "music.canna" and not mechanizeModule:
-				pass
-			else:
-				if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
-					sys.path.append('/etc/enigma2/mp_override')
-					exec("from "+modfile.split('.')[1]+" import *")
-				else:
-					exec("from additions."+modfile+" import *")
-				exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
+		for x in root:
+			if x.tag == "plugin":
+				if x.get("type") == "mod":
+					modfile = x.get("modfile")
+					if modfile == "music.canna" and not mechanizeModule:
+						pass
+					else:
+						if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
+							sys.path.append('/etc/enigma2/mp_override')
+							exec("from "+modfile.split('.')[1]+" import *")
+						else:
+							exec("from additions."+modfile+" import *")
+						exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
 
 try:
 	xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
@@ -377,19 +377,19 @@ try:
 			for x in conf.getroot():
 				if x.tag == "set" and x.get("name") == 'additions_user':
 					root =  x
-			for x in root:
-				if x.tag == "plugin":
-					if x.get("type") == "mod":
-						modfile = x.get("modfile")
-						if modfile == "music.canna" and not mechanizeModule:
-							pass
-						else:
-							if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
-								sys.path.append('/etc/enigma2/mp_override')
-								exec("from "+modfile.split('.')[1]+" import *")
-							else:
-								exec("from additions."+modfile+" import *")
-							exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
+					for x in root:
+						if x.tag == "plugin":
+							if x.get("type") == "mod":
+								modfile = x.get("modfile")
+								if modfile == "music.canna" and not mechanizeModule:
+									pass
+								else:
+									if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
+										sys.path.append('/etc/enigma2/mp_override')
+										exec("from "+modfile.split('.')[1]+" import *")
+									else:
+										exec("from additions."+modfile+" import *")
+									exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
 except:
 	pass
 
@@ -687,21 +687,21 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					modfile = x.get("modfile")
-					gz = x.get("gz")
-					if modfile == "music.canna" and not mechanizeModule:
-						if not config.mediaportal.showgrauzone.value and gz == "1":
-							pass
-						else:
-							exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
-					else:
-						if not config.mediaportal.showgrauzone.value and gz == "1":
-							pass
-						else:
-							exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							modfile = x.get("modfile")
+							gz = x.get("gz")
+							if modfile == "music.canna" and not mechanizeModule:
+								if not config.mediaportal.showgrauzone.value and gz == "1":
+									pass
+								else:
+									exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
+							else:
+								if not config.mediaportal.showgrauzone.value and gz == "1":
+									pass
+								else:
+									exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
 
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
@@ -713,21 +713,21 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								modfile = x.get("modfile")
-								gz = x.get("gz")
-								if modfile == "music.canna" and not mechanizeModule:
-									if not config.mediaportal.showgrauzone.value and gz == "1":
-										pass
-									else:
-										exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
-								else:
-									if not config.mediaportal.showgrauzone.value and gz == "1":
-										pass
-									else:
-										exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										modfile = x.get("modfile")
+										gz = x.get("gz")
+										if modfile == "music.canna" and not mechanizeModule:
+											if not config.mediaportal.showgrauzone.value and gz == "1":
+												pass
+											else:
+												exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
+										else:
+											if not config.mediaportal.showgrauzone.value and gz == "1":
+												pass
+											else:
+												exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
 		except:
 			pass
 
@@ -1004,23 +1004,23 @@ class MPList(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					modfile = x.get("modfile")
-					confcat = x.get("confcat")
-					if modfile == "music.canna" and not mechanizeModule:
-						pass
-					elif not config.mediaportal.showporn.value and confcat == "porn":
-						pass
-					else:
-						gz = x.get("gz")
-						if not config.mediaportal.showgrauzone.value and gz == "1":
-							pass
-						else:
-							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-							if mod:
-								exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							modfile = x.get("modfile")
+							confcat = x.get("confcat")
+							if modfile == "music.canna" and not mechanizeModule:
+								pass
+							elif not config.mediaportal.showporn.value and confcat == "porn":
+								pass
+							else:
+								gz = x.get("gz")
+								if not config.mediaportal.showgrauzone.value and gz == "1":
+									pass
+								else:
+									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+									if mod:
+										exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -1031,23 +1031,23 @@ class MPList(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								modfile = x.get("modfile")
-								confcat = x.get("confcat")
-								if modfile == "music.canna" and not mechanizeModule:
-									pass
-								elif not config.mediaportal.showporn.value and confcat == "porn":
-									pass
-								else:
-									gz = x.get("gz")
-									if not config.mediaportal.showgrauzone.value and gz == "1":
-										pass
-									else:
-										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-										if mod:
-											exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										modfile = x.get("modfile")
+										confcat = x.get("confcat")
+										if modfile == "music.canna" and not mechanizeModule:
+											pass
+										elif not config.mediaportal.showporn.value and confcat == "porn":
+											pass
+										else:
+											gz = x.get("gz")
+											if not config.mediaportal.showgrauzone.value and gz == "1":
+												pass
+											else:
+												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+												if mod:
+													exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
 		except:
 			pass
 
@@ -1543,36 +1543,36 @@ class MPList(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					confcat = x.get("confcat")
-					if auswahl ==  x.get("name").replace("&amp;","&"):
-						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-						if status:
-							if int(config.mediaportal.version.value) < int(status[0][1]):
-								if status[0][1] == "9999":
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							confcat = x.get("confcat")
+							if auswahl ==  x.get("name").replace("&amp;","&"):
+								status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+								if status:
+									if int(config.mediaportal.version.value) < int(status[0][1]):
+										if status[0][1] == "9999":
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+										else:
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+										if not config.mediaportal.debugMode.value == "High":
+											return
+								param = ""
+								param1 = x.get("param1")
+								param2 = x.get("param2")
+								kids = x.get("kids")
+								if param1 != "":
+									param = ", \"" + param1 + "\""
+									exec("self.par1 = \"" + x.get("param1") + "\"")
+								if param2 != "":
+									param = param + ", \"" + param2 + "\""
+									exec("self.par2 = \"" + x.get("param2") + "\"")
+								if confcat == "porn":
+									exec("self.pornscreen = " + x.get("screen") + "")
+								elif kids != "1" and config.mediaportal.kidspin.value:
+									exec("self.pornscreen = " + x.get("screen") + "")
 								else:
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-								if not config.mediaportal.debugMode.value == "High":
-									return
-						param = ""
-						param1 = x.get("param1")
-						param2 = x.get("param2")
-						kids = x.get("kids")
-						if param1 != "":
-							param = ", \"" + param1 + "\""
-							exec("self.par1 = \"" + x.get("param1") + "\"")
-						if param2 != "":
-							param = param + ", \"" + param2 + "\""
-							exec("self.par2 = \"" + x.get("param2") + "\"")
-						if confcat == "porn":
-							exec("self.pornscreen = " + x.get("screen") + "")
-						elif kids != "1" and config.mediaportal.kidspin.value:
-							exec("self.pornscreen = " + x.get("screen") + "")
-						else:
-							exec("self.session.open(" + x.get("screen") + param + ")")
+									exec("self.session.open(" + x.get("screen") + param + ")")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -1583,36 +1583,36 @@ class MPList(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								confcat = x.get("confcat")
-								if auswahl ==  x.get("name").replace("&amp;","&"):
-									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-									if status:
-										if int(config.mediaportal.version.value) < int(status[0][1]):
-											if status[0][1] == "9999":
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										confcat = x.get("confcat")
+										if auswahl ==  x.get("name").replace("&amp;","&"):
+											status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+											if status:
+												if int(config.mediaportal.version.value) < int(status[0][1]):
+													if status[0][1] == "9999":
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+													else:
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+													if not config.mediaportal.debugMode.value == "High":
+														return
+											param = ""
+											param1 = x.get("param1")
+											param2 = x.get("param2")
+											kids = x.get("kids")
+											if param1 != "":
+												param = ", \"" + param1 + "\""
+												exec("self.par1 = \"" + x.get("param1") + "\"")
+											if param2 != "":
+												param = param + ", \"" + param2 + "\""
+												exec("self.par2 = \"" + x.get("param2") + "\"")
+											if confcat == "porn":
+												exec("self.pornscreen = " + x.get("screen") + "")
+											elif kids != "1" and config.mediaportal.kidspin.value:
+												exec("self.pornscreen = " + x.get("screen") + "")
 											else:
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-											if not config.mediaportal.debugMode.value == "High":
-												return
-									param = ""
-									param1 = x.get("param1")
-									param2 = x.get("param2")
-									kids = x.get("kids")
-									if param1 != "":
-										param = ", \"" + param1 + "\""
-										exec("self.par1 = \"" + x.get("param1") + "\"")
-									if param2 != "":
-										param = param + ", \"" + param2 + "\""
-										exec("self.par2 = \"" + x.get("param2") + "\"")
-									if confcat == "porn":
-										exec("self.pornscreen = " + x.get("screen") + "")
-									elif kids != "1" and config.mediaportal.kidspin.value:
-										exec("self.pornscreen = " + x.get("screen") + "")
-									else:
-										exec("self.session.open(" + x.get("screen") + param + ")")
+												exec("self.session.open(" + x.get("screen") + param + ")")
 		except:
 			pass
 
@@ -1779,23 +1779,23 @@ class MPWall(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					modfile = x.get("modfile")
-					confcat = x.get("confcat")
-					if modfile == "music.canna" and not mechanizeModule:
-						pass
-					elif not config.mediaportal.showporn.value and confcat == "porn":
-						pass
-					else:
-						gz = x.get("gz")
-						if not config.mediaportal.showgrauzone.value and gz == "1":
-							pass
-						else:
-							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-							if mod:
-								y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							modfile = x.get("modfile")
+							confcat = x.get("confcat")
+							if modfile == "music.canna" and not mechanizeModule:
+								pass
+							elif not config.mediaportal.showporn.value and confcat == "porn":
+								pass
+							else:
+								gz = x.get("gz")
+								if not config.mediaportal.showgrauzone.value and gz == "1":
+									pass
+								else:
+									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+									if mod:
+										y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -1806,23 +1806,23 @@ class MPWall(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								modfile = x.get("modfile")
-								confcat = x.get("confcat")
-								if modfile == "music.canna" and not mechanizeModule:
-									pass
-								elif not config.mediaportal.showporn.value and confcat == "porn":
-									pass
-								else:
-									gz = x.get("gz")
-									if not config.mediaportal.showgrauzone.value and gz == "1":
-										pass
-									else:
-										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-										if mod:
-											y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										modfile = x.get("modfile")
+										confcat = x.get("confcat")
+										if modfile == "music.canna" and not mechanizeModule:
+											pass
+										elif not config.mediaportal.showporn.value and confcat == "porn":
+											pass
+										else:
+											gz = x.get("gz")
+											if not config.mediaportal.showgrauzone.value and gz == "1":
+												pass
+											else:
+												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+												if mod:
+													y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
 		except:
 			pass
 
@@ -2486,36 +2486,36 @@ class MPWall(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					confcat = x.get("confcat")
-					if auswahl ==  x.get("name").replace("&amp;","&"):
-						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-						if status:
-							if int(config.mediaportal.version.value) < int(status[0][1]):
-								if status[0][1] == "9999":
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							confcat = x.get("confcat")
+							if auswahl ==  x.get("name").replace("&amp;","&"):
+								status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+								if status:
+									if int(config.mediaportal.version.value) < int(status[0][1]):
+										if status[0][1] == "9999":
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+										else:
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+										if not config.mediaportal.debugMode.value == "High":
+											return
+								param = ""
+								param1 = x.get("param1")
+								param2 = x.get("param2")
+								kids = x.get("kids")
+								if param1 != "":
+									param = ", \"" + param1 + "\""
+									exec("self.par1 = \"" + x.get("param1") + "\"")
+								if param2 != "":
+									param = param + ", \"" + param2 + "\""
+									exec("self.par2 = \"" + x.get("param2") + "\"")
+								if confcat == "porn":
+									exec("self.pornscreen = " + x.get("screen") + "")
+								elif kids != "1" and config.mediaportal.kidspin.value:
+									exec("self.pornscreen = " + x.get("screen") + "")
 								else:
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-								if not config.mediaportal.debugMode.value == "High":
-									return
-						param = ""
-						param1 = x.get("param1")
-						param2 = x.get("param2")
-						kids = x.get("kids")
-						if param1 != "":
-							param = ", \"" + param1 + "\""
-							exec("self.par1 = \"" + x.get("param1") + "\"")
-						if param2 != "":
-							param = param + ", \"" + param2 + "\""
-							exec("self.par2 = \"" + x.get("param2") + "\"")
-						if confcat == "porn":
-							exec("self.pornscreen = " + x.get("screen") + "")
-						elif kids != "1" and config.mediaportal.kidspin.value:
-							exec("self.pornscreen = " + x.get("screen") + "")
-						else:
-							exec("self.session.open(" + x.get("screen") + param + ")")
+									exec("self.session.open(" + x.get("screen") + param + ")")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -2526,36 +2526,36 @@ class MPWall(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								confcat = x.get("confcat")
-								if auswahl ==  x.get("name").replace("&amp;","&"):
-									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-									if status:
-										if int(config.mediaportal.version.value) < int(status[0][1]):
-											if status[0][1] == "9999":
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										confcat = x.get("confcat")
+										if auswahl ==  x.get("name").replace("&amp;","&"):
+											status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+											if status:
+												if int(config.mediaportal.version.value) < int(status[0][1]):
+													if status[0][1] == "9999":
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+													else:
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+													if not config.mediaportal.debugMode.value == "High":
+														return
+											param = ""
+											param1 = x.get("param1")
+											param2 = x.get("param2")
+											kids = x.get("kids")
+											if param1 != "":
+												param = ", \"" + param1 + "\""
+												exec("self.par1 = \"" + x.get("param1") + "\"")
+											if param2 != "":
+												param = param + ", \"" + param2 + "\""
+												exec("self.par2 = \"" + x.get("param2") + "\"")
+											if confcat == "porn":
+												exec("self.pornscreen = " + x.get("screen") + "")
+											elif kids != "1" and config.mediaportal.kidspin.value:
+												exec("self.pornscreen = " + x.get("screen") + "")
 											else:
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-											if not config.mediaportal.debugMode.value == "High":
-												return
-									param = ""
-									param1 = x.get("param1")
-									param2 = x.get("param2")
-									kids = x.get("kids")
-									if param1 != "":
-										param = ", \"" + param1 + "\""
-										exec("self.par1 = \"" + x.get("param1") + "\"")
-									if param2 != "":
-										param = param + ", \"" + param2 + "\""
-										exec("self.par2 = \"" + x.get("param2") + "\"")
-									if confcat == "porn":
-										exec("self.pornscreen = " + x.get("screen") + "")
-									elif kids != "1" and config.mediaportal.kidspin.value:
-										exec("self.pornscreen = " + x.get("screen") + "")
-									else:
-										exec("self.session.open(" + x.get("screen") + param + ")")
+												exec("self.session.open(" + x.get("screen") + param + ")")
 		except:
 			pass
 
@@ -2863,23 +2863,23 @@ class MPWall2(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					modfile = x.get("modfile")
-					confcat = x.get("confcat")
-					if modfile == "music.canna" and not mechanizeModule:
-						pass
-					elif not config.mediaportal.showporn.value and confcat == "porn":
-						pass
-					else:
-						gz = x.get("gz")
-						if not config.mediaportal.showgrauzone.value and gz == "1":
-							pass
-						else:
-							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-							if mod:
-								y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							modfile = x.get("modfile")
+							confcat = x.get("confcat")
+							if modfile == "music.canna" and not mechanizeModule:
+								pass
+							elif not config.mediaportal.showporn.value and confcat == "porn":
+								pass
+							else:
+								gz = x.get("gz")
+								if not config.mediaportal.showgrauzone.value and gz == "1":
+									pass
+								else:
+									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+									if mod:
+										y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -2890,23 +2890,23 @@ class MPWall2(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								modfile = x.get("modfile")
-								confcat = x.get("confcat")
-								if modfile == "music.canna" and not mechanizeModule:
-									pass
-								elif not config.mediaportal.showporn.value and confcat == "porn":
-									pass
-								else:
-									gz = x.get("gz")
-									if not config.mediaportal.showgrauzone.value and gz == "1":
-										pass
-									else:
-										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-										if mod:
-											y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										modfile = x.get("modfile")
+										confcat = x.get("confcat")
+										if modfile == "music.canna" and not mechanizeModule:
+											pass
+										elif not config.mediaportal.showporn.value and confcat == "porn":
+											pass
+										else:
+											gz = x.get("gz")
+											if not config.mediaportal.showgrauzone.value and gz == "1":
+												pass
+											else:
+												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+												if mod:
+													y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
 		except:
 			pass
 
@@ -3380,36 +3380,36 @@ class MPWall2(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					confcat = x.get("confcat")
-					if p_name ==  x.get("name").replace("&amp;","&"):
-						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-						if status:
-							if int(config.mediaportal.version.value) < int(status[0][1]):
-								if status[0][1] == "9999":
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							confcat = x.get("confcat")
+							if p_name ==  x.get("name").replace("&amp;","&"):
+								status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+								if status:
+									if int(config.mediaportal.version.value) < int(status[0][1]):
+										if status[0][1] == "9999":
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+										else:
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+										if not config.mediaportal.debugMode.value == "High":
+											return
+								param = ""
+								param1 = x.get("param1")
+								param2 = x.get("param2")
+								kids = x.get("kids")
+								if param1 != "":
+									param = ", \"" + param1 + "\""
+									exec("self.par1 = \"" + x.get("param1") + "\"")
+								if param2 != "":
+									param = param + ", \"" + param2 + "\""
+									exec("self.par2 = \"" + x.get("param2") + "\"")
+								if confcat == "porn":
+									exec("self.pornscreen = " + x.get("screen") + "")
+								elif kids != "1" and config.mediaportal.kidspin.value:
+									exec("self.pornscreen = " + x.get("screen") + "")
 								else:
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-								if not config.mediaportal.debugMode.value == "High":
-									return
-						param = ""
-						param1 = x.get("param1")
-						param2 = x.get("param2")
-						kids = x.get("kids")
-						if param1 != "":
-							param = ", \"" + param1 + "\""
-							exec("self.par1 = \"" + x.get("param1") + "\"")
-						if param2 != "":
-							param = param + ", \"" + param2 + "\""
-							exec("self.par2 = \"" + x.get("param2") + "\"")
-						if confcat == "porn":
-							exec("self.pornscreen = " + x.get("screen") + "")
-						elif kids != "1" and config.mediaportal.kidspin.value:
-							exec("self.pornscreen = " + x.get("screen") + "")
-						else:
-							exec("self.session.open(" + x.get("screen") + param + ")")
+									exec("self.session.open(" + x.get("screen") + param + ")")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -3420,36 +3420,36 @@ class MPWall2(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								confcat = x.get("confcat")
-								if p_name ==  x.get("name").replace("&amp;","&"):
-									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-									if status:
-										if int(config.mediaportal.version.value) < int(status[0][1]):
-											if status[0][1] == "9999":
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										confcat = x.get("confcat")
+										if p_name ==  x.get("name").replace("&amp;","&"):
+											status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+											if status:
+												if int(config.mediaportal.version.value) < int(status[0][1]):
+													if status[0][1] == "9999":
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+													else:
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+													if not config.mediaportal.debugMode.value == "High":
+														return
+											param = ""
+											param1 = x.get("param1")
+											param2 = x.get("param2")
+											kids = x.get("kids")
+											if param1 != "":
+												param = ", \"" + param1 + "\""
+												exec("self.par1 = \"" + x.get("param1") + "\"")
+											if param2 != "":
+												param = param + ", \"" + param2 + "\""
+												exec("self.par2 = \"" + x.get("param2") + "\"")
+											if confcat == "porn":
+												exec("self.pornscreen = " + x.get("screen") + "")
+											elif kids != "1" and config.mediaportal.kidspin.value:
+												exec("self.pornscreen = " + x.get("screen") + "")
 											else:
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-											if not config.mediaportal.debugMode.value == "High":
-												return
-									param = ""
-									param1 = x.get("param1")
-									param2 = x.get("param2")
-									kids = x.get("kids")
-									if param1 != "":
-										param = ", \"" + param1 + "\""
-										exec("self.par1 = \"" + x.get("param1") + "\"")
-									if param2 != "":
-										param = param + ", \"" + param2 + "\""
-										exec("self.par2 = \"" + x.get("param2") + "\"")
-									if confcat == "porn":
-										exec("self.pornscreen = " + x.get("screen") + "")
-									elif kids != "1" and config.mediaportal.kidspin.value:
-										exec("self.pornscreen = " + x.get("screen") + "")
-									else:
-										exec("self.session.open(" + x.get("screen") + param + ")")
+												exec("self.session.open(" + x.get("screen") + param + ")")
 		except:
 			pass
 
@@ -3683,23 +3683,23 @@ class MPWall3(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					modfile = x.get("modfile")
-					confcat = x.get("confcat")
-					if modfile == "music.canna" and not mechanizeModule:
-						pass
-					elif not config.mediaportal.showporn.value and confcat == "porn":
-						pass
-					else:
-						gz = x.get("gz")
-						if not config.mediaportal.showgrauzone.value and gz == "1":
-							pass
-						else:
-							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-							if mod:
-								y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							modfile = x.get("modfile")
+							confcat = x.get("confcat")
+							if modfile == "music.canna" and not mechanizeModule:
+								pass
+							elif not config.mediaportal.showporn.value and confcat == "porn":
+								pass
+							else:
+								gz = x.get("gz")
+								if not config.mediaportal.showgrauzone.value and gz == "1":
+									pass
+								else:
+									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+									if mod:
+										y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -3710,23 +3710,23 @@ class MPWall3(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								modfile = x.get("modfile")
-								confcat = x.get("confcat")
-								if modfile == "music.canna" and not mechanizeModule:
-									pass
-								elif not config.mediaportal.showporn.value and confcat == "porn":
-									pass
-								else:
-									gz = x.get("gz")
-									if not config.mediaportal.showgrauzone.value and gz == "1":
-										pass
-									else:
-										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
-										if mod:
-											y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										modfile = x.get("modfile")
+										confcat = x.get("confcat")
+										if modfile == "music.canna" and not mechanizeModule:
+											pass
+										elif not config.mediaportal.showporn.value and confcat == "porn":
+											pass
+										else:
+											gz = x.get("gz")
+											if not config.mediaportal.showgrauzone.value and gz == "1":
+												pass
+											else:
+												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
+												if mod:
+													y = eval("self.plugin_liste.append((\"" + x.get("name").replace("&amp;","&") + "\", \"" + x.get("icon") + "\", \"" + x.get("filter") + "\"))")
 		except:
 			pass
 
@@ -4205,36 +4205,36 @@ class MPWall3(Screen, HelpableScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					confcat = x.get("confcat")
-					if p_name ==  x.get("name").replace("&amp;","&"):
-						status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-						if status:
-							if int(config.mediaportal.version.value) < int(status[0][1]):
-								if status[0][1] == "9999":
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							confcat = x.get("confcat")
+							if p_name ==  x.get("name").replace("&amp;","&"):
+								status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+								if status:
+									if int(config.mediaportal.version.value) < int(status[0][1]):
+										if status[0][1] == "9999":
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+										else:
+											self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+										if not config.mediaportal.debugMode.value == "High":
+											return
+								param = ""
+								param1 = x.get("param1")
+								param2 = x.get("param2")
+								kids = x.get("kids")
+								if param1 != "":
+									param = ", \"" + param1 + "\""
+									exec("self.par1 = \"" + x.get("param1") + "\"")
+								if param2 != "":
+									param = param + ", \"" + param2 + "\""
+									exec("self.par2 = \"" + x.get("param2") + "\"")
+								if confcat == "porn":
+									exec("self.pornscreen = " + x.get("screen") + "")
+								elif kids != "1" and config.mediaportal.kidspin.value:
+									exec("self.pornscreen = " + x.get("screen") + "")
 								else:
-									self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-								if not config.mediaportal.debugMode.value == "High":
-									return
-						param = ""
-						param1 = x.get("param1")
-						param2 = x.get("param2")
-						kids = x.get("kids")
-						if param1 != "":
-							param = ", \"" + param1 + "\""
-							exec("self.par1 = \"" + x.get("param1") + "\"")
-						if param2 != "":
-							param = param + ", \"" + param2 + "\""
-							exec("self.par2 = \"" + x.get("param2") + "\"")
-						if confcat == "porn":
-							exec("self.pornscreen = " + x.get("screen") + "")
-						elif kids != "1" and config.mediaportal.kidspin.value:
-							exec("self.pornscreen = " + x.get("screen") + "")
-						else:
-							exec("self.session.open(" + x.get("screen") + param + ")")
+									exec("self.session.open(" + x.get("screen") + param + ")")
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 			for file in os.listdir(xmlpath):
@@ -4245,36 +4245,36 @@ class MPWall3(Screen, HelpableScreen):
 					for x in conf.getroot():
 						if x.tag == "set" and x.get("name") == 'additions_user':
 							root =  x
-					for x in root:
-						if x.tag == "plugin":
-							if x.get("type") == "mod":
-								confcat = x.get("confcat")
-								if p_name ==  x.get("name").replace("&amp;","&"):
-									status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
-									if status:
-										if int(config.mediaportal.version.value) < int(status[0][1]):
-											if status[0][1] == "9999":
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										confcat = x.get("confcat")
+										if p_name ==  x.get("name").replace("&amp;","&"):
+											status = [item for item in mp_globals.status if item[0] == x.get("modfile")]
+											if status:
+												if int(config.mediaportal.version.value) < int(status[0][1]):
+													if status[0][1] == "9999":
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"\n\nIf someone else is willing to provide a fix for this Plugin then please get in contact with us.") % status[0][2], MessageBoxExt.TYPE_INFO)
+													else:
+														self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
+													if not config.mediaportal.debugMode.value == "High":
+														return
+											param = ""
+											param1 = x.get("param1")
+											param2 = x.get("param2")
+											kids = x.get("kids")
+											if param1 != "":
+												param = ", \"" + param1 + "\""
+												exec("self.par1 = \"" + x.get("param1") + "\"")
+											if param2 != "":
+												param = param + ", \"" + param2 + "\""
+												exec("self.par2 = \"" + x.get("param2") + "\"")
+											if confcat == "porn":
+												exec("self.pornscreen = " + x.get("screen") + "")
+											elif kids != "1" and config.mediaportal.kidspin.value:
+												exec("self.pornscreen = " + x.get("screen") + "")
 											else:
-												self.session.open(MessageBoxExt, _("This Plugin has been marked as \"not working\" by the developers.\n\nCurrent developer status of this Plugin is:\n\"%s\"") % status[0][2], MessageBoxExt.TYPE_INFO)
-											if not config.mediaportal.debugMode.value == "High":
-												return
-									param = ""
-									param1 = x.get("param1")
-									param2 = x.get("param2")
-									kids = x.get("kids")
-									if param1 != "":
-										param = ", \"" + param1 + "\""
-										exec("self.par1 = \"" + x.get("param1") + "\"")
-									if param2 != "":
-										param = param + ", \"" + param2 + "\""
-										exec("self.par2 = \"" + x.get("param2") + "\"")
-									if confcat == "porn":
-										exec("self.pornscreen = " + x.get("screen") + "")
-									elif kids != "1" and config.mediaportal.kidspin.value:
-										exec("self.pornscreen = " + x.get("screen") + "")
-									else:
-										exec("self.session.open(" + x.get("screen") + param + ")")
+												exec("self.session.open(" + x.get("screen") + param + ")")
 		except:
 			pass
 

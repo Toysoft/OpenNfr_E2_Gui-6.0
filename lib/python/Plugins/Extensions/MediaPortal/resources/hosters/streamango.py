@@ -1,11 +1,28 @@
 ﻿# -*- coding: utf-8 -*-
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
+from Plugins.Extensions.MediaPortal.resources.messageboxext import MessageBoxExt
+from Plugins.Extensions.MediaPortal.resources.packer import unpack, detect
 
 def streamango(self, data):
-	stream_url = re.findall('type:"video/mp4",src:"(//streamango.com.*?)"', data)
-	if stream_url:
-		url = 'http:'+stream_url[0]
-		self._callback(url)
+	get_packedjava = re.findall("<script type=.text.javascript.*?(eval.function.*?\{\}\)\))", data, re.S)
+	if get_packedjava and detect(get_packedjava[0]):
+		sJavascript = get_packedjava[0]
+		sUnpacked = unpack(sJavascript)
+		if sUnpacked:
+			js = sUnpacked.decode('string_escape').replace('window.d=function','d=function')
+			dec = re.findall('video\/mp4\",src:(.*?\)),', data, re.S)
+			js = js + ';\nvidurl = ' + dec[0] + ';\nreturn vidurl;'
+			try:
+				import execjs
+				node = execjs.get("Node")
+				url = str(node.exec_(js))
+				if url.startswith('//'):
+					url = 'http:' + url
+				self._callback(url)
+			except:
+				self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+		else:
+			self.stream_not_found()
 	else:
 		self.stream_not_found()

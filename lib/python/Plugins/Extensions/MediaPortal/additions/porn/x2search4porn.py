@@ -284,15 +284,37 @@ class toSearchForPornBrowse(MPScreen):
 		for x in conf.getroot():
 			if x.tag == "set" and x.get("name") == 'additions':
 				root =  x
-		for x in root:
-			if x.tag == "plugin":
-				if x.get("type") == "mod":
-					if x.get("confcat") == "porn" and x.get("search") == "1":
-							if auswahl == x.get("name").replace("&amp;","&"):
-								modfile = x.get("modfile")
-								modfile = "Plugins.Extensions.MediaPortal.additions.%s.%s" % (modfile.split(".")[0], modfile.split(".")[1])
-								exec("from "+modfile+" import *")
-								exec("self.suchString = self.suchString")
-								exec("Name = \"2Search4Porn - %s\" % (self.suchString)")
-								exec("Link = \""+x.get("searchurl").replace("&amp;","&")+"\" % (self.suchString.replace(\" \",\""+x.get("delim")+"\"))")
-								exec("self.session.open("+x.get("searchscreen")+", Link, Name"+x.get("searchparam").replace("&quot;","\"")+")")
+				for x in root:
+					if x.tag == "plugin":
+						if x.get("type") == "mod":
+							if x.get("confcat") == "porn" and x.get("search") == "1":
+									if auswahl == x.get("name").replace("&amp;","&"):
+										modfile = x.get("modfile")
+										modfile = "Plugins.Extensions.MediaPortal.additions.%s.%s" % (modfile.split(".")[0], modfile.split(".")[1])
+										exec("from "+modfile+" import *")
+										exec("Name = \"2Search4Porn - %s\" % self.suchString")
+										exec("Link = \""+x.get("searchurl").replace("&amp;","&")+"\" % self.suchString.replace(\" \",\""+x.get("delim")+"\")")
+										exec("self.session.open("+x.get("searchscreen")+", Link, Name"+x.get("searchparam").replace("&quot;","\"")+")")
+		try:
+			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
+			for file in os.listdir(xmlpath):
+				if file.endswith(".xml") and file != "additions.xml":
+					useraddition = xmlpath + file
+
+					conf = xml.etree.cElementTree.parse(useraddition)
+					for x in conf.getroot():
+						if x.tag == "set" and x.get("name") == 'additions_user':
+							root =  x
+							for x in root:
+								if x.tag == "plugin":
+									if x.get("type") == "mod":
+										if x.get("confcat") == "porn" and x.get("search") == "1":
+												if auswahl == x.get("name").replace("&amp;","&"):
+													modfile = x.get("modfile")
+													modfile = "Plugins.Extensions.MediaPortal.additions.%s.%s" % (modfile.split(".")[0], modfile.split(".")[1])
+													exec("from "+modfile+" import *")
+													exec("Name = \"2Search4Porn - %s\" % self.suchString")
+													exec("Link = \""+x.get("searchurl").replace("&amp;","&")+"\" % self.suchString.replace(\" \",\""+x.get("delim")+"\")")
+													exec("self.session.open("+x.get("searchscreen")+", Link, Name"+x.get("searchparam").replace("&quot;","\"")+")")
+		except:
+			pass

@@ -257,6 +257,7 @@ def decodeHtml(text):
 	text = text.replace('&#215;','×')
 	text = text.replace('&#225;','a')
 	text = text.replace('&#233;','e')
+	text = text.replace('&#241;','ñ')
 	text = text.replace('&#243;','o')
 	text = text.replace('&#8211;',"-")
 	text = text.replace('&#8212;',"—")

@@ -179,34 +179,18 @@ class eroprofileFilmScreen(MPScreen, ThumbsHelper):
 		elif (self.ID == "" or self.ID == "home"):
 			url = 'http://www.eroprofile.com/m/videos/home?niche=13.14.12.19.27.25.5.11.18.20.23.24.10.26.17.7.15.6.30.16.28.9.8&text=%s&pnum=%s' % (self.SearchString, str(self.page))
 		else:
-			url = 'http://www.eroprofile.com/m/videos/niche/%s/?pnum=%s' % (self.ID, str(self.page))
+			url = 'http://www.eroprofile.com/m/videos/search?niche=%s&pnum=%s' % (self.ID, str(self.page))
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		if "divVideoListPageNav" in data:
-			self.getLastPage(data, 'id="divVideoListPageNav">(.*?)</div>','.*pnum=(\d+)')
-			Movies = re.findall('class="video">.*?<a\shref="(.*?)"><img\ssrc="(.*?)".*?class="videoDur">(.*?)</div>.*?(?:class="videoTtl">|class="videoTtl"\stitle=")(.*?)(?:</div|")', data, re.S)
-			if Movies:
-				for (Url, Image, Runtime, Title) in Movies:
-					if Image.startswith('//'):
-						Image = "http:" + Image
-					Url = "http://www.eroprofile.com" + Url
-					self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
-		else:
-			lastp = re.search('class="maxW"><tr><td><b>(.*?)</b>\sresults</td>', data, re.S)
-			if lastp:
-				lastp = round((float(lastp.group(1)) / 12) + 0.5)
-				self.lastpage = int(lastp)
-			else:
-				self.lastpage = 1
-			self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
-			Movies = re.findall('class="video">.*?img\ssrc="(.*?)".*?class="title"><a\shref="(.*?)">(.*?)</a.*?class="duration">(.*?)</div>', data, re.S)
-			if Movies:
-				for (Image, Url, Title, Runtime) in Movies:
-					if Image.startswith('//'):
-						Image = "http:" + Image
-					Url = "http://www.eroprofile.com" + Url
-					self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
+		self.getLastPage(data, 'id="divVideoListPageNav">(.*?)</div>','.*pnum=(\d+)')
+		Movies = re.findall('class="video">.*?<a\shref="(.*?)"><img\ssrc="(.*?)".*?class="videoDur">(.*?)</div>.*?(?:class="videoTtl">|class="videoTtl"\stitle=")(.*?)(?:</div|")', data, re.S)
+		if Movies:
+			for (Url, Image, Runtime, Title) in Movies:
+				if Image.startswith('//'):
+					Image = "http:" + Image
+				Url = "http://www.eroprofile.com" + Url
+				self.filmliste.append((decodeHtml(Title), Url, Image.replace('amp;',''), Runtime))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), None, '', ''))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))

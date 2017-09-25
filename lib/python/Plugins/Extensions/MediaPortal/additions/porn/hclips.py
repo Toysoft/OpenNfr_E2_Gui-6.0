@@ -263,6 +263,21 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 	def getVideoPage(self, data):
 		videoPage = re.findall("file':\s'(http[s]?:(?:(?://)|(?:\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*.mp4.*?)\',type", data, re.S)
 		if videoPage:
+			url = videoPage[-1]
+		else:
+			try:
+				import execjs
+				node = execjs.get("Node")
+				decstring = re.findall('sources\[\d\]={type:\'mp4\',file:([a-zA-Z0-9]+)\(', data, re.S)
+				decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
+				video_url = re.findall('(var video_url.*?;)', data, re.S)
+				js = decoder[0] + "\n" + video_url[0] + "\n" + "vidurl = (%s(video_url));" % decstring[0] + "\n" + "return vidurl;"
+				url = str(node.exec_(js))
+			except:
+				printl('nodejs not found',self,'E')
+				self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+				url = None
+		if url:
 			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, videoPage[-1])], showPlaylist=False, ltype='hclips')
+			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='hclips')

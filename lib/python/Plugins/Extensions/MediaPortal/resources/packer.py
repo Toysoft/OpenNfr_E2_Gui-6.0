@@ -45,19 +45,21 @@ def unpack(source):
 def _filterargs(source):
     """Juice from a source file the four args needed by decoder."""
     juicers = [ (r"}\('(.*)', *(\d+), *(\d+), *'(.*)'\.split\('\|'\), *(\d+), *(.*)\)\)"),
-                (r"}\('(.*)', *(\d+), *(\d+), *'(.*)'\.split\('\|'\)"),
+		(r"}\('(.*)', *(\d+|0x[0-9A-F]+), *(\d+|0x[0-9A-F]+), *'(.*)'\.split\('\|'\)"),
               ]
     for juicer in juicers:
-        args = re.search(juicer, source, re.DOTALL)
+        args = re.search(juicer, source, re.S)
         if args:
             a = args.groups()
             try:
-                return a[0], a[3].split('|'), int(a[1]), int(a[2])
+		return a[0], a[3].split('|'), int(a[1], 0), int(a[2], 0)
             except ValueError:
                 raise UnpackingError('Corrupted p.a.c.k.e.r. data.')
 
     # could not find a satisfying regex
     raise UnpackingError('Could not make sense of p.a.c.k.e.r data (unexpected code structure)')
+
+
 
 def _replacestrings(source):
     """Strip string lookup table (list) and replace values in source."""
@@ -73,10 +75,13 @@ def _replacestrings(source):
         return source[startpoint:]
     return source
 
+
 class Unbaser(object):
     """Functor for a given base. Will efficiently convert
-strings to natural numbers."""
-    ALPHABET = {
+    strings to natural numbers."""
+    ALPHABET  = {
+        53 : '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',
+        59 : '0123456789abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ',
         62 : '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
         95 : (' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ'
               '[\]^_`abcdefghijklmnopqrstuvwxyz{|}~')
