@@ -9,6 +9,7 @@ from Components.Pixmap import Pixmap
 from Tools.BoundFunction import boundFunction
 from Tools.Notifications import AddPopup
 from time import time
+from Components.config import config
 
 class InputBox(Screen):
 	def __init__(self, session, title = "", windowTitle = _("Input"), useableChars = None, **kwargs):
@@ -49,7 +50,10 @@ class InputBox(Screen):
 		}, -1)
 
 		if self["input"].type == Input.TEXT:
-			self.onExecBegin.append(self.setKeyboardModeAscii)
+			if config.misc.remotecontrol_text_support.value:
+				self.onExecBegin.append(self.setKeyboardModeNone)
+			else:
+				self.onExecBegin.append(self.setKeyboardModeAscii)
 		else:
 			self.onExecBegin.append(self.setKeyboardModeNone)
 
