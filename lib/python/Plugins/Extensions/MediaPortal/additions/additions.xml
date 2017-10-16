@@ -22,7 +22,7 @@
 		<plugin type="mod" modfile="fun.dokustream" confopt="showDokuStream" default="True" confcat="fun" listcat="funsport" gz="0" name="DokuStream" icon="dokustream" filter="Fun" screen="show_DS_Genre" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.dokus4_me" confopt="showDokus4me" default="True" confcat="fun" listcat="funsport" gz="0" name="dokus4.me" icon="dokus4_me" filter="Fun" screen="show_D4ME_Genre" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gigatv" confopt="showGIGA" default="True" confcat="fun" listcat="funsport" gz="0" name="GIGA.de" icon="gigatv" filter="Fun" screen="gigatvGenreScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.gronkh" confopt="showgronkh" default="True" confcat="fun" listcat="funsport" gz="0" name="gronkh.de" icon="gronkh" filter="Fun" screen="gronkhGenreScreen" param1="" param2=""/>
+		<!--<plugin type="mod" modfile="fun.gronkh" confopt="showgronkh" default="True" confcat="fun" listcat="funsport" gz="0" name="gronkh.de" icon="gronkh" filter="Fun" screen="gronkhGenreScreen" param1="" param2=""/>-->
 		<plugin type="mod" modfile="fun.wissen" confopt="showwissen" default="True" confcat="fun" listcat="funsport" gz="0" name="Wissen.de" icon="wissen" filter="Fun" screen="wissenListeScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.bild" confopt="showbildde" default="True" confcat="fun" listcat="funsport" gz="0" name="Bild.de" icon="bild" filter="Fun" screen="bildFirstScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gaskrank_tv" confopt="showGaskrank" default="False" confcat="fun" listcat="funsport" gz="0" name="GasKrank.tv" icon="gaskrank_tv" filter="Fun" screen="show_GKTV_Genre" param1="" param2=""/>

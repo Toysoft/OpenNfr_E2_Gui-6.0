@@ -81,7 +81,7 @@ class ORFGenreScreen(MPScreen):
 		self.genreliste.insert(0, ('0-9', '0'))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
-		
+
 	def keyOK(self):
 		if self.keyLocked:
 			return
@@ -261,7 +261,9 @@ class ORFStreamListeScreen(MPScreen, ThumbsHelper):
 		if folgen:
 			self.streamliste = []
 			for (title, desc, image, urls) in folgen[:-1]:
-				url = re.search('"quality":"Q6A","quality_string":"hoch","src":"(http://apasfpd.apa.at.*?.mp4)",', urls, re.S)
+				url = re.search('"quality":"Q8C","quality_string":"sehr hoch \(HD\)","src":"(http://apasfpd.apa.at.*?.mp4)",', urls, re.S)
+				if not url:
+					url = re.search('"quality":"Q6A","quality_string":"hoch","src":"(http://apasfpd.apa.at.*?.mp4)",', urls, re.S)
 				title = title.replace('\\"','"')
 				if desc == "null":
 					desc = ""

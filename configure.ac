@@ -798,7 +798,7 @@ lib/python/Plugins/Extensions/TuxboxPlugins/meta/Makefile
 lib/python/Plugins/Extensions/MediaPortal/Makefile
 lib/python/Plugins/Extensions/MediaPortal/additions/Makefile
 lib/python/Plugins/Extensions/MediaPortal/additions/fun/Makefile
-lib/python/Plugins/Extensions/MediaPortal/additions/grauzone/Makefile
+lib/python/Plugins/Extensions/MediaPortal/additions/useradditions/Makefile
 lib/python/Plugins/Extensions/MediaPortal/additions/mediatheken/Makefile
 lib/python/Plugins/Extensions/MediaPortal/additions/music/Makefile
 lib/python/Plugins/Extensions/MediaPortal/additions/porn/Makefile
@@ -807,6 +807,7 @@ lib/python/Plugins/Extensions/MediaPortal/icons/Makefile
 lib/python/Plugins/Extensions/MediaPortal/icons_bw/Makefile
 lib/python/Plugins/Extensions/MediaPortal/icons_zoom/Makefile
 lib/python/Plugins/Extensions/MediaPortal/images/Makefile
+lib/python/Plugins/Extensions/MediaPortal/logos/Makefile
 lib/python/Plugins/Extensions/MediaPortal/locale/Makefile
 lib/python/Plugins/Extensions/MediaPortal/locale/de/Makefile
 lib/python/Plugins/Extensions/MediaPortal/locale/de/LC_MESSAGES/Makefile
@@ -821,13 +822,9 @@ lib/python/Plugins/Extensions/MediaPortal/skins_720/liquidblue/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/liquidblue/images/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/original/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/original/images/Makefile
-lib/python/Plugins/Extensions/MediaPortal/skins_720/sml/Makefile
-lib/python/Plugins/Extensions/MediaPortal/skins_720/sml/images/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/tec/simpleplayer/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/tec/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_720/tec/images/Makefile
-lib/python/Plugins/Extensions/MediaPortal/skins_720/weed_EvoAero/Makefile
-lib/python/Plugins/Extensions/MediaPortal/skins_720/weed_EvoAero/images/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_1080/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_1080/clean_fhd/Makefile
 lib/python/Plugins/Extensions/MediaPortal/skins_1080/clean_fhd/simpleplayer/Makefile

@@ -43,7 +43,7 @@ class ahmeGenreScreen(MPScreen):
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats = re.findall('class="category">.*?<a\shref="(.*?)page1.html">.*?="thumb"\ssrc="(.*?)"\salt="(.*?)"', data, re.S)
+		Cats = re.findall('class="category">.*?<a\shref="(.*?)page1.html">.*?="thumb"\ssrc="(.*?)".*?alt="(.*?)"', data, re.S)
 		if Cats:
 			for (Url, Pic, Title) in Cats:
 				self.genreliste.append((decodeHtml(Title), Url, Pic))

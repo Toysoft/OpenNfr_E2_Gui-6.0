@@ -16,8 +16,8 @@
 -->
   <widget backgroundColor="#20000000" font="mediaportal;35" name="Mediatheken" position="30,205" size="460,45" transparent="1" />
   <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="mediatheken" position="30,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
-  <widget backgroundColor="#20000000" font="mediaportal;35" name="Grauzone" position="500,205" size="460,45" transparent="1" />
-  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="grauzone" position="500,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
+  <widget backgroundColor="#20000000" font="mediaportal;35" name="User-additions" position="500,205" size="460,45" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="useradditions" position="500,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
   <widget backgroundColor="#20000000" font="mediaportal;35" name="Funsport" position="970,205" size="460,45" transparent="1" />
   <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="funsport" position="970,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
   <widget backgroundColor="#20000000" font="mediaportal;35" name="Porn" position="1440,205" size="460,45" transparent="1" />

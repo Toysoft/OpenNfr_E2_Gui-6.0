@@ -63,17 +63,14 @@ from resources.twisted_hang import HangWatcher
 try:
 	from enigma import eWall, eWallPythonMultiContent, BT_SCALE
 	from Components.BaseWall import BaseWall
-	mp_globals.isVTi = True
-except:
-	mp_globals.isVTi = False
-
-if mp_globals.isVTi:
 	class CoverWall(BaseWall):
-
 		def setentry(self, entry):
 			res = [entry]
 			res.append((eWallPythonMultiContent.TYPE_COVER, eWallPythonMultiContent.SHOW_ALWAYS, loadPNG(entry[2]), BT_SCALE))
 			return res
+	mp_globals.isVTi = True
+except:
+	mp_globals.isVTi = False
 
 CONFIG = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/additions/additions.xml"
 
@@ -195,13 +192,13 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="904"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.4"))
+config.mediaportal.version = NoSave(ConfigText(default="907"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="9.0.7"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 config.mediaportal.pincode = ConfigPIN(default = 0000)
 config.mediaportal.showporn = ConfigYesNo(default = False)
-config.mediaportal.showgrauzone = ConfigYesNo(default = False)
-config.mediaportal.pingrauzone = ConfigYesNo(default = False)
+config.mediaportal.showuseradditions = ConfigYesNo(default = False)
+config.mediaportal.pinuseradditions = ConfigYesNo(default = False)
 config.mediaportal.ena_suggestions = ConfigYesNo(default = True)
 
 config.mediaportal.animation_coverart = ConfigSelection(default = "mp_crossfade_fast", choices = [("mp_crossfade_fast", _("Crossfade (fast)")),("mp_crossfade_slow", _("Crossfade (slow)"))])
@@ -232,7 +229,7 @@ if mp_globals.covercollection:
 elif mp_globals.videomode == 2 and mp_globals.fakeScale and not mp_globals.isVTi:
 	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("liste", _("List")),("wall", _("Wall"))])
 elif mp_globals.videomode == 2 and mp_globals.isVTi:
-	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("liste", _("List")),("wall", _("Wall")),("wall2_vti", _("Wall VTi"))])
+	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("liste", _("List")),("wall", _("Wall")),("wall_vti", _("Wall VTi"))])
 elif mp_globals.videomode == 2 and not mp_globals.isDreamOS:
 	config.mediaportal.ansicht = ConfigSelection(default = "liste", choices = [("liste", _("List"))])
 else:
@@ -248,7 +245,7 @@ config.mediaportal.hls_buffersize = ConfigInteger(default = 32, limits = (1,64))
 config.mediaportal.storagepath = ConfigText(default="/tmp/mediaportal/tmp/", fixed_size=False)
 config.mediaportal.iconcachepath = ConfigText(default="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/", fixed_size=False)
 config.mediaportal.autoplayThreshold = ConfigInteger(default = 50, limits = (1,100))
-config.mediaportal.filter = ConfigSelection(default = "ALL", choices = ["ALL", "Mediathek", "Grauzone", "Fun", "Sport", "Music", "Porn"])
+config.mediaportal.filter = ConfigSelection(default = "ALL", choices = ["ALL", "Mediathek", "User-additions", "Fun", "Sport", "Music", "Porn"])
 config.mediaportal.youtubeprio = ConfigSelection(default = "2", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
 config.mediaportal.videoquali_others = ConfigSelection(default = "2", choices = [("0", _("Low")),("1", _("Medium")),("2", _("High"))])
 config.mediaportal.youtube_max_items_pp = ConfigInteger(default = 19, limits = (10,50))
@@ -584,7 +581,7 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		self.fun = []
 		self.mediatheken = []
 		self.porn = []
-		self.grauzone = []
+		self.useradditions = []
 		### Allgemein
 		self._separator()
 		self.configlist.append(getConfigListEntry(_("GENERAL"), ))
@@ -652,7 +649,6 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		self.configlist.append(getConfigListEntry(_("Videoquality (others):"), config.mediaportal.videoquali_others, False))
 		self.configlist.append(getConfigListEntry(_("Watchlist/Playlist/Userchan path:"), config.mediaportal.watchlistpath, False))
 		self.configlist.append(getConfigListEntry(_("Show USER-Channels Help:"), config.mediaportal.show_userchan_help, False))
-		self.configlist.append(getConfigListEntry(_("Activate Grauzone:"), config.mediaportal.showgrauzone, False))
 		self.configlist.append(getConfigListEntry(_('SimpleList on key:'), config.mediaportal.simplelist_key, False))
 		if MediaInfoPresent:
 			self.configlist.append(getConfigListEntry(_('MediaInfo on key:'), config.mediaportal.sp_mi_key, False))
@@ -693,12 +689,12 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 							modfile = x.get("modfile")
 							gz = x.get("gz")
 							if modfile == "music.canna" and not mechanizeModule:
-								if not config.mediaportal.showgrauzone.value and gz == "1":
+								if not config.mediaportal.showuseradditions.value and gz == "1":
 									pass
 								else:
 									exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
 							else:
-								if not config.mediaportal.showgrauzone.value and gz == "1":
+								if not config.mediaportal.showuseradditions.value and gz == "1":
 									pass
 								else:
 									exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
@@ -719,12 +715,12 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 										modfile = x.get("modfile")
 										gz = x.get("gz")
 										if modfile == "music.canna" and not mechanizeModule:
-											if not config.mediaportal.showgrauzone.value and gz == "1":
+											if not config.mediaportal.showuseradditions.value and gz == "1":
 												pass
 											else:
 												exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
 										else:
-											if not config.mediaportal.showgrauzone.value and gz == "1":
+											if not config.mediaportal.showuseradditions.value and gz == "1":
 												pass
 											else:
 												exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
@@ -767,18 +763,23 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 			for x in self.porn:
 				self.configlist.append((_("Show ")+x[0]+":",x[1], False))
 
-		if config.mediaportal.showgrauzone.value:
-			self._separator()
-			self.configlist.append(getConfigListEntry(_("GRAYZONE"), ))
-			self._separator()
-			self.grauzone.sort(key=lambda t : t[0].lower())
-			for x in self.grauzone:
-				self.configlist.append((_("Show ")+x[0]+":",x[1], False))
+		test = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/useradditions/")
+
+		if len(os.listdir(test)) > 2:
+			if config.mediaportal.showuseradditions.value:
+				self._separator()
+				self.configlist.append(getConfigListEntry(_("USER-ADDITIONS"), ))
+				self._separator()
+				self.useradditions.sort(key=lambda t : t[0].lower())
+				for x in self.useradditions:
+					self.configlist.append((_("Show ")+x[0]+":",x[1], False))
 
 		self._separator()
 		self.configlist.append(getConfigListEntry("DEBUG", ))
 		self._separator()
 		self.configlist.append(getConfigListEntry("Debug-Mode:", config.mediaportal.debugMode, False))
+		if len(os.listdir(test)) > 2:
+			self.configlist.append(getConfigListEntry(_("Activate User-additions:"), config.mediaportal.showuseradditions, False))
 
 		self["config"].list = self.configlist
 		self["config"].setList(self.configlist)
@@ -816,12 +817,12 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 			config.mediaportal.iconcachepath.value = config.mediaportal.iconcachepath.value + '/'
 		if (config.mediaportal.showporn.value == False and config.mediaportal.filter.value == 'Porn'):
 			config.mediaportal.filter.value = 'ALL'
-		if (config.mediaportal.showgrauzone.value == False and config.mediaportal.filter.value == 'Grauzone'):
+		if (config.mediaportal.showuseradditions.value == False and config.mediaportal.filter.value == 'User-additions'):
 			config.mediaportal.filter.value = 'ALL'
 
 		CheckPathes(self.session).checkPathes(self.cb_checkPathes)
 
-		if (config.mediaportal.showgrauzone.value and not config.mediaportal.pingrauzone.value):
+		if (config.mediaportal.showuseradditions.value and not config.mediaportal.pinuseradditions.value):
 			self.a = str(random.randint(1,9))
 			self.b = str(random.randint(0,9))
 			self.c = str(random.randint(0,9))
@@ -830,9 +831,9 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 			message = _("Some of the plugins may not be legally used in your country!\n\nIf you accept this then enter the following code now:\n\n%s" % (code))
 			self.session.openWithCallback(self.keyOK2, MessageBoxExt, message, MessageBoxExt.TYPE_YESNO)
 		else:
-			if not config.mediaportal.showgrauzone.value:
-				config.mediaportal.pingrauzone.value = False
-				config.mediaportal.pingrauzone.save()
+			if not config.mediaportal.showuseradditions.value:
+				config.mediaportal.pinuseradditions.value = False
+				config.mediaportal.pinuseradditions.save()
 			self.keySave()
 
 	def premium(self):
@@ -849,10 +850,10 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		if answer is True:
 			self.session.openWithCallback(self.validcode, PinInputExt, pinList = [(int(self.a+self.b+self.c+self.d))], triesEntry = self.getTriesEntry(), title = _("Please enter the correct code"), windowTitle = _("Enter code"))
 		else:
-			config.mediaportal.showgrauzone.value = False
-			config.mediaportal.showgrauzone.save()
-			config.mediaportal.pingrauzone.value = False
-			config.mediaportal.pingrauzone.save()
+			config.mediaportal.showuseradditions.value = False
+			config.mediaportal.showuseradditions.save()
+			config.mediaportal.pinuseradditions.value = False
+			config.mediaportal.pinuseradditions.save()
 			self.keySave()
 
 	def getTriesEntry(self):
@@ -860,14 +861,14 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 
 	def validcode(self, code):
 		if code:
-			config.mediaportal.pingrauzone.value = True
-			config.mediaportal.pingrauzone.save()
+			config.mediaportal.pinuseradditions.value = True
+			config.mediaportal.pinuseradditions.save()
 			self.keySave()
 		else:
-			config.mediaportal.showgrauzone.value = False
-			config.mediaportal.showgrauzone.save()
-			config.mediaportal.pingrauzone.value = False
-			config.mediaportal.pingrauzone.save()
+			config.mediaportal.showuseradditions.value = False
+			config.mediaportal.showuseradditions.save()
+			config.mediaportal.pinuseradditions.value = False
+			config.mediaportal.pinuseradditions.save()
 			self.keySave()
 
 class MPList(Screen, HelpableScreen):
@@ -945,8 +946,8 @@ class MPList(Screen, HelpableScreen):
 			self.chooseMenuList2.l.setItemHeight(60)
 		else:
 			self.chooseMenuList2.l.setItemHeight(44)
-		self['grauzone'] = self.chooseMenuList2
-		self['Grauzone'] = Label("")
+		self['useradditions'] = self.chooseMenuList2
+		self['User-additions'] = Label("")
 
 		self.chooseMenuList3 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self.chooseMenuList3.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize))
@@ -996,7 +997,7 @@ class MPList(Screen, HelpableScreen):
 			checkupdate(self.session).checkforupdate()
 
 		self.mediatheken = []
-		self.grauzone = []
+		self.useradditions = []
 		self.funsport = []
 		self.porn = []
 
@@ -1015,7 +1016,7 @@ class MPList(Screen, HelpableScreen):
 								pass
 							else:
 								gz = x.get("gz")
-								if not config.mediaportal.showgrauzone.value and gz == "1":
+								if not config.mediaportal.showuseradditions.value and gz == "1":
 									pass
 								else:
 									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -1042,7 +1043,7 @@ class MPList(Screen, HelpableScreen):
 											pass
 										else:
 											gz = x.get("gz")
-											if not config.mediaportal.showgrauzone.value and gz == "1":
+											if not config.mediaportal.showuseradditions.value and gz == "1":
 												pass
 											else:
 												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -1056,18 +1057,18 @@ class MPList(Screen, HelpableScreen):
 		else:
 			self['Porn'].setText(_("Porn"))
 
-		if len(self.grauzone) < 1:
-			self['Grauzone'].hide()
+		if len(self.useradditions) < 1:
+			self['User-additions'].hide()
 		else:
-			self['Grauzone'].setText(_("Grayzone"))
+			self['User-additions'].setText(_("User-additions"))
 
 		self.mediatheken.sort(key=lambda t : t[0][0].lower())
-		self.grauzone.sort(key=lambda t : t[0][0].lower())
+		self.useradditions.sort(key=lambda t : t[0][0].lower())
 		self.funsport.sort(key=lambda t : t[0][0].lower())
 		self.porn.sort(key=lambda t : t[0][0].lower())
 
 		self.chooseMenuList1.setList(self.mediatheken)
-		self.chooseMenuList2.setList(self.grauzone)
+		self.chooseMenuList2.setList(self.useradditions)
 		self.chooseMenuList3.setList(self.funsport)
 		self.chooseMenuList4.setList(self.porn)
 		self.keyRight()
@@ -1102,7 +1103,7 @@ class MPList(Screen, HelpableScreen):
 		reloadit = False
 		for defitem in mp_globals.status:
 			if int(config.mediaportal.version.value) < int(defitem[1]):
-				for confcatitem in [self.mediatheken, self.grauzone, self.funsport, self.porn]:
+				for confcatitem in [self.mediatheken, self.useradditions, self.funsport, self.porn]:
 					lst = list(confcatitem)
 					for n,i in enumerate(lst):
 						if i[0][2] == defitem[0]:
@@ -1119,7 +1120,7 @@ class MPList(Screen, HelpableScreen):
 					confcatitem = tuple(lst)
 		if reloadit:
 			self.chooseMenuList1.setList(self.mediatheken)
-			self.chooseMenuList2.setList(self.grauzone)
+			self.chooseMenuList2.setList(self.useradditions)
 			self.chooseMenuList3.setList(self.funsport)
 			self.chooseMenuList4.setList(self.porn)
 
@@ -1240,24 +1241,24 @@ class MPList(Screen, HelpableScreen):
 		if config.mediaportal.listmode.value == "single":
 			self["mediatheken"].hide()
 			self["Mediatheken"].hide()
-			self["grauzone"].hide()
-			self["Grauzone"].hide()
+			self["useradditions"].hide()
+			self["User-additions"].hide()
 			self["funsport"].hide()
 			self["Funsport"].hide()
 			self["porn"].hide()
 			self["Porn"].hide()
 		self["mediatheken"].selectionEnabled(0)
-		self["grauzone"].selectionEnabled(0)
+		self["useradditions"].selectionEnabled(0)
 		self["funsport"].selectionEnabled(0)
 		self["porn"].selectionEnabled(0)
 		if self.currentlist == "mediatheken":
-			if len(self.grauzone) > 0:
-				self["grauzone"].selectionEnabled(1)
+			if len(self.useradditions) > 0:
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			elif len(self.funsport) > 0:
 				self["funsport"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1279,7 +1280,7 @@ class MPList(Screen, HelpableScreen):
 					self["Mediatheken"].show()
 				self.currentlist = "mediatheken"
 				cnt_tmp_ls = len(self.mediatheken)
-		elif self.currentlist == "grauzone":
+		elif self.currentlist == "useradditions":
 			if len(self.funsport) > 0:
 				self["funsport"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1302,12 +1303,12 @@ class MPList(Screen, HelpableScreen):
 				self.currentlist = "mediatheken"
 				cnt_tmp_ls = len(self.mediatheken)
 			else:
-				self["grauzone"].selectionEnabled(1)
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 		elif self.currentlist == "funsport":
 			if len(self.porn) > 0:
 				self["porn"].selectionEnabled(1)
@@ -1323,13 +1324,13 @@ class MPList(Screen, HelpableScreen):
 					self["Mediatheken"].show()
 				self.currentlist = "mediatheken"
 				cnt_tmp_ls = len(self.mediatheken)
-			elif len(self.grauzone) > 0:
-				self["grauzone"].selectionEnabled(1)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			else:
 				self["funsport"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1345,13 +1346,13 @@ class MPList(Screen, HelpableScreen):
 					self["Mediatheken"].show()
 				self.currentlist = "mediatheken"
 				cnt_tmp_ls = len(self.mediatheken)
-			elif len(self.grauzone) > 0:
-				self["grauzone"].selectionEnabled(1)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			elif len(self.funsport) > 0:
 				self["funsport"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1384,14 +1385,14 @@ class MPList(Screen, HelpableScreen):
 		if config.mediaportal.listmode.value == "single":
 			self["mediatheken"].hide()
 			self["Mediatheken"].hide()
-			self["grauzone"].hide()
-			self["Grauzone"].hide()
+			self["useradditions"].hide()
+			self["User-additions"].hide()
 			self["funsport"].hide()
 			self["Funsport"].hide()
 			self["porn"].hide()
 			self["Porn"].hide()
 		self["mediatheken"].selectionEnabled(0)
-		self["grauzone"].selectionEnabled(0)
+		self["useradditions"].selectionEnabled(0)
 		self["funsport"].selectionEnabled(0)
 		self["porn"].selectionEnabled(0)
 		if self.currentlist == "porn":
@@ -1402,13 +1403,13 @@ class MPList(Screen, HelpableScreen):
 					self["Funsport"].show()
 				self.currentlist = "funsport"
 				cnt_tmp_ls = len(self.funsport)
-			elif len(self.grauzone) > 0:
-				self["grauzone"].selectionEnabled(1)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			elif len(self.mediatheken) > 0:
 				self["mediatheken"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1424,13 +1425,13 @@ class MPList(Screen, HelpableScreen):
 				self.currentlist = "porn"
 				cnt_tmp_ls = len(self.porn)
 		elif self.currentlist == "funsport":
-			if len(self.grauzone) > 0:
-				self["grauzone"].selectionEnabled(1)
+			if len(self.useradditions) > 0:
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			elif len(self.mediatheken) > 0:
 				self["mediatheken"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1452,7 +1453,7 @@ class MPList(Screen, HelpableScreen):
 					self["Funsport"].show()
 				self.currentlist = "funsport"
 				cnt_tmp_ls = len(self.funsport)
-		elif self.currentlist == "grauzone":
+		elif self.currentlist == "useradditions":
 			if len(self.mediatheken) > 0:
 				self["mediatheken"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1475,12 +1476,12 @@ class MPList(Screen, HelpableScreen):
 				self.currentlist = "funsport"
 				cnt_tmp_ls = len(self.funsport)
 			else:
-				self["grauzone"].selectionEnabled(1)
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 		elif self.currentlist == "mediatheken":
 			if len(self.porn) > 0:
 				self["porn"].selectionEnabled(1)
@@ -1496,13 +1497,13 @@ class MPList(Screen, HelpableScreen):
 					self["Funsport"].show()
 				self.currentlist = "funsport"
 				cnt_tmp_ls = len(self.funsport)
-			elif len(self.grauzone) > 0:
-				self["grauzone"].selectionEnabled(1)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
-					self["grauzone"].show()
-					self["Grauzone"].show()
-				self.currentlist = "grauzone"
-				cnt_tmp_ls = len(self.grauzone)
+					self["useradditions"].show()
+					self["User-additions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			else:
 				self["mediatheken"].selectionEnabled(1)
 				if config.mediaportal.listmode.value == "single":
@@ -1790,7 +1791,7 @@ class MPWall(Screen, HelpableScreen):
 								pass
 							else:
 								gz = x.get("gz")
-								if not config.mediaportal.showgrauzone.value and gz == "1":
+								if not config.mediaportal.showuseradditions.value and gz == "1":
 									pass
 								else:
 									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -1817,7 +1818,7 @@ class MPWall(Screen, HelpableScreen):
 											pass
 										else:
 											gz = x.get("gz")
-											if not config.mediaportal.showgrauzone.value and gz == "1":
+											if not config.mediaportal.showuseradditions.value and gz == "1":
 												pass
 											else:
 												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -1833,8 +1834,8 @@ class MPWall(Screen, HelpableScreen):
 		if (config.mediaportal.showporn.value == False and config.mediaportal.filter.value == 'Porn'):
 			config.mediaportal.filter.value = 'ALL'
 
-		# Grauzone
-		if (config.mediaportal.showgrauzone.value == False and config.mediaportal.filter.value == 'Grauzone'):
+		# User-additions
+		if (config.mediaportal.showuseradditions.value == False and config.mediaportal.filter.value == 'User-additions'):
 			config.mediaportal.filter.value = 'ALL'
 
 		# Plugin Sortierung
@@ -2036,7 +2037,7 @@ class MPWall(Screen, HelpableScreen):
 			"2": boundFunction(self.gotFilter, "Fun"),
 			"3": boundFunction(self.gotFilter, "Music"),
 			"4": boundFunction(self.gotFilter, "Sport"),
-			"5": boundFunction(self.gotFilter, "Grauzone"),
+			"5": boundFunction(self.gotFilter, "User-additions"),
 			"6": boundFunction(self.gotFilter, "Porn")
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
@@ -2178,8 +2179,8 @@ class MPWall(Screen, HelpableScreen):
 			name = _("ALL")
 		elif config.mediaportal.filter.value == "Mediathek":
 			name = _("Libraries")
-		elif config.mediaportal.filter.value == "Grauzone":
-			name = _("Grayzone")
+		elif config.mediaportal.filter.value == "User-additions":
+			name = _("User-additions")
 		elif config.mediaportal.filter.value == "Fun":
 			name = _("Fun")
 		elif config.mediaportal.filter.value == "Music":
@@ -2207,8 +2208,8 @@ class MPWall(Screen, HelpableScreen):
 				name = _("ALL")
 			elif config.mediaportal.filter.value == "Mediathek":
 				name = _("Libraries")
-			elif config.mediaportal.filter.value == "Grauzone":
-				name = _("Grayzone")
+			elif config.mediaportal.filter.value == "User-additions":
+				name = _("User-additions")
 			elif config.mediaportal.filter.value == "Fun":
 				name = _("Fun")
 			elif config.mediaportal.filter.value == "Music":
@@ -2766,8 +2767,8 @@ class MPWall(Screen, HelpableScreen):
 		if config.mediaportal.filter.value == "ALL":
 			config.mediaportal.filter.value = "Mediathek"
 		elif config.mediaportal.filter.value == "Mediathek":
-			config.mediaportal.filter.value = "Grauzone"
-		elif config.mediaportal.filter.value == "Grauzone":
+			config.mediaportal.filter.value = "User-additions"
+		elif config.mediaportal.filter.value == "User-additions":
 			config.mediaportal.filter.value = "Sport"
 		elif config.mediaportal.filter.value == "Sport":
 			config.mediaportal.filter.value = "Music"
@@ -2874,7 +2875,7 @@ class MPWall2(Screen, HelpableScreen):
 								pass
 							else:
 								gz = x.get("gz")
-								if not config.mediaportal.showgrauzone.value and gz == "1":
+								if not config.mediaportal.showuseradditions.value and gz == "1":
 									pass
 								else:
 									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -2901,7 +2902,7 @@ class MPWall2(Screen, HelpableScreen):
 											pass
 										else:
 											gz = x.get("gz")
-											if not config.mediaportal.showgrauzone.value and gz == "1":
+											if not config.mediaportal.showuseradditions.value and gz == "1":
 												pass
 											else:
 												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -2917,8 +2918,8 @@ class MPWall2(Screen, HelpableScreen):
 		if (config.mediaportal.showporn.value == False and config.mediaportal.filter.value == 'Porn'):
 			config.mediaportal.filter.value = 'ALL'
 
-		# Grauzone
-		if (config.mediaportal.showgrauzone.value == False and config.mediaportal.filter.value == 'Grauzone'):
+		# User-additions
+		if (config.mediaportal.showuseradditions.value == False and config.mediaportal.filter.value == 'User-additions'):
 			config.mediaportal.filter.value = 'ALL'
 
 		# Plugin Sortierung
@@ -3076,7 +3077,7 @@ class MPWall2(Screen, HelpableScreen):
 			"2": boundFunction(self.gotFilter, "Fun"),
 			"3": boundFunction(self.gotFilter, "Music"),
 			"4": boundFunction(self.gotFilter, "Sport"),
-			"5": boundFunction(self.gotFilter, "Grauzone"),
+			"5": boundFunction(self.gotFilter, "User-additions"),
 			"6": boundFunction(self.gotFilter, "Porn")
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
@@ -3206,8 +3207,8 @@ class MPWall2(Screen, HelpableScreen):
 			name = _("ALL")
 		elif config.mediaportal.filter.value == "Mediathek":
 			name = _("Libraries")
-		elif config.mediaportal.filter.value == "Grauzone":
-			name = _("Grayzone")
+		elif config.mediaportal.filter.value == "User-additions":
+			name = _("User-additions")
 		elif config.mediaportal.filter.value == "Fun":
 			name = _("Fun")
 		elif config.mediaportal.filter.value == "Music":
@@ -3235,8 +3236,8 @@ class MPWall2(Screen, HelpableScreen):
 				name = _("ALL")
 			elif config.mediaportal.filter.value == "Mediathek":
 				name = _("Libraries")
-			elif config.mediaportal.filter.value == "Grauzone":
-				name = _("Grayzone")
+			elif config.mediaportal.filter.value == "User-additions":
+				name = _("User-additions")
 			elif config.mediaportal.filter.value == "Fun":
 				name = _("Fun")
 			elif config.mediaportal.filter.value == "Music":
@@ -3586,8 +3587,8 @@ class MPWall2(Screen, HelpableScreen):
 		if config.mediaportal.filter.value == "ALL":
 			config.mediaportal.filter.value = "Mediathek"
 		elif config.mediaportal.filter.value == "Mediathek":
-			config.mediaportal.filter.value = "Grauzone"
-		elif config.mediaportal.filter.value == "Grauzone":
+			config.mediaportal.filter.value = "User-additions"
+		elif config.mediaportal.filter.value == "User-additions":
 			config.mediaportal.filter.value = "Sport"
 		elif config.mediaportal.filter.value == "Sport":
 			config.mediaportal.filter.value = "Music"
@@ -3666,7 +3667,7 @@ class MPWall2(Screen, HelpableScreen):
 			print "Filter changed:", config.mediaportal.filter.value
 			self.restartAndCheck()
 
-class MPWall3(Screen, HelpableScreen):
+class MPWallVTi(Screen, HelpableScreen):
 
 	def __init__(self, session, lastservice, filter):
 		self.lastservice = mp_globals.lastservice = lastservice
@@ -3694,7 +3695,7 @@ class MPWall3(Screen, HelpableScreen):
 								pass
 							else:
 								gz = x.get("gz")
-								if not config.mediaportal.showgrauzone.value and gz == "1":
+								if not config.mediaportal.showuseradditions.value and gz == "1":
 									pass
 								else:
 									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -3721,7 +3722,7 @@ class MPWall3(Screen, HelpableScreen):
 											pass
 										else:
 											gz = x.get("gz")
-											if not config.mediaportal.showgrauzone.value and gz == "1":
+											if not config.mediaportal.showuseradditions.value and gz == "1":
 												pass
 											else:
 												mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -3737,8 +3738,8 @@ class MPWall3(Screen, HelpableScreen):
 		if (config.mediaportal.showporn.value == False and config.mediaportal.filter.value == 'Porn'):
 			config.mediaportal.filter.value = 'ALL'
 
-		# Grauzone
-		if (config.mediaportal.showgrauzone.value == False and config.mediaportal.filter.value == 'Grauzone'):
+		# User-additions
+		if (config.mediaportal.showuseradditions.value == False and config.mediaportal.filter.value == 'User-additions'):
 			config.mediaportal.filter.value = 'ALL'
 
 		# Plugin Sortierung
@@ -3896,7 +3897,7 @@ class MPWall3(Screen, HelpableScreen):
 			"2": boundFunction(self.gotFilter, "Fun"),
 			"3": boundFunction(self.gotFilter, "Music"),
 			"4": boundFunction(self.gotFilter, "Sport"),
-			"5": boundFunction(self.gotFilter, "Grauzone"),
+			"5": boundFunction(self.gotFilter, "User-additions"),
 			"6": boundFunction(self.gotFilter, "Porn")
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
@@ -4030,8 +4031,8 @@ class MPWall3(Screen, HelpableScreen):
 			name = _("ALL")
 		elif config.mediaportal.filter.value == "Mediathek":
 			name = _("Libraries")
-		elif config.mediaportal.filter.value == "Grauzone":
-			name = _("Grayzone")
+		elif config.mediaportal.filter.value == "User-additions":
+			name = _("User-additions")
 		elif config.mediaportal.filter.value == "Fun":
 			name = _("Fun")
 		elif config.mediaportal.filter.value == "Music":
@@ -4059,8 +4060,8 @@ class MPWall3(Screen, HelpableScreen):
 				name = _("ALL")
 			elif config.mediaportal.filter.value == "Mediathek":
 				name = _("Libraries")
-			elif config.mediaportal.filter.value == "Grauzone":
-				name = _("Grayzone")
+			elif config.mediaportal.filter.value == "User-additions":
+				name = _("User-additions")
 			elif config.mediaportal.filter.value == "Fun":
 				name = _("Fun")
 			elif config.mediaportal.filter.value == "Music":
@@ -4412,8 +4413,8 @@ class MPWall3(Screen, HelpableScreen):
 		if config.mediaportal.filter.value == "ALL":
 			config.mediaportal.filter.value = "Mediathek"
 		elif config.mediaportal.filter.value == "Mediathek":
-			config.mediaportal.filter.value = "Grauzone"
-		elif config.mediaportal.filter.value == "Grauzone":
+			config.mediaportal.filter.value = "User-additions"
+		elif config.mediaportal.filter.value == "User-additions":
 			config.mediaportal.filter.value = "Sport"
 		elif config.mediaportal.filter.value == "Sport":
 			config.mediaportal.filter.value = "Music"
@@ -4580,8 +4581,8 @@ class MPchooseFilter(Screen):
 				name = _("ALL")
 			elif filtername == "Mediathek":
 				name = _("Libraries")
-			elif filtername == "Grauzone":
-				name = _("Grayzone")
+			elif filtername == "User-additions":
+				name = _("User-additions")
 			elif filtername == "Fun":
 				name = _("Fun")
 			elif filtername == "Music":
@@ -4635,8 +4636,8 @@ def exit(session, result, lastservice):
 			session.openWithCallback(exit, MPWall, lastservice, config.mediaportal.filter.value)
 		elif config.mediaportal.ansicht.value == "wall2":
 			session.openWithCallback(exit, MPWall2, lastservice, config.mediaportal.filter.value)
-		elif config.mediaportal.ansicht.value == "wall2_vti":
-			session.openWithCallback(exit, MPWall3, lastservice, config.mediaportal.filter.value)
+		elif config.mediaportal.ansicht.value == "wall_vti":
+			session.openWithCallback(exit, MPWallVTi, lastservice, config.mediaportal.filter.value)
 	else:
 		try:
 			if mp_globals.animationfix:
@@ -4920,8 +4921,8 @@ def startMP(session):
 		session.openWithCallback(exit, MPWall, lastservice, config.mediaportal.filter.value)
 	elif config.mediaportal.ansicht.value == "wall2":
 		session.openWithCallback(exit, MPWall2, lastservice, config.mediaportal.filter.value)
-	elif config.mediaportal.ansicht.value == "wall2_vti":
-		session.openWithCallback(exit, MPWall3, lastservice, config.mediaportal.filter.value)
+	elif config.mediaportal.ansicht.value == "wall_vti":
+		session.openWithCallback(exit, MPWallVTi, lastservice, config.mediaportal.filter.value)
 
 ##################################
 # Autostart section

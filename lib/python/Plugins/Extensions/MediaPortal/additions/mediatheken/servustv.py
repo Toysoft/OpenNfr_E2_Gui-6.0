@@ -39,7 +39,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-baseurl = "http://www.servustv.com"
+baseurl = "https://www.servus.com"
 stvAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
 
 class sTVGenreScreen(MPScreen):
@@ -74,21 +74,13 @@ class sTVGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
-		self.genreliste.append(("Aktuelles", "/de/Themen/Aktuelles"))
-		self.genreliste.append(("Das Salzkammergut", "/de/Videos/Alle-Videos-zu-Sendungen/Das-Salzkammergut"))
-		self.genreliste.append(("Die Frühstückerinnen", "/de/Videos/Alle-Videos-zu-Sendungen/Die-Fruehstueckerinnen"))
-		self.genreliste.append(("Dokumentationen", "/de/Videos/Dokumentationen"))
-		self.genreliste.append(("Kultur", "/de/Themen/Kultur"))
-		self.genreliste.append(("Mei Tracht mei Gwand", "/de/Videos/Alle-Videos-zu-Sendungen/Mei-Tracht-mei-Gwand"))
-		self.genreliste.append(("Natur", "/de/Themen/Natur"))
-		self.genreliste.append(("Neueste", "/de/Videos/Neueste-Videos"))
-		self.genreliste.append(("Sport", "/de/Themen/Sport"))
-		self.genreliste.append(("Städte Trips", "/de/Videos/Alle-Videos-zu-Sendungen/Staedte-Trips"))
-		self.genreliste.append(("Süsser am Morgen", "/de/Videos/Alle-Videos-zu-Sendungen/Suesser-am-Morgen"))
-		self.genreliste.append(("Top Videos", "/de/Videos/Top-Videos"))
-		self.genreliste.append(("Unterhaltung", "/de/Themen/Unterhaltung"))
-		self.genreliste.append(("Volkskultur", "/de/Themen/Volkskultur"))
-		self.genreliste.append(("Wissen", "/de/Themen/Wissen"))
+		self.genreliste.append(("Aktuelles", "/de/aktuelles"))
+		self.genreliste.append(("Kultur", "/de/kultur"))
+		self.genreliste.append(("Natur", "/de/natur"))
+		self.genreliste.append(("Sport", "/de/sport"))
+		self.genreliste.append(("Unterhaltung", "/de/unterhaltung"))
+		self.genreliste.append(("Volkskultur", "/de/volkskultur"))
+		self.genreliste.append(("Wissen", "/de/wissen"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 
 	def keyOK(self):
@@ -132,10 +124,6 @@ class sTVids(MPScreen):
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
 
-		self['Page'] = Label(_("Page:"))
-		self.page = 1
-		self.lastpage = 1
-
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
@@ -144,19 +132,15 @@ class sTVids(MPScreen):
 
 	def loadPage(self):
 		self.keyLocked = True
-		url = "%s%s" % (self.Link, str(self.page))
+		url = self.Link
 		getPage(url, agent=stvAgent).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		self.getLastPage(data, 'class="org paging(.*?)</ul>', '.*page=(\d+)')
-		raw = re.findall('block-(.*?)class="org\sFooter">', data, re.S)
-		shows = re.findall('href="(/de/Medien/.*?)".*?src="(.*?)".*?videoleange">(.*?)<.*?<h4.*?">(.*?)</.*?subtitel">(.*?)<', raw[0], re.S)
+		parse = re.search('row products(.*?)id="foot"', data, re.S)
+		shows = re.findall('video-play"\shref=".*?([A-Z0-9-]+)\/">.*?src="(https://da\d{0,2}.rbmbtnx.net/.*?\.jpg).*?class="card-title"><a href=".*?">(.*?)</a>', parse.group(1), re.S)
 		if shows:
-			self.filmliste = []
-			for (url,pic,leng,title,stitle) in shows:
-				title = title.strip() + " - " + stitle.strip()
-				pic = baseurl + pic
-				self.filmliste.append((decodeHtml(title),url,pic,leng))
+			for (id,image,title) in shows:
+				self.filmliste.append((decodeHtml(title),id,image))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False
@@ -165,26 +149,33 @@ class sTVids(MPScreen):
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]
 		pic = self['liste'].getCurrent()[0][2]
-		runtime = self['liste'].getCurrent()[0][3]
-		self['handlung'].setText("Runtime: %s" % runtime)
 		self['name'].setText(title)
 		CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		self['name'] = Label(_("Please wait..."))
-		url = baseurl + self['liste'].getCurrent()[0][1]
-		getPage(url, agent=stvAgent).addCallback(self.getID).addErrback(self.dataError)
+		url = self['liste'].getCurrent()[0][1]
+		url = 'https://stv.rbmbtnx.net/api/v1/manifests/%s.m3u8' % url
+		basepath = 'https://stv.rbmbtnx.net/api/v1/manifests/'
+		getPage(url, agent=stvAgent).addCallback(self.loadplaylist, basepath).addErrback(self.dataError)
 
-	def getID(self, data):
-		id = re.findall('data-videoid="(.*?)"', data, re.S)[0]
-		account = re.findall('data-account="(.*?)"', data, re.S)[0]
-		url = "https://edge.api.brightcove.com/playback/v1/accounts/%s/videos/%s" % (account, id)
-		getPage(url, agent=stvAgent, headers={'Accept':'application/json;pk=BCpkADawqM3hYrTRw2Gi3RgqoRH8EXAdhKTIf0ZYTeLzvF3i0Fns90ytp8xkt58hAXj8NHdlT5Zz2fosHIwHoGkobH6Y7UXotgwSAqCKR5GiZKtI7xkJnKKJ6c47s43U7dCYpDan1-KyDOpS'}).addCallback(self.getVideo).addErrback(self.dataError)
-
-	def getVideo(self, data):
-		video = re.findall('"width":\d+,"src":"(.*?)",', data, re.S)
-		title = self['liste'].getCurrent()[0][0]
-		self['name'].setText(title)
-		self.session.open(SimplePlayer, [(title, video[-1])], showPlaylist=False, ltype='servustv', forceGST=True)
+	def loadplaylist(self, data, basepath):
+		bandwith_list = []
+		match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n((?!#).*?m3u8)', data, re.S)
+		videoPrio = int(config.mediaportal.videoquali_others.value)
+		if videoPrio == 2:
+			bw = int(match_sec_m3u8[-1][0])
+		elif videoPrio == 1:
+			bw = int(match_sec_m3u8[-1][0])/2
+		else:
+			bw = int(match_sec_m3u8[-1][0])/3
+		self.bandwith_list = []
+		for each in match_sec_m3u8:
+			bandwith,url = each
+			self.bandwith_list.append((int(bandwith),url))
+		_, best = min((abs(int(x[0]) - bw), x) for x in self.bandwith_list)
+		url = basepath + best[1]
+		Name = self['liste'].getCurrent()[0][0]
+		mp_globals.player_agent = stvAgent
+		self.session.open(SimplePlayer, [(Name, url)], showPlaylist=False, ltype='servustv', forceGST=True)

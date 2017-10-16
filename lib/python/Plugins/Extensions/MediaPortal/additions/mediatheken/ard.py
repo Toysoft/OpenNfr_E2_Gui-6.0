@@ -178,14 +178,22 @@ class ARDPreSelect(MPScreen):
 				self.genreliste.append(("Neueste Videos", "2"))
 				self.genreliste.append(("Am besten bewertete Videos", "3"))
 				self.genreliste.append(("Meistabgerufene Videos", "4"))
-				self.genreliste.append(placeHolder)
-				self.genreliste.append(("Ausgewählte Filme", "5"))	# Ab hier (incl.) Standard-Kategorien, Radio & TV
+				self.genreliste.append(("Ausgewählte Filme", "5"))
 				self.genreliste.append(("Ausgewählte Dokus", "6"))
+				self.genreliste.append(placeHolder)
 				self.genreliste.append(("Kinder & Familie", "7"))
-				self.genreliste.append(("Unterhaltung & Comedy", "8"))
-				self.genreliste.append(('"Must see" - was die Redaktion schaut', "9"))
-				#self.genreliste.append(("Serien & Soaps", "10"))
-				#self.genreliste.append(("Wissen", "11"))
+				self.genreliste.append(('"Must see" - was die Redaktion schaut', "8"))
+				self.genreliste.append(("Kurzes für Zwischendurch", "9"))
+				self.genreliste.append(("Unterhaltung & Comedy", "10"))
+				self.genreliste.append(("Wissen", "11"))
+				self.genreliste.append(("Politik", "12"))
+				self.genreliste.append(("Kultur", "13"))
+				self.genreliste.append(("Ratgeber", "14"))
+				self.genreliste.append(("Sport", "15"))
+				self.genreliste.append(("Sportreportagen", "16"))
+				self.genreliste.append(("Reise", "17"))
+				self.genreliste.append(("Alle Filme", "18"))
+				self.genreliste.append(("Alle Dokus & Reportagen", "19"))
 			if self.gF == "8": # Extra-Kategorien, nur Radio
 				self['name'].setText(self.gN+"\nAuswahl der Kategorie")
 				self.genreliste.append(("Neueste Clips", "1"))
@@ -235,14 +243,30 @@ class ARDPreSelect(MPScreen):
 				streamLink = "%s/tv/Ausgewählte-Dokus/mehr?documentId=33649086" % mainLink
 			elif extra == '7': # Kinder & Familie
 				streamLink = "%s/tv/Kinder-Familie/mehr?documentId=21282542" % mainLink
-			elif extra == '8': # Unterhaltung & Comedy
-				streamLink = "%s/tv/Satire-Unterhaltung/mehr?documentId=21282544" % mainLink
-			elif extra == '9': # "Must see" - was die Redaktion schaut
-				streamLink = "%s/tv/Must-see-was-die-Redaktion-schaut/Thema?documentId=37407256" % mainLink
-			elif extra == '10': # Serien & Soaps
-				streamLink = "%s/tv/Serien/mehr?documentId=26402940" % mainLink
+			elif extra == '8': # "Must see" - was die Redaktion schaut
+				streamLink = "%s/tv/mustsee" % mainLink
+			elif extra == '9': # Kurzes für Zwischendurch
+				streamLink = "%s/tv/Kurzes-für-Zwischendurch/mehr?documentId=45458112" % mainLink
+			elif extra == '10': # Unterhaltung & Comedy
+				streamLink = "%s/tv/unterhaltung" % mainLink
 			elif extra == '11': # Wissen
-				streamLink = "%s/tv/Wissensmagazine-in-der-ARD/Tipps?documentId=39350362" % mainLink
+				streamLink = "%s/tv/wissen" % mainLink
+			elif extra == '12': # Politik
+				streamLink = "%s/tv/politik" % mainLink
+			elif extra == '13': # Kultur
+				streamLink = "%s/tv/kultur" % mainLink
+			elif extra == '14': # Ratgeber
+				streamLink = "%s/tv/ratgeber" % mainLink
+			elif extra == '15': # Sport
+				streamLink = "%s/tv/sport" % mainLink
+			elif extra == '16': # Sportreportagen
+				streamLink = "%s/tv/Sportreportagen-dokus/Tipps?documentId=30366344" % mainLink
+			elif extra == '17': # Reise
+				streamLink = "%s/tv/reise" % mainLink
+			elif extra == '18': # Alle Filme
+				streamLink = "%s/tv/Alle-Filme/mehr?documentId=31610076" % mainLink
+			elif extra == '19': # Alle Dokus & Reportagen
+				streamLink = "%s/tv/Alle-Dokus-und-Reportagen/mehr?documentId=29897594" % mainLink
 			self.session.open(ARDStreamScreen,streamLink,auswahl,self.gF)
 		elif self.gF == "8": # Kategorien Radio
 			if extra == '1': # Neueste Clips
@@ -552,10 +576,27 @@ class ARDStreamScreen(MPScreen, ThumbsHelper):
 				url = self.streamLink
 			else:
 				url = "%s&mcontents=page.%s" % (self.streamLink,self.page)
-			if self.gN == "TOP von Seite 1 - TV": #	self.gF == 4 überschreiben
+
+			if self.gN == "TOP von Seite 1 - TV":
 				url = self.streamLink
 			elif self.gN == '"Must see" - was die Redaktion schaut':
-				url = "%s&m23644322=page.%s" % (self.streamLink,self.page)
+				url = "%s?m37862988=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Unterhaltung & Comedy':
+				url = "%s?m39803570=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Wissen':
+				url = "%s?m39348662=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Politik':
+				url = "%s?m39593042=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Kultur':
+				url = "%s?m39594746=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Reise':
+				url = "%s?m39618186=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Ratgeber':
+				url = "%s?m39712440=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Sport':
+				url = "%s?m30348620=page.%s" % (self.streamLink,self.page)
+			elif self.gN == 'Sportreportagen':
+				url = "%s&m27307124=page.%s" % (self.streamLink,self.page)
 		else:	# Zweiter Durchlauf, wenn "Mehr.." gedrückt wurde (StreamLink wird zur StreamLink-Liste)
 			self['F4'].setText("Zurück")
 			self.blueMemory[0] = self.page
@@ -564,6 +605,8 @@ class ARDStreamScreen(MPScreen, ThumbsHelper):
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
+		if self.gN == "Sport":
+			data = re.search('(.*?)Ausgewählte Dokus', data, re.S).group(1)
 		self.filmliste = []
 		if self.blueTrigger == 0:
 			if self.page == 1:	# Gleich bei Seite 1 die maximale Seite merken. Danach nicht nochmal berechnen
@@ -756,4 +799,6 @@ class ARDStreamScreen(MPScreen, ThumbsHelper):
 		if stream.startswith('//'):
 			stream = 'http:' + stream
 		if stream != "":
+			streamName = self['liste'].getCurrent()[0][0]
+			self['name'].setText(streamName)
 			self.session.open(SimplePlayer, [(self.streamName, stream)], showPlaylist=False, ltype='ard')

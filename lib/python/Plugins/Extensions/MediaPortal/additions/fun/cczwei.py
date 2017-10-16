@@ -85,7 +85,7 @@ class cczwei(MPScreen):
 					url = url.group(1)
 				title = title.replace('\r\n<br>',', ').replace('   ','').replace('Youtube, HD 1080p','').replace('<br>',', ').strip().strip(', ').strip(',')
 				title = "Folge %s - %s" % (folge, stripAllTags(title.replace(', , , ','').replace(', , ','').replace(', ','')))
-				self.streamList.append((decodeHtml(title), url))
+				self.streamList.append((decodeHtml(title), url.strip()))
 			self.ml.setList(map(self._defaultlistleft, self.streamList))
 			self.keyLocked = False
 

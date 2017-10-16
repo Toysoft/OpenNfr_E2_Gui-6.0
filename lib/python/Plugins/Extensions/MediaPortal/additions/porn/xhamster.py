@@ -597,7 +597,7 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 
 	def showInfos2(self, data):
 		self.videoId = re.findall('"videoId":(\d+),', data, re.S)[0]
-		self.username = re.findall('"entity-author-container__name" (?:href="https://xhamster.com/users/(.*?)"\s|data-tooltip="User is retired").*?itemprop="name">(.*?)</span', data, re.S)
+		self.username = re.findall('"entity-author-container__name(?: link|)" (?:href="https://xhamster.com/users/(.*?)"\s|data-tooltip="User is retired").*?itemprop="name">(.*?)</span', data, re.S)
 		title = self['liste'].getCurrent()[0][0]
 		if self.Link == "favs":
 			pic = re.findall('itemprop="thumbnailUrl" href="(.*?)">', data, re.S)[0]

@@ -45,6 +45,7 @@ headers = {
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	}
+default_cover = "file://%s/extremetube.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class extremetubeGenreScreen(MPScreen):
 
@@ -85,6 +86,7 @@ class extremetubeGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.keyLocked = True
 		url = "http://www.extremetube.com/video-categories"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
@@ -96,14 +98,16 @@ class extremetubeGenreScreen(MPScreen):
 			for (Url, Image, Title) in Cats:
 				if Title != "High Definition Videos":
 					Url = "http://www.extremetube.com" + Url.replace('?fromPage=categories', '') + '?page='
+					if Image.startswith('//'):
+						Image = 'http:' + Image
 					self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.extremetube.com/videos?o=lg", None))
-			self.genreliste.insert(0, ("Highest Rated", "http://www.extremetube.com/videos?o=tr", None))
-			self.genreliste.insert(0, ("Most Popular", "http://www.extremetube.com/videos?o=mv", None))
-			self.genreliste.insert(0, ("Being Watched", "http://www.extremetube.com/videos?o=bw", None))
-			self.genreliste.insert(0, ("Recently Added", "http://www.extremetube.com/videos?o=mr", None))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
+			self.genreliste.insert(0, ("Longest", "http://www.extremetube.com/videos?o=lg", default_cover))
+			self.genreliste.insert(0, ("Highest Rated", "http://www.extremetube.com/videos?o=tr", default_cover))
+			self.genreliste.insert(0, ("Most Popular", "http://www.extremetube.com/videos?o=mv", default_cover))
+			self.genreliste.insert(0, ("Being Watched", "http://www.extremetube.com/videos?o=bw", default_cover))
+			self.genreliste.insert(0, ("Recently Added", "http://www.extremetube.com/videos?o=mr", default_cover))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

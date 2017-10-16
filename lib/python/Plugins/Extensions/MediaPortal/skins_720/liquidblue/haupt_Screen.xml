@@ -18,8 +18,8 @@
 <!-- select screen -->
 	<widget name="Mediatheken" position="25,215" size="320,30" backgroundColor="#26181d20" zPosition="5" font="mediaportal; 26" halign="left" transparent="1" foregroundColor="#00ffffff" />
 	<widget name="mediatheken" position="25,265" size="320,350" backgroundColor="#26181d20" transparent="1" selectionPixmap="~/liquidblue/images/sel.png" foregroundColorSelected="#ffffff" foregroundColor="#00555555" />
-	<widget name="Grauzone" position="345,215" size="320,30" backgroundColor="#26181d20" zPosition="5" font="mediaportal; 26" halign="left" transparent="1" foregroundColor="#00ffffff" />
-	<widget name="grauzone" position="345,265" size="320,350" backgroundColor="#26181d20" transparent="1" selectionPixmap="~/liquidblue/images/sel.png" foregroundColorSelected="#ffffff" foregroundColor="#00555555" />
+	<widget name="User-additions" position="345,215" size="320,30" backgroundColor="#26181d20" zPosition="5" font="mediaportal; 26" halign="left" transparent="1" foregroundColor="#00ffffff" />
+	<widget name="useradditions" position="345,265" size="320,350" backgroundColor="#26181d20" transparent="1" selectionPixmap="~/liquidblue/images/sel.png" foregroundColorSelected="#ffffff" foregroundColor="#00555555" />
 	<widget name="Funsport" position="665,215" size="320,30" backgroundColor="#26181d20" zPosition="5" font="mediaportal; 26" halign="left" transparent="1" foregroundColor="#00ffffff" />
 	<widget name="funsport" position="665,265" size="320,350" backgroundColor="#26181d20" transparent="1" selectionPixmap="~/liquidblue/images/sel.png" foregroundColorSelected="#ffffff" foregroundColor="#00555555" />
 	<widget name="Porn" position="985,215" size="320,30" backgroundColor="#26181d20" zPosition="5" font="mediaportal; 26" halign="left" transparent="1" foregroundColor="#00ffffff" />

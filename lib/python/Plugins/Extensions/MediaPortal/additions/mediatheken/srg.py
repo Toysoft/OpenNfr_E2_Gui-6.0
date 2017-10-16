@@ -224,8 +224,10 @@ class SRGFilmeListeScreen(MPScreen, ThumbsHelper):
 		self.filmliste = []
 		try:
 			listJson = json.loads(data)
-			try: self.getLastPage(str(listJson["AssetSets"]["@maxPageNumber"]), '', '(\d+)')
-			except: self.lastpage = 1
+			try:
+				self.getLastPage(str(listJson["AssetSets"]["@maxPageNumber"]), '', '(\d+)')
+			except:
+				self.lastpage = 1
 			for node in listJson["AssetSets"]["AssetSet"]:
 					try:
 						serie = node["title"].encode("utf-8")
@@ -236,19 +238,27 @@ class SRGFilmeListeScreen(MPScreen, ThumbsHelper):
 								serie = "%s - %s" % (serie, videotitle)
 						except:
 							pass
-						try: desc = node["Assets"]["Video"][0]["AssetMetadatas"]["AssetMetadata"][0]["description"].encode("utf-8").strip()
-						except: desc = ""
-						try: image = node["Assets"]["Video"][0]["Image"]["ImageRepresentations"]["ImageRepresentation"][0]["url"].encode("utf-8")#.replace("width\/224","width\/320")
-						except: image = ""
+						try:
+							desc = node["Assets"]["Video"][0]["AssetMetadatas"]["AssetMetadata"][0]["description"].encode("utf-8").strip()
+						except:
+							desc = ""
+						try:
+							image = node["Assets"]["Video"][0]["Image"]["ImageRepresentations"]["ImageRepresentation"][0]["url"].encode("utf-8")
+						except:
+							image = ""
 						self.filmliste.append((decodeHtml(serie), url, desc, image))
 					except:
 						pass
 		except:
 			pass
 		if len(self.filmliste) == 0:
-			self.filmliste.append(('Keine Sendungen gefunden.','', '', None))
+			self.filmliste.append(('Keine Sendungen gefunden.', None, '', None))
+			self.ml.setList(map(self._defaultlistleft, self.filmliste))
+			self['Page'].setText('')
+			self['page'].setText('')
+		else:
+			self.keyLocked = False
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
-		self.keyLocked = False
 		self.th_ThumbsQuery(self.filmliste, 0, 1, 3, None, None, 1, 1, mode=1)
 		self.showInfos()
 
@@ -265,7 +275,8 @@ class SRGFilmeListeScreen(MPScreen, ThumbsHelper):
 			return
 		staffel = self['liste'].getCurrent()[0][0]
 		urlid = self['liste'].getCurrent()[0][1]
-		self.session.open(SRGStreamScreen, self.serie, staffel, urlid, self.channel)
+		if urlid:
+			self.session.open(SRGStreamScreen, self.serie, staffel, urlid, self.channel)
 
 class SRGStreamScreen(MPScreen):
 
@@ -314,9 +325,9 @@ class SRGStreamScreen(MPScreen):
 			listJson = json.loads(data)
 			try:
 				streamurl = listJson["Video"]["Downloads"]["Download"]
-				for Playlist in streamurl:
-					protoname = Playlist['@protocol'].encode("utf-8")
-					for urldata in Playlist["url"]:
+				for playlist in streamurl:
+					protoname = playlist['@protocol'].encode("utf-8")
+					for urldata in playlist["url"]:
 						myurl = urldata["text"].encode("utf-8")
 						quali = urldata['@quality'].encode("utf-8")
 						self.genreliste.append(('%s %s' % (protoname, quali) , myurl))
@@ -337,6 +348,7 @@ class SRGStreamScreen(MPScreen):
 			pass
 		if len(self.genreliste) == 0:
 			self.genreliste.append(('Keine Sendungen gefunden.',''))
+		self.genreliste.sort()
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
 
@@ -344,7 +356,25 @@ class SRGStreamScreen(MPScreen):
 		if self.keyLocked:
 			return
 		url = self['liste'].getCurrent()[0][1]
-		if re.findall('.*?\.m3u8$', url) and not config.mediaportal.use_hls_proxy.value:
-			message = self.session.open(MessageBoxExt, _("If you want to play this stream, you have to activate the HLS-Player in the MP-Setup"), MessageBoxExt.TYPE_INFO, timeout=5)
+		if '.m3u8' in url:
+			twAgentGetPage(url, gzip_decoding=True).addCallback(self.loadplaylist).addErrback(self.dataError)
 		else:
-			self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srg', forceGST=True)
+			self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srg')
+
+	def loadplaylist(self, data):
+		bandwith_list = []
+		match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n(.*?m3u8)', data, re.S)
+		videoPrio = int(config.mediaportal.videoquali_others.value)
+		if videoPrio == 2:
+			bw = int(match_sec_m3u8[-2][0])
+		elif videoPrio == 1:
+			bw = int(match_sec_m3u8[-2][0])/2
+		else:
+			bw = int(match_sec_m3u8[-2][0])/3
+		for each in match_sec_m3u8:
+			bandwith,url = each
+			bandwith_list.append((int(bandwith),url))
+		_, best = min((abs(int(x[0]) - bw), x) for x in bandwith_list)
+		url = best[1]
+
+		self.session.open(SimplePlayer, [(self.serie, url)], showPlaylist=False, ltype='srg', forceGST=True)

@@ -45,8 +45,8 @@ MyHeaders= {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;
 			'Accept-Language':'en-US,en;q=0.5'}
 default_cover = "file://%s/beeg.png" % (config.mediaportal.iconcachepath.value + "logos")
 
-config.mediaportal.beeg_apikey = ConfigText(default="1764", fixed_size=False)
-config.mediaportal.beeg_salt = ConfigText(default="Q3A5Bc6oJ934nAXedx3nyM", fixed_size=False)
+beeg_apikey = ''
+beeg_salt = ''
 
 class beegGenreScreen(MPScreen):
 
@@ -84,11 +84,34 @@ class beegGenreScreen(MPScreen):
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
-		self.onLayoutFinish.append(self.layoutFinished)
+		if beeg_salt == '' or beeg_apikey == '':
+			self.onLayoutFinish.append(self.getApiKeys)
+		else:
+			self.onLayoutFinish.append(self.layoutFinished)
+
+	def getApiKeys(self):
+		url = "http://beeg.com/1000000"
+		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getApiKeys2).addErrback(self.dataError)
+
+	def getApiKeys2(self, data):
+		cpl = re.findall('<script[^>]+src=["\']((?:/static|(?:https?:)?//static\.beeg\.com)/cpl/\d+\.js.*?)["\']', data, re.S)[0]
+		if cpl.startswith('/static'):
+			cpl = 'http://beeg.com' + cpl
+		twAgentGetPage(cpl, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getApiKeys3).addErrback(self.dataError)
+
+	def getApiKeys3(self, data):
+		global beeg_apikey
+		beeg_apikey = str(re.findall('beeg_version=(\d+)', data, re.S)[0])
+		global beeg_salt
+		beeg_salt = re.findall('beeg_salt="(.*?)"', data, re.S)[0]
+		if beeg_salt == '' or beeg_apikey == '':
+			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
+		else:
+			self.layoutFinished()
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://api2.beeg.com/api/v6/%s/index/main/0/mobile" % config.mediaportal.beeg_apikey.value
+		url = "http://beeg.com/api/v6/%s/index/main/0/mobile" % beeg_apikey
 		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
@@ -97,50 +120,23 @@ class beegGenreScreen(MPScreen):
 			Cats = re.findall('"(.*?)"', parse.group(1), re.S)
 			if Cats:
 				for Title in Cats:
-					Url = 'http://api2.beeg.com/api/v6/%s/index/tag/$PAGE$/mobile?tag=%s' % (config.mediaportal.beeg_apikey.value, Title)
+					Url = 'http://beeg.com/api/v6/%s/index/tag/$PAGE$/mobile?tag=%s' % (beeg_apikey, Title)
 					Title = Title.title()
 					self.genreliste.append((Title, Url))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://api2.beeg.com/api/v6/%s/index/tag/$PAGE$/mobile?tag=long%svideos" % (config.mediaportal.beeg_apikey.value, "%20")))
-			self.genreliste.insert(0, ("Newest", "http://api2.beeg.com/api/v6/%s/index/main/$PAGE$/mobile" % config.mediaportal.beeg_apikey.value))
+			self.genreliste.insert(0, ("Longest", "http://beeg.com/api/v6/%s/index/tag/$PAGE$/mobile?tag=long%svideos" % (beeg_apikey, "%20")))
+			self.genreliste.insert(0, ("Newest", "http://beeg.com/api/v6/%s/index/main/$PAGE$/mobile" % beeg_apikey))
 			if self.tags == 'popular':
 				self.genreliste.insert(0, ("- Show all Tags -", ""))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
+			self.showInfos()
 		else:
-			if not self.looplock:
-				self.getkeys()
-			else:
-				self.keyLocked = False
-				message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
-		self.showInfos()
+			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def showInfos(self):
 		CoverHelper(self['coverArt']).getCover(default_cover)
-
-	def getkeys(self):
-		self.looplock = True
-		url = "http://beeg.com"
-		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getkeysData).addErrback(self.dataError)
-
-	def getkeysData(self, data):
-		parse = re.search('cpl/(\d+)\.js', data, re.S)
-		if parse and config.mediaportal.beeg_apikey.value != parse.group(1):
-			config.mediaportal.beeg_apikey.value = parse.group(1)
-			config.mediaportal.beeg_apikey.save()
-		url = "http://static.beeg.com/cpl/%s.js" % config.mediaportal.beeg_apikey.value
-		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getsaltData).addErrback(self.dataError)
-
-	def getsaltData(self, data):
-		parse = re.search('beeg_salt="(.*?)"', data, re.S)
-		if parse:
-			config.mediaportal.beeg_salt.value = parse.group(1)
-			config.mediaportal.beeg_salt.save()
-			self.layoutFinished()
-		else:
-			self.keyLocked = False
-			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -217,7 +213,7 @@ class beegFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*Search", self.Name):
-			url = 'http://api2.beeg.com/api/v6/%s/index/search/$PAGE$/mobile?query=%s' % (config.mediaportal.beeg_apikey.value, self.Link)
+			url = 'http://beeg.com/api/v6/%s/index/search/$PAGE$/mobile?query=%s' % (beeg_apikey, self.Link)
 			url = url.replace('$PAGE$', '%s' % str(self.page-1))
 		else:
 			url = self.Link.replace('$PAGE$', '%s' % str(self.page-1))
@@ -228,8 +224,8 @@ class beegFilmScreen(MPScreen, ThumbsHelper):
 		Videos = re.findall('\{"title":"(.*?)","id":"(.*?)"', data, re.S)
 		if Videos:
 			for (Title, VideoId) in Videos:
-				Url = 'http://api2.beeg.com/api/v6/%s/video/%s' % (config.mediaportal.beeg_apikey.value, VideoId)
-				Image = 'http://img.beeg.com/236x177/%s.jpg' % VideoId
+				Url = 'http://beeg.com/api/v6/%s/video/%s' % (beeg_apikey, VideoId)
+				Image = 'http://img.beeg.com/800x450/%s.jpg' % VideoId
 				self.filmliste.append((decodeHtml(Title), Url, Image))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No videos found!'), '', None))
@@ -251,31 +247,32 @@ class beegFilmScreen(MPScreen, ThumbsHelper):
 		url = self['liste'].getCurrent()[0][1]
 		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getVideoPage).addErrback(self.dataError)
 
+	def decrypt_key(self, key):
+		try:
+			import execjs
+			node = execjs.get("Node")
+		except:
+			printl('nodejs not found',self,'E')
+			self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+			return
+		js = 'var jsalt="%s";' % beeg_salt + 'String.prototype.str_split=function(e,t){var n=this;e=e||1,t=!!t;var r=[];if(t){var a=n.length%e;a>0&&(r.push(n.substring(0,a)),n=n.substring(a))}for(;n.length>e;)r.push(n.substring(0,e)),n=n.substring(e);return r.push(n),r};  function jsaltDecode(e){e=decodeURIComponent(e);for(var s=jsalt.length,t="",o=0;o<e.length;o++){var l=e.charCodeAt(o),n=o%s,i=jsalt.charCodeAt(n)%21;t+=String.fromCharCode(l-i)}return t.str_split(3,!0).reverse().join("")};' + 'var key = "%s";' % key +  'vidurl = jsaltDecode(key); return vidurl;'
+		key = str(node.exec_(js))
+		return key
+
+	def decrypt_url(self, encrypted_url):
+		encrypted_url = 'https:' + encrypted_url.replace('/{DATA_MARKERS}/', '/data=pc_XX__%s/' % beeg_apikey)
+		key = re.search('/key=(.*?)%2Cend=', encrypted_url).group(1)
+		if not key:
+			return encrypted_url
+		return encrypted_url.replace(key, self.decrypt_key(key))
+
 	def getVideoPage(self, data):
 		streamlinks = re.findall('\d{3}p":"(.*?)"', data , re.S)
 		if streamlinks:
-			streamlink = streamlinks[-1].replace('{DATA_MARKERS}','data=pc.DE')
-			linkid = re.search('^(.*?key=)(.*?)(%2C.*?)$', streamlink)
-			if linkid:
-				a = config.mediaportal.beeg_salt.value
-				e = urllib2.unquote(linkid.group(2)).decode('utf-8')
-				t = len(a)
-				o = ''
-				for n in range(len(e)):
-					r = ord(e[n])
-					i = n % t
-					s = ord(a[i]) % 21
-					o += chr(r - s)
-				ofinal = ''
-				while len(o) > 3:
-					oPart = o[-3:]
-					o = o[:-3]
-					ofinal = ofinal+oPart
-				ofinal = ofinal+o
-				Url = "http:" + linkid.group(1) + ofinal + linkid.group(3)
-				Title = self['liste'].getCurrent()[0][0]
-				Cover = self['liste'].getCurrent()[0][2]
-				mp_globals.player_agent = IPhone5Agent
-				self.session.open(SimplePlayer, [(Title, Url, Cover)], showPlaylist=False, ltype='beeg', cover=True)
-				return
-		message = self.session.open(MessageBoxExt, _("Stream not found"), MessageBoxExt.TYPE_INFO, timeout=3)
+			streamlink = self.decrypt_url(streamlinks[-1])
+			Title = self['liste'].getCurrent()[0][0]
+			Cover = self['liste'].getCurrent()[0][2]
+			mp_globals.player_agent = IPhone5Agent
+			self.session.open(SimplePlayer, [(Title, streamlink, Cover)], showPlaylist=False, ltype='beeg', cover=True)
+		else:
+			message = self.session.open(MessageBoxExt, _("Stream not found"), MessageBoxExt.TYPE_INFO, timeout=3)

@@ -1124,7 +1124,7 @@ class pornhubFilmScreen(MPScreen, ThumbsHelper, rnCalc):
 			self.suburl = ""
 			self.unsuburl = ""
 			self.subscribed = ""
-			favparse = re.findall('favouriteUrl.*?itemId":(\d+),.*?isFavourite":(\d),.*?token=(.*?)",', data, re.S)
+			favparse = re.findall('favouriteUrl.*?itemId":\"{0,1}(\d+)\"{0,1},.*?isFavourite":(\d),.*?token=(.*?)",', data, re.S)
 			if favparse:
 				self.favtoken = str(favparse[0][2])
 				self.id = str(favparse[0][0])

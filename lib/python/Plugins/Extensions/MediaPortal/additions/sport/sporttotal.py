@@ -106,7 +106,7 @@ class sporttotalGenreScreen(MPScreen):
 	def getStream(self, data):
 		streams = re.findall('file:\s"(.*?)",', data, re.S)
 		if not streams:
-			streams = re.findall('<source\ssrc="(.*?)"\stype="video/mp4">', data, re.S)
+			streams = re.findall('<source\ssrc="(.*?)"\stype="', data, re.S)
 		if streams:
 			name = self['liste'].getCurrent()[0][0]
 			self.session.open(SimplePlayer, [(name, streams[0])], showPlaylist=False, ltype='sporttotal', forceGST=True)

@@ -46,16 +46,19 @@ config.mediaportal.vporn_password = ConfigPassword(default="vpornPassword", fixe
 config.mediaportal.vporn_hd = ConfigText(default="SD/HD", fixed_size=False)
 config.mediaportal.vporn_date = ConfigText(default="all time", fixed_size=False)
 
-ck = {}
+vpagent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+vpck = {}
+
+default_cover = "file://%s/vporn.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class vpornGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -98,9 +101,11 @@ class vpornGenreScreen(MPScreen):
 			self.onLayoutFinish.append(self.layoutFinished)
 
 	def Login(self):
+		self['name'].setText(_('Please wait...'))
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		loginUrl = "http://www.vporn.com/login"
 		loginData = {'backto': "", 'password': self.password, 'sub': 1, 'username': self.username}
-		getPage(loginUrl, method='POST', postdata=urlencode(loginData), cookies=ck, headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.Login2).addErrback(self.dataError)
+		getPage(loginUrl, agent=vpagent, method='POST', postdata=urlencode(loginData), cookies=vpck, timeout=30, headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.Login2).addErrback(self.dataError)
 
 	def Login2(self, data):
 		if 'href="/logout/"' in data:
@@ -108,9 +113,10 @@ class vpornGenreScreen(MPScreen):
 		self.layoutFinished()
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.keyLocked = True
 		url = "http://www.vporn.com"
-		getPage(url, cookies=ck).addCallback(self.genreData).addErrback(self.dataError)
+		getPage(url, agent=vpagent, cookies=vpck, timeout=30).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		if not self.loggedin:
@@ -130,9 +136,10 @@ class vpornGenreScreen(MPScreen):
 			self.genreliste.insert(0, ("Most Viewed", "http://www.vporn.com/views/", None, True))
 			self.genreliste.insert(0, ("Top Rated", "http://www.vporn.com/rating/", None, True))
 			self.genreliste.insert(0, ("Newest", "http://www.vporn.com/newest/", None, True))
-		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None, False))
+		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None, True))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
+		self['name'].setText('')
 		self.keyLocked = False
 
 	def keyOK(self):
@@ -280,7 +287,8 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 		self['title'] = Label("VPORN.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
-		self['F4'] = Label(_("Sort"))
+		if not self.Main:
+			self['F4'] = Label(_("Sort"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
@@ -310,7 +318,7 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 				url = "%s%s/%s%s" % (self.Link, sort , self.date, self.hd)
 			else:
 				url = "%s%s/%s%s%s" % (self.Link, sort , self.date, self.hd, str(self.page))
-		getPage(url, cookies=ck).addCallback(self.loadData).addErrback(self.dataError)
+		getPage(url, agent=vpagent, cookies=vpck, timeout=30).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pages">(.*?)</div>')
@@ -335,16 +343,19 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 			runtime = self['liste'].getCurrent()[0][3]
 			views = self['liste'].getCurrent()[0][4]
 			self['name'].setText(title)
-			self['handlung'].setText("Runtime: %s\nViews: %s\nSort order: %s" % (runtime, views, self.sortname))
+			if not self.Main:
+				sort = "\nSort order: %s" % self.sortname
+			else:
+				sort = ''
+			self['handlung'].setText("Runtime: %s\nViews: %s%s" % (runtime, views, sort))
 			CoverHelper(self['coverArt']).getCover(pic)
 		else:
 			self['name'].setText('')
 
 	def keySort(self):
-		if self.keyLocked:
+		if self.keyLocked or self.Main:
 			return
-		rangelist = [['Newest', 'newest'], ['Views','views'], ['Rating','rating'], ['Favorites','favorites']
-					, ['Comments','comments'], ['Votes','votes'], ['Duration','longest']]
+		rangelist = [['Newest', 'newest'], ['Views','views'], ['Rating','rating'], ['Favorites','favorites'], ['Comments','comments'], ['Votes','votes'], ['Duration','longest']]
 		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
 
 	def keySortAction(self, result):
@@ -357,9 +368,9 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 		if self.keyLocked:
 			return
 		url = self['liste'].getCurrent()[0][1]
-		if url != None:
+		if url:
 			self.keyLocked = True
-			getPage(url, cookies=ck).addCallback(self.getVideoPage).addErrback(self.dataError)
+			getPage(url, agent=vpagent, cookies=vpck, timeout=30).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
 		videoPage = re.findall('flashvars.videoUrl(?:Low|Low2|Medium|Medium2|HD|HD2)\s=\s"(http.*?.mp4)"', data, re.S)

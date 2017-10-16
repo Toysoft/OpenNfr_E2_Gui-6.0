@@ -262,7 +262,7 @@ class youtubeUrl(object):
 				txt += '\n' + msg.group(1).strip()
 
 			if not pc:
-				self.error = '[YoutubeURL] Error: %s' % txt
+				self.error = '[YoutubeURL] Error: %s' % decodeHtml(txt)
 			else:
 				self.error += txt
 		elif not pc:

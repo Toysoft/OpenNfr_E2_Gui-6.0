@@ -255,7 +255,7 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 
 		self.genreliste.sort(key=lambda t : t[0]+t[1].lower())
 
-		if config.mediaportal.showgrauzone.value:
+		if config.mediaportal.showuseradditions.value:
 			dpath = config.mediaportal.watchlistpath.value
 
 		self.ml.setList(map(self.simplelistListEntry, self.genreliste))

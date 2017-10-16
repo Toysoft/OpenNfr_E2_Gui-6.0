@@ -254,17 +254,20 @@ class uporniaFilmScreen(MPScreen, ThumbsHelper):
 		try:
 			import execjs
 			node = execjs.get("Node")
-			decstring = re.findall('sources\[\d\]={type:\'mp4\',file:([a-zA-Z0-9]+)\(', data, re.S)
-			decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
-			video_url = re.findall('(var video_url.*?;)', data, re.S)
-			js = decoder[0] + "\n" + video_url[0] + "\n" + "vidurl = (%s(video_url));" % decstring[0] + "\n" + "return vidurl;"
-			url = str(node.exec_(js))
-			print url
 		except:
 			printl('nodejs not found',self,'E')
 			self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
-			url = None
-		if url:
-			self.keyLocked = False
-			Title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='upornia')
+			return
+		decstring = re.findall('sources\[\d\]={type:\'mp4\',file:([a-zA-Z0-9]+)\(', data, re.S)
+		decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
+		if decoder:
+			video_url = re.findall('(var video_url.*?;)', data, re.S)
+			js = decoder[0] + "\n" + video_url[0] + "\n" + "vidurl = (%s(video_url));" % decstring[0] + "\n" + "return vidurl;"
+		else:
+			decoder = re.findall('(var (_0x[A-Za-z0-9]+)=.*?)var (?:m3u8|video)_url', data, re.S)
+			video_url = re.findall('(var video_url.*?;)', data, re.S)
+			js = decoder[0][0].replace('window[%s[1]]' % decoder[0][1],'%s[1]' % decoder[0][1])  + "\n" + video_url[0] + "\n" + "vidurl = (%s[1](video_url));" % decoder[0][1] + "\n" + "return vidurl;"
+		url = str(node.exec_(js))
+		self.keyLocked = False
+		Title = self['liste'].getCurrent()[0][0]
+		self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='upornia')

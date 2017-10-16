@@ -240,7 +240,7 @@ class toSearchForPornBrowse(MPScreen):
 				if x.get("type") == "mod":
 					if x.get("confcat") == "porn" and x.get("search") == "1":
 						gz = x.get("gz")
-						if not config.mediaportal.showgrauzone.value and gz == "1":
+						if not config.mediaportal.showuseradditions.value and gz == "1":
 							pass
 						else:
 							mod = eval("config.mediaportal." + x.get("confopt") + ".value")
@@ -262,7 +262,7 @@ class toSearchForPornBrowse(MPScreen):
 							if x.get("type") == "mod":
 								if x.get("confcat") == "porn" and x.get("search") == "1":
 									gz = x.get("gz")
-									if not config.mediaportal.showgrauzone.value and gz == "1":
+									if not config.mediaportal.showuseradditions.value and gz == "1":
 										pass
 									else:
 										mod = eval("config.mediaportal." + x.get("confopt") + ".value")
