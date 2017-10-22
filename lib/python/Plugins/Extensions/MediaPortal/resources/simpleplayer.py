@@ -877,7 +877,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		try:
 			InfoBarServiceErrorPopupSupport.__init__(self)
 			InfoBarGstreamerErrorPopupSupport.__init__(self)
-			if mp_globals.isDreamOS:
+			if mp_globals.isDreamOS and mp_globals.stateinfo:
 				InfoBarServiceErrorPopupSupport._stateInfo = self.session.instantiateDialog(SimplePlayerInfoBarStateInfo,zPosition=-5)
 				InfoBarServiceErrorPopupSupport._stateInfo.neverAnimate()
 		except:
@@ -1396,7 +1396,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		elif answer == "rtmpbuffering":
 			self.close('continue')
 		try:
-			if mp_globals.isDreamOS:
+			if mp_globals.isDreamOS and mp_globals.stateinfo:
 				InfoBarServiceErrorPopupSupport._stateInfo = self.session.instantiateDialog(InfoBarStateInfo,zPosition=-5)
 				InfoBarServiceErrorPopupSupport._stateInfo.neverAnimate()
 		except:

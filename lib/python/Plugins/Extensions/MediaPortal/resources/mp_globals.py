@@ -53,3 +53,4 @@ yt_s = None
 yt_i = None
 animationfix = False
 lastservice = None
+stateinfo = False

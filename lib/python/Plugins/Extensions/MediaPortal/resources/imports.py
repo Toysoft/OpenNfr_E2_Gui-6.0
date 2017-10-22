@@ -42,20 +42,6 @@ from Components.Input import Input
 from Screens.InfoBar import MoviePlayer, InfoBar
 from Screens.InfoBarGenerics import InfoBarSeek, InfoBarNotifications
 
-try:
-	from Screens.InfoBarGenerics import InfoBarServiceErrorPopupSupport
-except:
-	class InfoBarServiceErrorPopupSupport:
-		def __init__(self):
-			pass
-
-try:
-	from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
-except:
-	class InfoBarGstreamerErrorPopupSupport:
-		def __init__(self):
-			pass
-
 from Screens.Screen import Screen
 from Screens.Standby import TryQuitMainloop
 from Screens.NumericalTextInputHelpDialog import NumericalTextInputHelpDialog
@@ -101,6 +87,22 @@ def r_getPage(url, *args, **kwargs):
 	return twAgentGetPage(url, *args, **kwargs).addErrback(retry)
 
 import mp_globals
+
+try:
+	from Screens.InfoBarGenerics import InfoBarServiceErrorPopupSupport
+except:
+	class InfoBarServiceErrorPopupSupport:
+		def __init__(self):
+			pass
+
+try:
+	from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
+	mp_globals.stateinfo = True
+except:
+	class InfoBarGstreamerErrorPopupSupport:
+		def __init__(self):
+			mp_globals.stateinfo = False
+
 from mp_globals import std_headers
 from streams import isSupportedHoster, get_stream_link
 from mpscreen import MPScreen, SearchHelper
