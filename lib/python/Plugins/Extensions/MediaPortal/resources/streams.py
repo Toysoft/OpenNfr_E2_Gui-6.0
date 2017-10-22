@@ -103,6 +103,7 @@ class get_stream_link:
 	from hosters.powvideo import powvideo
 	from hosters.promptfile import promptfile, promptfilePost
 	from hosters.rapidvideo import rapidvideo
+	from hosters.rapidvideocom import rapidvideocom
 	from hosters.streamango import streamango
 	from hosters.streamin import streamin
 	from hosters.trollvid import trollvid
@@ -733,7 +734,7 @@ class get_stream_link:
 					else:
 						data = self.grabpage(link)
 						if data == "error":
-							message = self.session.open(MessageBoxExt, _("Some mandatory Python modules are missing!"), MessageBoxExt.TYPE_ERROR)
+							message = self.session.open(MessageBoxExt, _("Mandatory Python module python-requests is missing!"), MessageBoxExt.TYPE_ERROR)
 						else:
 							self.vivo(data, link)
 
@@ -800,6 +801,15 @@ class get_stream_link:
 					self.callPremium(link)
 				else:
 					getPage(link).addCallback(self.rapidvideo).addErrback(self.errorload)
+
+			elif re.search('rapidvideo\.com', data, re.S):
+				if re.search('rapidvideo\.com/(embed|e)/', data, re.S):
+					link = data
+				else:
+					id = re.findall('rapidvideo\.com/v/(.*?)$', data)
+					if id:
+						link = "http://rapidvideo.com/embed/%s" % id[0]
+				getPage(link).addCallback(self.rapidvideocom).addErrback(self.errorload)
 
 			elif re.search('vid\.gg|vidgg\.to', data, re.S):
 				data = data.replace('vid.gg','vidgg.to')
@@ -919,7 +929,7 @@ class get_stream_link:
 				else:
 					data = self.grabpage(link)
 					if data == "error":
-						message = self.session.open(MessageBoxExt, _("Some mandatory Python modules are missing!"), MessageBoxExt.TYPE_ERROR)
+						message = self.session.open(MessageBoxExt, _("Mandatory Python module python-requests is missing!"), MessageBoxExt.TYPE_ERROR)
 					else:
 						self.vidlox(data)
 

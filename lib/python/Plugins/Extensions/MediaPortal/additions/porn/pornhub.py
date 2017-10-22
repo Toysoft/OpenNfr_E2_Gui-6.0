@@ -486,6 +486,8 @@ class pornhubPlayListScreen(MPScreen, ThumbsHelper, rnCalc):
 			DelayedFunction(1000, self.loadPage)
 
 	def ok(self, data):
+		if data == "2":
+			self.session.open(MessageBoxExt, _("You have reached the maximum allowed number of favorite playlists. Please delete some of your current favorite playlists before adding new ones."), MessageBoxExt.TYPE_INFO, timeout=5)
 		#print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		#print data
 		#print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

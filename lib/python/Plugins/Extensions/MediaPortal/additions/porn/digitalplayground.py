@@ -229,6 +229,7 @@ class digitalplaygroundFilmScreen(MPScreen, ThumbsHelper):
 		if self.keyLocked:
 			return
 		Link = self['liste'].getCurrent()[0][1]
+		Link = Link.replace('http:','https:')
 		get_stream_link(self.session).check_link(Link, self.play)
 
 	def play(self, url):

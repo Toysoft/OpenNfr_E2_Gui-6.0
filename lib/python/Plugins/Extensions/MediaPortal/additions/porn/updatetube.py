@@ -209,7 +209,10 @@ class updatetubeFilmScreen(MPScreen, ThumbsHelper):
 		elif self.page == 1:
 			url = "%s" % (self.Link)
 		else:
-			url = "%s/%s" % (self.Link, str(self.page))
+			if self.Name == "Newest" and self.portal == "PornSharing.com":
+				url = "%s/videos/%s" % (self.Link, str(self.page))
+			else:
+				url = "%s/%s" % (self.Link, str(self.page))
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):

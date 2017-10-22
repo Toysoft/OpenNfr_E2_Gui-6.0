@@ -88,7 +88,7 @@ class sunpornoGenreScreen(MPScreen):
 		getPage(url, agent=spAgent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		parse = re.search('class="cat-container"(.*?)class="clearfix">', data, re.S)
+		parse = re.search('class="cat-container(.*?)class="clearfix">', data, re.S)
 		Cats = re.findall('<a\shref="https://www.sunporno.com/channels/(\d+).*?">(.*?)<', parse.group(1), re.S)
 		if Cats:
 			for (Id, Title) in Cats:

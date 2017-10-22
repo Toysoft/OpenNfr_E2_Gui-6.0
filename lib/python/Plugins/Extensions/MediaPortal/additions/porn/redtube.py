@@ -40,14 +40,18 @@ from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
-agent='Mozilla/5.0 (Windows NT 6.1; rv:44.0) Gecko/20100101 Firefox/44.0'
+agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'
 json_headers = {
-	'Accept':'application/json',
+	'Accept':'text/plain, */*; q=0.01',
 	'Accept-Language':'de,en-US;q=0.7,en;q=0.3',
 	'X-Requested-With':'XMLHttpRequest',
 	'Content-Type':'application/x-www-form-urlencoded',
+	'Referer':'https://www.redtube.com/',
+	'Origin':'https://www.redtube.com/'
 	}
 default_cover = "file://%s/redtube.png" % (config.mediaportal.iconcachepath.value + "logos")
+
+ufAC = ''
 
 class redtubeGenreScreen(MPScreen):
 
@@ -87,25 +91,27 @@ class redtubeGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
-		url = "http://www.redtube.com/categories"
+		url = "https://www.redtube.com/categories"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
+		global ufAC
+		ufAC = re.search('page_params.ufAC =.*?"(.*?)";', data, re.S).group(1)
 		Cats = re.findall('class="video">.*?<a\shref="(.*?)"\stitle="(.*?)">.*?data-src="(.*?\.jpg).*?"', data, re.S)
 		if Cats:
 			for (Url, Title, Image) in Cats:
-				Url = "http://www.redtube.com" + Url + '?page='
+				Url = "https://www.redtube.com" + Url + '?page='
 				Title = Title.replace('&amp;','&')
 				if Image.startswith('//'):
 					Image = 'http:' + Image
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.redtube.com/longest?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Most Favorited", "http://www.redtube.com/mostfavored?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Most Viewed", "http://www.redtube.com/mostviewed?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Top Rated", "http://www.redtube.com/top?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Trending", "http://www.redtube.com/hot?page=", default_cover))
-			self.genreliste.insert(0, ("Newest", "http://www.redtube.com/newest?page=", default_cover))
+			self.genreliste.insert(0, ("Longest", "https://www.redtube.com/longest?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Most Favorited", "https://www.redtube.com/mostfavored?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Most Viewed", "https://www.redtube.com/mostviewed?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "https://www.redtube.com/top?period=alltime&page=", default_cover))
+			self.genreliste.insert(0, ("Trending", "https://www.redtube.com/hot?page=", default_cover))
+			self.genreliste.insert(0, ("Newest", "https://www.redtube.com/newest?page=", default_cover))
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
@@ -130,12 +136,12 @@ class redtubeGenreScreen(MPScreen):
 		if callback is not None and len(callback):
 			Name = "--- Search ---"
 			self.suchString = callback
-			Link = 'http://www.redtube.com/?search=%s&page=' % self.suchString.replace(' ', '+')
+			Link = 'https://www.redtube.com/?search=%s&page=' % self.suchString.replace(' ', '+')
 			self.session.open(redtubeFilmScreen, Link, Name)
 
 	def getSuggestions(self, text, max_res):
-		url = "http://www.redtube.com/searchsuggest?class=0&limit=10"
-		postdata = {'term': text}
+		url = "https://www.redtube.com/searchsuggest?class=0&limit=10"
+		postdata = {'term': text, 'ufAC': ufAC}
 		d = twAgentGetPage(url, method='POST', postdata=urlencode(postdata), agent=agent, headers=json_headers, timeout=5)
 		d.addCallback(self.gotSuggestions, max_res)
 		d.addErrback(self.gotSuggestions, max_res, err=True)
@@ -146,10 +152,14 @@ class redtubeGenreScreen(MPScreen):
 		if not err and type(suggestions) in (str, buffer):
 			suggestions = json.loads(suggestions)
 			for item in suggestions['data']['suggestions']:
-				li = item['label']
-				list.append(str(li))
-				max_res -= 1
-				if not max_res: break
+				try:
+					if item['type'] == 'video':
+						li = item['label']
+						list.append(str(li))
+						max_res -= 1
+						if not max_res: break
+				except:
+					pass
 		elif err:
 			printl(str(suggestions),self,'E')
 		return list

@@ -204,8 +204,8 @@ class pornoxoFilmScreen(MPScreen, ThumbsHelper):
 			getPage(url).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		url = re.findall('(?:filefallback\'|file):\s{0,1}"(.*?\.mp4)",', data, re.S)
+		url = re.findall('(?:filefallback\'|file)"{0,1}:\s{0,1}"(.*?\.mp4)",', data, re.S)
 		if url:
 			self.keyLocked = False
 			title = self['liste'].getCurrent()[0][0]
-			self.session.open(SimplePlayer, [(title, url[-1])], showPlaylist=False, ltype='pornoxo')
+			self.session.open(SimplePlayer, [(title, url[-1].replace('\/','/'))], showPlaylist=False, ltype='pornoxo')

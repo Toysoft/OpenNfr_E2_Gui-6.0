@@ -766,6 +766,45 @@ class SimplePlayerPVRState(Screen):
 		self["speed"] = Label()
 		self["statusicon"] = MultiPixmap()
 
+class SimplePlayerInfoBarStateInfo(Screen):
+	def __init__(self, session):
+		Screen.__init__(self, session)
+		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+		path = "%s/%s/simpleplayer/SimplePlayerInfoBarStateInfo.xml" % (self.skin_path, config.mediaportal.skin.value)
+		if not fileExists(path):
+			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayerInfoBarStateInfo.xml"
+		with open(path, "r") as f:
+			self.skin = f.read()
+			f.close()
+
+		self["state"] = Label()
+		self["message"] = Label()
+		self.onFirstExecBegin.append(self.__onFirstExecBegin)
+		self._stateSizeDefault = eSize(590,40)
+		self._stateSizeFull = eSize(590,130)
+		self._stateOnly = False
+
+	def __onFirstExecBegin(self):
+		self._stateSizeDefault = self["state"].getSize()
+		self._stateSizeFull = eSize( self._stateSizeDefault.width(), self.instance.size().height() - (2 * self["state"].position.x()) )
+		self._resizeBoxes()
+
+	def _resizeBoxes(self):
+		if self._stateOnly:
+			self["state"].resize(self._stateSizeFull)
+			self["message"].hide();
+		else:
+			self["state"].resize(self._stateSizeDefault)
+			self["message"].show();
+
+	def setPlaybackState(self, state, message=""):
+		self["state"].text = state
+		self["message"].text = message
+		self._stateOnly = False if message else True
+
+	def current(self):
+		return (self["state"].text, self["message"].text)
+
 class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, SimplePlayerResume, InfoBarMenu, InfoBarBase, InfoBarSeek, InfoBarNotifications, InfoBarServiceNotifications, InfoBarPVRState, InfoBarShowHide, InfoBarAudioSelection, InfoBarSubtitleSupport, InfoBarSimpleEventView, InfoBarServiceErrorPopupSupport, InfoBarGstreamerErrorPopupSupport):
 
 	ALLOW_SUSPEND = True
@@ -838,6 +877,9 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		try:
 			InfoBarServiceErrorPopupSupport.__init__(self)
 			InfoBarGstreamerErrorPopupSupport.__init__(self)
+			if mp_globals.isDreamOS:
+				InfoBarServiceErrorPopupSupport._stateInfo = self.session.instantiateDialog(SimplePlayerInfoBarStateInfo,zPosition=-5)
+				InfoBarServiceErrorPopupSupport._stateInfo.neverAnimate()
 		except:
 			pass
 
@@ -845,7 +887,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		InfoBarSeek.__init__(self)
 		InfoBarPVRState.__init__(self, screen=SimplePlayerPVRState, force_show=True)
 
-		self.skinName = 'MediaPortal SimplePlayer'
+		self.skinName = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
 		if config.mediaportal.restorelastservice.value == "1" and not config.mediaportal.backgroundtv.value:
 			self.lastservice = self.session.nav.getCurrentlyPlayingServiceReference()
 		else:
@@ -1353,6 +1395,12 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			self.close()
 		elif answer == "rtmpbuffering":
 			self.close('continue')
+		try:
+			if mp_globals.isDreamOS:
+				InfoBarServiceErrorPopupSupport._stateInfo = self.session.instantiateDialog(InfoBarStateInfo,zPosition=-5)
+				InfoBarServiceErrorPopupSupport._stateInfo.neverAnimate()
+		except:
+			pass
 
 	def leavePlayer(self):
 		if self.seekBarLocked:
