@@ -1693,7 +1693,7 @@ class InfoBarSeek:
 			elif self.seekstate[1]:
 				if not pauseable.setFastForward(self.seekstate[1]):
 					print "resolved to FAST FORWARD"
-					self.setMute()
+					#self.setMute()
 					pass
 				else:
 					self.seekstate = self.SEEK_STATE_PLAY
@@ -1701,7 +1701,7 @@ class InfoBarSeek:
 			elif self.seekstate[2]:
 				if not pauseable.setSlowMotion(self.seekstate[2]):
 					print "resolved to SLOW MOTION"
-					self.setMute()
+					#self.setMute()
 					pass
 					# print "resolved to SLOW MOTION"
 				else:
