@@ -75,6 +75,7 @@ class pornoxoGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "https://www.pornoxo.com"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -94,10 +95,6 @@ class pornoxoGenreScreen(MPScreen):
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 		
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

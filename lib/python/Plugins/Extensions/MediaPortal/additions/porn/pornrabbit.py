@@ -79,6 +79,7 @@ class pornrabbitGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.pornrabbit.com/page/categories/"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 

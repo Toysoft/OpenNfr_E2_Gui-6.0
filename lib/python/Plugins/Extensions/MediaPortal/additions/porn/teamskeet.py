@@ -81,6 +81,7 @@ class teamskeetGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_('Please wait...'))
 		url = "http://www.teamskeet.com/t1/updates/load?view=rating&page=1&fltrs[tags]=&fltrs[site]=ALL&fltrs[alpha]="
 		getPage(url, agent=myagent, cookies=ck, headers={'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'http://www.teamskeet.com/t1/updates/?site=ts'}).addCallback(self.genreData).addErrback(self.dataError)

@@ -11,8 +11,6 @@
 	<widget name="liste" position="12,194" size="898,250" backgroundColor="#26181d20" scrollbarMode="showOnDemand" transparent="1" selectionPixmap="/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/skins_720/tec/images/sel.png" foregroundColorSelected="#ffffff" foregroundColor="#00999999" itemHeight="25" />
 	<widget name="title" position="10,104" size="900,50" foregroundColor="#00ffffff" backgroundColor="#26181d20" transparent="1" font="mediaportal;26" valign="center" halign="center" />
 	<widget name="Parameter" position="55,456" size="150,30" foregroundColor="#00999999" backgroundColor="#26181d20" transparent="1" font="mediaportal; 26" valign="center" halign="center" zPosition="0" />
-	<widget name="ParameterToEdit" position="220,456" size="120,30" foregroundColor="#00ffffff" backgroundColor="#26181d20" transparent="1" font="mediaportal; 26" valign="center" zPosition="0" halign="left" />
-	<widget name="parametertoedit" position="340,456" size="200,30" backgroundColor="#26181d20" transparent="1" font="mediaportal;26" valign="center" zPosition="0" />
 	<widget name="Query" position="55,485" size="150,25" backgroundColor="#26181d20" transparent="1" font="mediaportal; 20" valign="center" zPosition="0" halign="center" foregroundColor="#00999999" />
 	<widget name="query" position="220,485" size="690,25" backgroundColor="#26181d20" transparent="1" font="mediaportal;20" valign="center" zPosition="0" noWrap="1" />
 	<widget name="Keywords" position="55,510" size="150,25" backgroundColor="#26181d20" transparent="1" font="mediaportal;20" valign="center" zPosition="0" halign="center" foregroundColor="#00999999" />

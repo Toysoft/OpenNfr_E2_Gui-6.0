@@ -106,6 +106,7 @@ class fourtubeGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(self.default_cover)
 		url = "http://%s/tag%s" % (self.baseurl, self.s)
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 

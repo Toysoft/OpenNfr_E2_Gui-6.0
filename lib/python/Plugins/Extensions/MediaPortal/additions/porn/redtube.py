@@ -39,6 +39,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
+from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
 
 agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'
 json_headers = {
@@ -91,6 +92,7 @@ class redtubeGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "https://www.redtube.com/categories"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -100,19 +102,19 @@ class redtubeGenreScreen(MPScreen):
 		Cats = re.findall('class="video">.*?<a\shref="(.*?)"\stitle="(.*?)">.*?data-src="(.*?\.jpg).*?"', data, re.S)
 		if Cats:
 			for (Url, Title, Image) in Cats:
-				Url = "https://www.redtube.com" + Url + '?page='
+				Url = "https://www.redtube.com" + Url
 				Title = Title.replace('&amp;','&')
 				if Image.startswith('//'):
 					Image = 'http:' + Image
-				self.genreliste.append((Title, Url, Image))
+				self.genreliste.append((Title, Url, Image, True))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "https://www.redtube.com/longest?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Most Favorited", "https://www.redtube.com/mostfavored?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Most Viewed", "https://www.redtube.com/mostviewed?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Top Rated", "https://www.redtube.com/top?period=alltime&page=", default_cover))
-			self.genreliste.insert(0, ("Trending", "https://www.redtube.com/hot?page=", default_cover))
-			self.genreliste.insert(0, ("Newest", "https://www.redtube.com/newest?page=", default_cover))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
+			self.genreliste.insert(0, ("Longest", "https://www.redtube.com/longest?period=alltime", default_cover, False))
+			self.genreliste.insert(0, ("Most Favorited", "https://www.redtube.com/mostfavored?period=alltime", default_cover, False))
+			self.genreliste.insert(0, ("Most Viewed", "https://www.redtube.com/mostviewed?period=alltime", default_cover, False))
+			self.genreliste.insert(0, ("Top Rated", "https://www.redtube.com/top?period=alltime", default_cover, False))
+			self.genreliste.insert(0, ("Trending", "https://www.redtube.com/hot", default_cover, False))
+			self.genreliste.insert(0, ("Newest", "https://www.redtube.com/newest", default_cover, False))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover, True))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False
@@ -130,14 +132,15 @@ class redtubeGenreScreen(MPScreen):
 			self.session.openWithCallback(self.SuchenCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.suchString, is_dialog=True, auto_text_init=False, suggest_func=self.getSuggestions)
 		else:
 			Link = self['liste'].getCurrent()[0][1]
-			self.session.open(redtubeFilmScreen, Link, Name)
+			Sort = self['liste'].getCurrent()[0][3]
+			self.session.open(redtubeFilmScreen, Link, Name, Sort)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
 			Name = "--- Search ---"
 			self.suchString = callback
-			Link = 'https://www.redtube.com/?search=%s&page=' % self.suchString.replace(' ', '+')
-			self.session.open(redtubeFilmScreen, Link, Name)
+			Link = self.suchString.replace(' ', '+')
+			self.session.open(redtubeFilmScreen, Link, Name, True)
 
 	def getSuggestions(self, text, max_res):
 		url = "https://www.redtube.com/searchsuggest?class=0&limit=10"
@@ -166,10 +169,11 @@ class redtubeGenreScreen(MPScreen):
 
 class redtubeFilmScreen(MPScreen, ThumbsHelper):
 
-	def __init__(self, session, Link, Name):
+	def __init__(self, session, Link, Name, Sort):
 		self.Link = Link
 		self.Name = Name
 		self.plugin_path = mp_globals.pluginPath
+		self.Sort = Sort
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
@@ -192,16 +196,28 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"green" : self.keyPageNumber
+			"green" : self.keyPageNumber,
+			"yellow" : self.keySort
 		}, -1)
 
 		self['title'] = Label("RedTube.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['F2'] = Label(_("Page"))
+		if self.Sort:
+			self['F3'] = Label(_("Sort"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True
 		self.page = 1
+		if not self.Sort:
+			self.sort = ''
+			self.sorttext = ''
+		elif re.match(".*?Search", self.Name):
+			self.sort = ''
+			self.sorttext = 'Most Relevant'
+		else:
+			self.sort = ''
+			self.sorttext = 'Newest'
 
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -213,7 +229,16 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
-		url = "%s%s" % (self.Link, str(self.page))
+		if re.match(".*?Search", self.Name):
+			url = 'https://www.redtube.com/%s?search=%s&page=%s' % (self.sort, self.Link, str(self.page))
+		else:
+			if '?' in self.Link or '?' in self.sort:
+				delim = '&'
+			else:
+				delim = '?'
+			url = "%s%s%spage=%s" % (self.Link, self.sort, delim, str(self.page))
+		print "##############################"
+		print url
 		getPage(url).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
@@ -261,8 +286,25 @@ class redtubeFilmScreen(MPScreen, ThumbsHelper):
 		runtime = self['liste'].getCurrent()[0][3]
 		views = self['liste'].getCurrent()[0][4]
 		self['name'].setText(title)
-		self['handlung'].setText("Runtime: %s\nViews: %s" % (runtime, views))
+		self['handlung'].setText("%s: %s\nRuntime: %s\nViews: %s" % (_("Sort order"),self.sorttext,runtime, views))
 		CoverHelper(self['coverArt']).getCover(pic)
+
+	def keySort(self):
+		if self.keyLocked:
+			return
+		if not self.Sort:
+			return
+		if re.match(".*?Search", self.Name):
+			rangelist = [['Newest', 'new'], ['Most Relevant',''], ['Most Viewed','mostviewed'], ['Top Rated','top'], ['Longest','longest']]
+		else:
+			rangelist = [['Newest', ''], ['Most Viewed','?sorting=mostviewed&period=alltime'], ['Most Favored','?sorting=mostfavored&period=alltime'], ['Top Rated','?sorting=rating&period=alltime'], ['Longest','?sorting=longest&period=alltime']]
+		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
+
+	def keySortAction(self, result):
+		if result:
+			self.sort = result[1]
+			self.sorttext = result[0]
+			self.loadPage()
 
 	def keyOK(self):
 		if self.keyLocked:

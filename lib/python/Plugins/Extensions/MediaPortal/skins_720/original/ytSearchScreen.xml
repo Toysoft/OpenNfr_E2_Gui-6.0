@@ -11,8 +11,6 @@
 	<widget name="name" position="20,95" size="860,30" foregroundColor="#00e5b243" backgroundColor="#00101214" transparent="1" font="mediaportal;26" valign="top" />
 	<widget name="liste" position="1,135" size="900,250" backgroundColor="#00101214" scrollbarMode="showOnDemand" selectionPixmap="~/original/images/sel.png" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="25" />
 	<widget name="Parameter" position="20,410" size="200,30" foregroundColor="#00e5b243" backgroundColor="#00101214" transparent="1" font="mediaportal; 26" valign="center" zPosition="0" />
-	<widget name="ParameterToEdit" position="230,410" size="100,30" foregroundColor="#00e5b243" backgroundColor="#00101214" transparent="1" font="mediaportal; 20" valign="center" zPosition="0" halign="right" />
-	<widget name="parametertoedit" position="340,410" size="200,30" foregroundColor="#0006ff00" backgroundColor="#00101214" transparent="1" font="mediaportal;20" valign="center" zPosition="0" />
 	<eLabel position="20,440" size="860,2" backgroundColor="#00555556" />
 	<widget name="Query" position="20,445" size="150,25" backgroundColor="#00101214" transparent="1" font="mediaportal; 20" valign="center" zPosition="0" halign="right" foregroundColor="#00555556" />
 	<widget name="query" position="180,445" size="700,25" backgroundColor="#00101214" transparent="1" font="mediaportal;20" valign="center" zPosition="0" noWrap="1" />

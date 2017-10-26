@@ -82,6 +82,7 @@ class befuckGenreScreen(MPScreen):
 
 	def loadPage(self):
 		self.filmliste = []
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://%s/categories/" % baseurl
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
 

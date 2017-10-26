@@ -88,6 +88,7 @@ class hdzogGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.hdzog.com/categories/"
 		getPage(url, agent=agent).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -190,7 +191,7 @@ class hdzogFilmScreen(MPScreen, ThumbsHelper):
 
 	def loadData(self, data):
 		self.getLastPage(data, 'class="pagination"(.*?)</div><!-- poagination -->')
-		Movies = re.findall('href="(http[s]?://www.hdzog.com/videos/.*?)".*?img\ssrc="(.*?)"\salt="(.*?)".*?class="time">(.*?)</span.*?class="added">(.*?)</span', data, re.S)
+		Movies = re.findall('href="(http[s]?://www.hdzog.com/videos/.*?)".*?img(?:\sid="[A-Za-z0-9]+")\s+src="(.*?)"\salt="(.*?)".*?class="time">(.*?)</span.*?class="added">(.*?)</span', data, re.S)
 		if Movies:
 			for (Url, Image, Title, Runtime, Added) in Movies:
 				if not Url.startswith('http'):

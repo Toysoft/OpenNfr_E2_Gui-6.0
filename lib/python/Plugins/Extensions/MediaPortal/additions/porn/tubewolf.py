@@ -75,6 +75,7 @@ class tubewolfGenreScreen(MPScreen):
 
 	def loadPage(self):
 		self.filmliste = []
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_('Please wait...'))
 		url = "http://www.tubewolf.com/categories/"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
@@ -93,10 +94,6 @@ class tubewolfGenreScreen(MPScreen):
 			self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 			self.keyLocked = False
 		self['name'].setText('')
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

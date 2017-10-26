@@ -130,12 +130,16 @@ class atvListScreen(MPScreen, ThumbsHelper):
 			"down" : self.keyDown,
 			"right" : self.keyRight,
 			"left" : self.keyLeft,
+			"blue" :  self.keyTxtPageDown,
+			"red" :  self.keyTxtPageUp
 		}, -1)
 
 		self['title'] = Label("ATV Mediathek")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
 		self['name'] = Label(_("Please wait..."))
 		self['Page'] = Label(_("Page:"))
+		self['F1'] = Label(_("Text-"))
+		self['F4'] = Label(_("Text+"))
 
 		self.filmliste = []
 		self.handlung = ''

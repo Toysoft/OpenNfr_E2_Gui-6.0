@@ -81,6 +81,7 @@ class tvnowFirstScreen(MPScreen, ThumbsHelper):
 		self.onLayoutFinish.append(self.genreData)
 
 	def genreData(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.senderliste.append(("RTL", "rtl", default_cover))
 		self.senderliste.append(("VOX", "vox", default_cover))
 		self.senderliste.append(("RTL2", "rtl2", default_cover))

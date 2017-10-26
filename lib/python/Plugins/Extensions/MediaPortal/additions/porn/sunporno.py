@@ -83,6 +83,7 @@ class sunpornoGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_('Please wait...'))
 		url = "https://www.sunporno.com/channels/"
 		getPage(url, agent=spAgent).addCallback(self.genreData).addErrback(self.dataError)
@@ -107,10 +108,6 @@ class sunpornoGenreScreen(MPScreen):
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
 		self['name'].setText('')
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

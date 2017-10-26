@@ -38,6 +38,7 @@ class show_DMAX_Genre(MenuHelper):
 
 	def mh_initMenu(self):
 		self.d_print("mh_initMenu:")
+		CoverHelper(self['coverArt']).getCover(glob_portal_logo)
 		self.mh_menuListe.append((_('Please wait...'),None))
 		self.ml.setList(map(self.mh_menuListentry, self.mh_menuListe))
 		self.mh_parseCategorys(None)

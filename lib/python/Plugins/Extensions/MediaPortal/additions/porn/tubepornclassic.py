@@ -78,6 +78,7 @@ class tubepornclassicGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://tubepornclassic.com/categories/"
 		getPage(url, agent=tcAgent, headers={'Cookie': 'language=en'}).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -95,10 +96,6 @@ class tubepornclassicGenreScreen(MPScreen):
 			self.genreliste.insert(0, ("--- Search ---", ""))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

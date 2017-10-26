@@ -90,6 +90,7 @@ class beegGenreScreen(MPScreen):
 			self.onLayoutFinish.append(self.layoutFinished)
 
 	def getApiKeys(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://beeg.com/1000000"
 		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.getApiKeys2).addErrback(self.dataError)
 
@@ -111,6 +112,7 @@ class beegGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://beeg.com/api/v6/%s/index/main/0/mobile" % beeg_apikey
 		twAgentGetPage(url, agent=IPhone5Agent, headers=MyHeaders).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -131,12 +133,8 @@ class beegGenreScreen(MPScreen):
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
-			self.showInfos()
 		else:
 			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

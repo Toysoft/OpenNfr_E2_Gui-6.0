@@ -85,6 +85,7 @@ class hclipsGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.hclips.com/categories/"
 		getPage(url, agent=agent).addCallback(self.genreData).addErrback(self.dataError)
 

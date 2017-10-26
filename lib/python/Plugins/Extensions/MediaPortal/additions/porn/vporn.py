@@ -86,7 +86,7 @@ class vpornGenreScreen(MPScreen):
 		self['ContentTitle'] = Label("Genre:")
 		self['F2'] = Label(self.hd)
 		self['F3'] = Label(self.date)
-		self['F4'] = Label(_("Setup"))
+		#self['F4'] = Label(_("Setup"))
 		self.keyLocked = True
 		self.loggedin = False
 		self.suchString = ''
@@ -95,15 +95,15 @@ class vpornGenreScreen(MPScreen):
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
 		self['liste'] = self.ml
 
-		if self.username != "vpornUserName" and self.password != "vpornPassword":
-			self.onLayoutFinish.append(self.Login)
-		else:
-			self.onLayoutFinish.append(self.layoutFinished)
+		#if self.username != "vpornUserName" and self.password != "vpornPassword":
+		#	self.onLayoutFinish.append(self.Login)
+		#else:
+		self.onLayoutFinish.append(self.layoutFinished)
 
 	def Login(self):
 		self['name'].setText(_('Please wait...'))
 		CoverHelper(self['coverArt']).getCover(default_cover)
-		loginUrl = "http://www.vporn.com/login"
+		loginUrl = "https://www.vporn.com/login"
 		loginData = {'backto': "", 'password': self.password, 'sub': 1, 'username': self.username}
 		getPage(loginUrl, agent=vpagent, method='POST', postdata=urlencode(loginData), cookies=vpck, timeout=30, headers={'Content-Type':'application/x-www-form-urlencoded'}).addCallback(self.Login2).addErrback(self.dataError)
 
@@ -115,27 +115,27 @@ class vpornGenreScreen(MPScreen):
 	def layoutFinished(self):
 		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.keyLocked = True
-		url = "http://www.vporn.com"
+		url = "https://www.vporn.com"
 		getPage(url, agent=vpagent, cookies=vpck, timeout=30).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		if not self.loggedin:
-			message = self.session.open(MessageBoxExt, _("Login data is required for HD video playback!"), MessageBoxExt.TYPE_INFO, timeout=5)
+		#if not self.loggedin:
+		#	message = self.session.open(MessageBoxExt, _("Login data is required for HD video playback!"), MessageBoxExt.TYPE_INFO, timeout=5)
 		parse = re.search('class="cats-all categories-list">(.*?)</div>', data, re.S)
 		Cats = re.findall('<li>\s<a\shref="/cat/(.*?)".*?>(.*?)</a></li>', parse.group(1), re.S)
 		if Cats:
 			for (Url, Title) in Cats:
-				Url = "http://www.vporn.com/cat/" + Url
+				Url = "https://www.vporn.com/cat/" + Url
 				Title = Title.strip()
 				self.genreliste.append((Title, Url, None, False))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.vporn.com/longest/", None, True))
-			self.genreliste.insert(0, ("Most Votes", "http://www.vporn.com/votes/", None, True))
-			self.genreliste.insert(0, ("Most Comments", "http://www.vporn.com/comments/", None, True))
-			self.genreliste.insert(0, ("Most Favorited", "http://www.vporn.com/favorites/", None, True))
-			self.genreliste.insert(0, ("Most Viewed", "http://www.vporn.com/views/", None, True))
-			self.genreliste.insert(0, ("Top Rated", "http://www.vporn.com/rating/", None, True))
-			self.genreliste.insert(0, ("Newest", "http://www.vporn.com/newest/", None, True))
+			self.genreliste.insert(0, ("Longest", "https://www.vporn.com/longest/", None, True))
+			self.genreliste.insert(0, ("Most Votes", "https://www.vporn.com/votes/", None, True))
+			self.genreliste.insert(0, ("Most Comments", "https://www.vporn.com/comments/", None, True))
+			self.genreliste.insert(0, ("Most Favorited", "https://www.vporn.com/favorites/", None, True))
+			self.genreliste.insert(0, ("Most Viewed", "https://www.vporn.com/views/", None, True))
+			self.genreliste.insert(0, ("Top Rated", "https://www.vporn.com/rating/", None, True))
+			self.genreliste.insert(0, ("Newest", "https://www.vporn.com/newest/", None, True))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None, True))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
@@ -161,10 +161,11 @@ class vpornGenreScreen(MPScreen):
 			self.session.open(vpornFilmScreen, Link, Name, self.hd, self.date, False)
 
 	def keySetup(self):
-		if mp_globals.isDreamOS:
-			self.session.openWithCallback(self.setupCallback, vpornSetupScreen, is_dialog=True)
-		else:
-			self.session.openWithCallback(self.setupCallback, vpornSetupScreen)
+		pass
+		#if mp_globals.isDreamOS:
+		#	self.session.openWithCallback(self.setupCallback, vpornSetupScreen, is_dialog=True)
+		#else:
+		#	self.session.openWithCallback(self.setupCallback, vpornSetupScreen)
 
 	def setupCallback(self):
 		pass
@@ -308,7 +309,7 @@ class vpornFilmScreen(MPScreen, ThumbsHelper):
 		self['name'].setText(_('Please wait...'))
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://www.vporn.com/search/?q=%s&page=%s&time=%s" % (self.Link, str(self.page), self.date)
+			url = "https://www.vporn.com/search/?q=%s&page=%s&time=%s" % (self.Link, str(self.page), self.date)
 		else:
 			if self.Main:
 				sort = ""

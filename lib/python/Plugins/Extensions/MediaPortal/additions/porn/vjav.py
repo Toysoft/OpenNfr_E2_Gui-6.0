@@ -89,6 +89,7 @@ class vjavGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		ck.update({'language':'en'})
 		url = "http://www.vjav.com/categories/"
 		getPage(url, agent=agent, cookies=ck).addCallback(self.genreData).addErrback(self.dataError)

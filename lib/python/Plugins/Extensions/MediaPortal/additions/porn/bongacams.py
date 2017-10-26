@@ -177,7 +177,7 @@ class bongacamsFilmScreen(MPScreen, ThumbsHelper):
 		else:
 			livetab = "females"
 			category = self.Link
-		url = BASEURL + "tools/listing_v3.php?tag=&page=" + str(self.page) + "&lang=&countryId=&countryLangs=&online_only=1&category=" + category + "&livetab=" + livetab + "&pageCount=&mls_width=&_save=1&model_search%5Bper_page%5D=20&model_search%5Bdisplay%5D=auto&model_search%5Bth_type%5D=live&mls_th_per_row=5&model_search%5Bbase_sort%5D=camscore"
+		url = BASEURL + "tools/listing_v3.php?livetab=" + livetab + "&online_only=true&offset=" + str((self.page*24)-24) + "&category=" + category
 		self.filmQ.put(url)
 		if not self.eventL.is_set():
 			self.eventL.set()
@@ -186,12 +186,14 @@ class bongacamsFilmScreen(MPScreen, ThumbsHelper):
 	def loadPageData(self, data):
 		self.ml.moveToIndex(0)
 		jsondata = json.loads(data)
-		self.lastpage = jsondata["page_count"]
+		lastp = jsondata["total_count"]
+		lastp = round((float(lastp) / 24) + 0.5)
+		self.lastpage = int(lastp)
 		self['page'].setText(str(self.page) + ' / ' + str(self.lastpage))
 		for node in jsondata["models"]:
 			Title = str(node["display_name"])
 			Url = str(node["username"])
-			Image = 'http:' + str(node["live_image"])
+			Image = 'http:' + str(node["thumb_image"])
 			Status = str(node["about_me"])
 			if not node["is_away"] and not str(node["room"])=="private" and not str(node["room"])=="vip":
 				self.filmliste.append((Title, Url, Image, Status))

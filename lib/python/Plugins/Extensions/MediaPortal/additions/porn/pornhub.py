@@ -129,6 +129,7 @@ class pornhubGenreScreen(MPScreen, rnCalc):
 		self.onLayoutFinish.append(self.Login)
 
 	def Login(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		global nodejs
 		nodejs = True
 		ck.update({'lang':'en'})

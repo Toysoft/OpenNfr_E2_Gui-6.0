@@ -74,6 +74,7 @@ class sporttotalGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_('Please wait...'))
 		url = "http://www.sporttotal.tv/live"
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
@@ -94,7 +95,6 @@ class sporttotalGenreScreen(MPScreen):
 
 	def showInfos(self):
 		self['name'].setText('')
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

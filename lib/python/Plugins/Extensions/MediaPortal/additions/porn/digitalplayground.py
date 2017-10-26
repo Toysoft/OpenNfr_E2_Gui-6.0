@@ -81,6 +81,7 @@ class digitalplaygroundGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.digitalplayground.com/tags/"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 

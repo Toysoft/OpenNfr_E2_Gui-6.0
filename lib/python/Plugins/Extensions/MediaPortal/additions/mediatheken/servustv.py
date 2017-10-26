@@ -41,6 +41,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 baseurl = "https://www.servus.com"
 stvAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+default_cover = "file://%s/servustv.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class sTVGenreScreen(MPScreen):
 
@@ -48,9 +49,9 @@ class sTVGenreScreen(MPScreen):
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 
 		with open(path, "r") as f:
 			self.skin = f.read()
@@ -74,6 +75,7 @@ class sTVGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.genreliste.append(("Aktuelles", "/de/aktuelles"))
 		self.genreliste.append(("Kultur", "/de/kultur"))
 		self.genreliste.append(("Natur", "/de/natur"))
@@ -163,13 +165,17 @@ class sTVids(MPScreen):
 	def loadplaylist(self, data, basepath):
 		bandwith_list = []
 		match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n((?!#).*?m3u8)', data, re.S)
+		max = 0
+		for x in match_sec_m3u8:
+			if int(x[0]) > max:
+				max = int(x[0])
 		videoPrio = int(config.mediaportal.videoquali_others.value)
 		if videoPrio == 2:
-			bw = int(match_sec_m3u8[-1][0])
+			bw = max
 		elif videoPrio == 1:
-			bw = int(match_sec_m3u8[-1][0])/2
+			bw = max/2
 		else:
-			bw = int(match_sec_m3u8[-1][0])/3
+			bw = max/3
 		self.bandwith_list = []
 		for each in match_sec_m3u8:
 			bandwith,url = each

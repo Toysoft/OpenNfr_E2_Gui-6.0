@@ -114,7 +114,7 @@ class pinflixGenreScreen(MPScreen):
 		self.genreliste.insert(0, ("Featured", "http://%s/?order=featured" % self.baseurl, default_cover))
 		self.genreliste.insert(0, ("Top Rated", "http://%s/?order=top-rated" % self.baseurl, default_cover))
 		self.genreliste.insert(0, ("Most Viewed", "http://%s/?order=most-popular" % self.baseurl, default_cover))
-		self.genreliste.insert(0, ("Latest", "http://%s/?order=newest" % self.baseurl, default_cover))
+		self.genreliste.insert(0, ("Newest", "http://%s/?order=newest" % self.baseurl, default_cover))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False

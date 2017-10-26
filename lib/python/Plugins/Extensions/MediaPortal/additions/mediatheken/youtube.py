@@ -31,6 +31,7 @@ std_headers = {
 	'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
 	'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 }
+default_cover = "file://%s/youtube.png" % (config.mediaportal.iconcachepath.value + "logos")
 
 class youtubeGenreScreen(MenuHelper):
 	def __init__(self, session):
@@ -147,7 +148,7 @@ class youtubeGenreScreen(MenuHelper):
 			(_('Video search'), 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=video&key=%KEY%'),
 			(_('Playlist search'), 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=playlist&key=%KEY%'),
 			(_('Channel search'), 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=%QR%&type=channel&key=%KEY%'),
-			(_('Categories'), 'https://www.googleapis.com/youtube/v3/guideCategories?part=snippet&key=%KEY%'),
+			#(_('Categories'), 'https://www.googleapis.com/youtube/v3/guideCategories?part=snippet&key=%KEY%'),
 			(400 * "—", ''),
 			(_('My channel'), ''),
 			(_('Favorites'), ''),
@@ -398,8 +399,6 @@ class youtubeGenreScreen(MenuHelper):
 		self['Keywords'] = Label(_("Event type"))
 		self['keywords'] = Label()
 		self['Parameter'] = Label(_("Parameter"))
-		self['ParameterToEdit'] = Label()
-		self['parametertoedit'] = Label()
 		self['3D'] = Label(_("3D Search"))
 		self['3d'] = Label()
 		self['Duration'] = Label(_("Runtime"))
@@ -408,6 +407,7 @@ class youtubeGenreScreen(MenuHelper):
 		self['reserve1'] = Label()
 		self['Reserve2'] = Label(_("Video type"))
 		self['reserve2'] = Label()
+		self['coverArt'] = Pixmap()
 
 		self['F3'] = Label(_("Edit Parameter"))
 		self['F4'] = Label(_("Request YT-Token"))
@@ -419,6 +419,7 @@ class youtubeGenreScreen(MenuHelper):
 		self.channelId = None
 
 	def initSubCat(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 
 		hl = param_hl[config.mediaportal.yt_param_meta_idx.value]
 
@@ -445,7 +446,7 @@ class youtubeGenreScreen(MenuHelper):
 			self.subCat,
 			None,
 			None,
-			None,
+			#None,
 			None,
 			self.subCatYourChannel,
 			None,
@@ -462,7 +463,7 @@ class youtubeGenreScreen(MenuHelper):
 			self.subCat_L2,
 			None,
 			None,
-			None,
+			#None,
 			None,
 			[None, None, None, None],
 			None,

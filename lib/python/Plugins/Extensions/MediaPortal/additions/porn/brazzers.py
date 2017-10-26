@@ -80,6 +80,7 @@ class brazzersGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_('Please wait...'))
 		url = "https://www.brazzers.com/categories/"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)

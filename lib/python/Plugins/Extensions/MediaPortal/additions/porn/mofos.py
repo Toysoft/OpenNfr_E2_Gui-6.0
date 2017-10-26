@@ -80,6 +80,7 @@ class mofosGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_('Please wait...'))
 		url = "http://www.mofos.com/tour/categories/"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)

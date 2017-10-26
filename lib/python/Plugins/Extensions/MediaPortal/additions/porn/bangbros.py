@@ -80,6 +80,7 @@ class bangbrosGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://bangbrothers.net/category"
 		getPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 

@@ -84,6 +84,7 @@ class realgfpornGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "https://www.realgfporn.com/channels/"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 

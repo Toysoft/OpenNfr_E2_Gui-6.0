@@ -76,6 +76,7 @@ class sexuGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://sexu.com/"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -93,10 +94,6 @@ class sexuGenreScreen(MPScreen):
 			self.genreliste.insert(0, ("--- Search ---", "callSuchen"))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

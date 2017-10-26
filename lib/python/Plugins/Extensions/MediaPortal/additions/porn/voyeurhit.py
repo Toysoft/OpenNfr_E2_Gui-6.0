@@ -79,6 +79,7 @@ class voyeurhitGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = 'http://voyeurhit.com/categories/'
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 

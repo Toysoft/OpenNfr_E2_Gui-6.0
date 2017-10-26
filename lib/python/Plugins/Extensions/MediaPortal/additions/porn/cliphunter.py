@@ -79,6 +79,7 @@ class cliphunterGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.cliphunter.com/categories/"
 		getPage(url, agent=agent).addCallback(self.genreData).addErrback(self.dataError)
 

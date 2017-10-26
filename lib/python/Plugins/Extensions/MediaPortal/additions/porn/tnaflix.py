@@ -89,6 +89,7 @@ class TnAflixGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
+		CoverHelper(self['coverArt']).getCover(self.default_cover)
 		url = self.baseurl
 		twAgentGetPage(url, agent=myagent).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -109,10 +110,6 @@ class TnAflixGenreScreen(MPScreen):
 				self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 				self.ml.moveToIndex(0)
 				self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(self.default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:

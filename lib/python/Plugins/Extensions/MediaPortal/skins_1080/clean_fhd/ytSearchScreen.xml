@@ -17,40 +17,39 @@
   <eLabel name="button green" position="385,1068" size="365,2" backgroundColor="#0031a500" zPosition="1" />
   <eLabel name="button yellow" position="755,1068" size="365,2" backgroundColor="#00e5b243" zPosition="1" />
   <eLabel name="button blue" position="1125,1068" size="365,2" backgroundColor="#000064c7" zPosition="1" />
+  <widget name="coverArt" pixmap="~/clean_fhd/images/no_coverArt.png" position="20,360" size="925,265" transparent="1" alphatest="blend" />
   <widget backgroundColor="#20000000" font="mediaportal_clean;50" halign="center" position="20,120" size="1880,90" name="title" transparent="1" valign="center" />
   <widget backgroundColor="#20000000" font="mediaportal_clean;30" halign="center" position="20,240" size="1880,45" name="ContentTitle" transparent="1" />
   <widget backgroundColor="#20000000" font="mediaportal_clean;30" halign="center" position="20,285" size="1880,45" name="name" transparent="1" />
   <widget backgroundColor="#20000000" name="liste" position="975,360" scrollbarMode="showOnDemand" size="925,650" transparent="1" itemHeight="35" />
-  <widget name="Parameter" position="20,667" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;38" halign="right" />
-  <widget name="ParameterToEdit" position="320,676" size="180,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
-  <widget name="parametertoedit" position="490,676" size="280,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
-  <widget name="Query" position="20,725" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal; 30" halign="right" />
-  <widget name="query" position="280,725" size="620,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
-  <widget name="Time" position="20,780" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="time" position="280,780" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
-  <widget name="Metalang" position="20,825" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="metalang" position="280,825" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
-  <widget name="3D" position="20,870" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="3d" position="280,870" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
-  <widget name="Author" position="20,915" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="author" position="280,915" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="Parameter" position="20,630" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;38" halign="right" />
+  <widget name="Query" position="20,685" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="query" position="270,685" size="680,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="Time" position="20,740" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="time" position="270,740" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
+  <widget name="Metalang" position="20,795" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="metalang" position="270,795" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
+  <widget name="3D" position="20,850" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="3d" position="270,850" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
+  <widget name="Author" position="20,905" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="author" position="270,905" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
   <widget name="Duration" position="20,960" size="230,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="duration" position="280,960" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
-  <widget name="Regionid" position="520,825" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="regionid" position="780,825" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
-  <widget name="Keywords" position="520,870" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="keywords" position="780,870" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
-  <widget name="Reserve1" position="520,915" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="reserve1" position="780,915" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
-  <widget name="Reserve2" position="520,960" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
-  <widget name="reserve2" position="780,960" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
-  <widget name="F1" position="15,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
-  <widget name="F2" position="385,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
-  <widget name="F3" position="755,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
-  <widget name="F4" position="1125,1030" size="365,40" transparent="1" font="mediaportal; 25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
-  <eLabel name="button ok" position="1740,1035" size="60,30" backgroundColor="#00000000" text="OK" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
-  <eLabel name="button exit" position="1820,1035" size="60,30" backgroundColor="#00000000" text="EXIT" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
-  <eLabel name="button bouq" position="1660,1035" size="60,30" backgroundColor="#00000000" text="BOUQ" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <widget name="duration" position="270,960" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" />
+  <widget name="Regionid" position="510,795" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="regionid" position="770,795" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="Keywords" position="510,850" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="keywords" position="770,850" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="Reserve1" position="510,905" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="reserve1" position="770,905" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="Reserve2" position="510,960" size="240,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" halign="right" />
+  <widget name="reserve2" position="770,960" size="170,50" backgroundColor="#20000000" transparent="1" font="mediaportal;30" noWrap="1" />
+  <widget name="F1" position="15,1030" size="365,40" transparent="1" font="mediaportal;25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
+  <widget name="F2" position="385,1030" size="365,40" transparent="1" font="mediaportal;25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
+  <widget name="F3" position="755,1030" size="365,40" transparent="1" font="mediaportal;25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
+  <widget name="F4" position="1125,1030" size="365,40" transparent="1" font="mediaportal;25" backgroundColor="#20000000" valign="center" halign="center" zPosition="1" />
+  <eLabel name="button ok" position="1740,1035" size="60,30" backgroundColor="#00000000" text="OK" font="mediaportal;15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button exit" position="1820,1035" size="60,30" backgroundColor="#00000000" text="EXIT" font="mediaportal;15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button bouq" position="1660,1035" size="60,30" backgroundColor="#00000000" text="BOUQ" font="mediaportal;15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
   <eLabel name="button ok bg" position="1739,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
   <eLabel name="button exit bg" position="1819,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
   <eLabel name="button bouq bg" position="1659,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />

@@ -103,6 +103,7 @@ class youpornGenreScreen(MPScreen):
 			self.onLayoutFinish.append(self.layoutFinished)
 
 	def Login(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		loginUrl = "https://www.youporn.com/login/"
 		loginData = {
 			'login[username]' : self.username,
@@ -124,6 +125,7 @@ class youpornGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.youporn.com/categories/alphabetical/"
 		twAgentGetPage(url, agent=ypAgent, cookieJar=ck).addCallback(self.genreData).addErrback(self.dataError)
 

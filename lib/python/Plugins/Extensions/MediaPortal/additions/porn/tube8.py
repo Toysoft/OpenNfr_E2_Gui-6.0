@@ -87,6 +87,7 @@ class tube8GenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.url = "http://www.tube8.com/categories.html"
 		getPage(self.url).addCallback(self.genreData).addErrback(self.dataError)
 

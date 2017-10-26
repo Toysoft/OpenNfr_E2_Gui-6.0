@@ -87,6 +87,7 @@ class epornerGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = "http://www.eporner.com/categories/"
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 

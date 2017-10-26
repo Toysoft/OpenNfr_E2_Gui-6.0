@@ -118,7 +118,8 @@ class xhamsterGenreScreen(MPScreen):
 		except:
 			pass
 
-	def layoutFinished(self):
+	def layoutFinished(self):	
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = base_url + "/categories"
 		ck.update({'x_ndvkey':'s%3A8%3A%22bef3e026%22%3B'})
 		getPage(url, agent=xhAgent, cookies=ck).addCallback(self.genreData).addErrback(self.dataError)
@@ -154,10 +155,6 @@ class xhamsterGenreScreen(MPScreen):
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.ml.moveToIndex(0)
 		self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def keyOK(self):
 		if self.keyLocked:
