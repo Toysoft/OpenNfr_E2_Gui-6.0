@@ -31,7 +31,7 @@
 <!-- main-->
 	<screen name="InfoBarSummary" position="0,0" size="400,240">
 	<!--clock background-->
-	<ePixmap pixmap="display/lcdskins/clock_lcd_digital_flipClock_bg.png" position="0,0" size="400,240" zPosition="0" />
+	<ePixmap pixmap="display/lcdskins/klappuhr_orange_lcd.png" position="0,0" size="400,240" zPosition="0" />
 	<!--rad center-->
 	<ePixmap pixmap="display/lcdskins/clock_lcd_digital_flipClock_rad.png" position="103,8" size="14,114" zPosition="12" transparent="1" alphatest="on" />
 	<!--TIME-->
@@ -53,9 +53,7 @@
 </screen>
 	<screen name="StandbySummary" position="0,0" size="400,240">
 	<!--clock background-->
-	<ePixmap pixmap="display/lcdskins/clock_lcd_digital_flipClock_bg.png" position="0,0" size="400,240" zPosition="0" />
-	<!--rad center-->
-	<ePixmap pixmap="display/lcdskins/clock_lcd_digital_flipClock_rad.png" position="103,8" size="14,114" zPosition="12" transparent="1" alphatest="on" />
+	<ePixmap pixmap="display/lcdskins/klappuhr_orange_lcd.png" position="0,0" size="400,240" zPosition="0" />
 	<!--TIME-->
 	<widget source="global.CurrentTime" render="Label" position="70,46" size="76,134" font="RegularLCD;70" halign="center" valign="top" noWrap="1" zPosition="1" transparent="1" foregroundColor="#ffffff">
 		<convert type="ClockToText">Format:%H</convert>
