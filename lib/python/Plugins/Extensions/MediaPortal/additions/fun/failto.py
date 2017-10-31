@@ -53,13 +53,14 @@ class failScreen(MPScreen, ThumbsHelper):
 	def loadPageData(self, data):
 		self.getLastPage(data, '', 'class="pagination">.*?<strong>(.*?)</strong>')
 		parse = re.search('<body>(.*?)class="pagination">', data, re.S)
-		Videos = re.findall('class="entry">.*?</span><a href="(.*?)" title=".*?">(.*?)</a></h3>.*?class="preview".*?<img src="(.*?)"', parse.group(1), re.S)
+		Videos = re.findall('class="entry">.*?</span><a href="(.*?)" title=".*?">(.*?)</a></h3>.*?class="preview".*?<img src="(.*?)".*?class="description">(.*?)</div>', parse.group(1), re.S)
 		if Videos:
 			self.filmliste = []
-			for (Url, Title, Image) in Videos:
+			for (Url, Title, Image, Descr) in Videos:
 				Url = "http://www.fail.to" + Url
 				Image = "http://www.fail.to" + Image
-				self.filmliste.append((Title, Url, Image))
+				Descr = stripAllTags(Descr).strip()
+				self.filmliste.append((Title, Url, Image, Descr))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False
@@ -69,7 +70,9 @@ class failScreen(MPScreen, ThumbsHelper):
 	def showInfos(self):
 		Title = self['liste'].getCurrent()[0][0]
 		PicLink = self['liste'].getCurrent()[0][2]
+		Descr = self['liste'].getCurrent()[0][3]
 		self['name'].setText(Title)
+		self['handlung'].setText(Descr)
 		CoverHelper(self['coverArt']).getCover(PicLink)
 
 	def keyOK(self):

@@ -38,7 +38,7 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
-from enigma import eLabel, eSize
+from enigma import eLabel
 
 headers = {'Accept': 'application/vnd.twitchtv.v5+json', 'Client-ID': '6r2dhbo9ek6mm1gab2snj0navo4sgqy'}
 limit = 19

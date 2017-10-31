@@ -69,6 +69,7 @@ class LiveLeakScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.genreliste.append(("Featured Items", "https://www.liveleak.com/rss?featured=1&page="))
+		self.genreliste.append(("Upcoming Items", "https://www.liveleak.com/rss?upcoming=1&page="))
 		self.genreliste.append(("Recent Items (All)", "https://www.liveleak.com/rss?selection=all&page="))
 		self.genreliste.append(("Recent Items (Popular)", "https://www.liveleak.com/rss?selection=popular&page="))
 		self.genreliste.append(("Top (Today)", "https://www.liveleak.com/rss?rank_by=day&page="))

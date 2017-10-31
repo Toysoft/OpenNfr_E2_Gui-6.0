@@ -106,14 +106,16 @@ class MPUpdateScreen(Screen):
 
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/MPUpdate.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_Update.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/MPUpdate.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/MP_Update.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
 
-		self["mplog"] = ScrollLabel()
+		self.ml = MenuList([])
+		self['mplog'] = self.ml
+		self.list = []
 
 		Screen.__init__(self, session)
 		self['title'] = Label("MediaPortal Update")
@@ -122,9 +124,12 @@ class MPUpdateScreen(Screen):
 		self.onLayoutFinish.append(self.__onLayoutFinished)
 
 	def __onLayoutFinished(self):
-		sl = self["mplog"]
-		sl.instance.setZPosition(1)
-		self["mplog"].setText(_("Starting update, please wait..."))
+		height = self['mplog'].l.getItemSize().height()
+		self.ml.l.setFont(gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
+		self.list.append(_("Starting update, please wait..."))
+		self.ml.setList(self.list)
+		self.ml.moveToIndex(len(self.list)-1)
+		self.ml.selectionEnabled(False)
 		self.startPluginUpdate()
 
 	def startPluginUpdate(self):
@@ -161,7 +166,10 @@ class MPUpdateScreen(Screen):
 		self.close()
 
 	def mplog(self,str):
-		self["mplog"].setText(str)
+		self.list.append(str)
+		self.ml.setList(self.list)
+		self.ml.moveToIndex(len(self.list)-1)
+		self.ml.selectionEnabled(False)
 		self.writeToLog(str)
 
 	def writeToLog(self, log):

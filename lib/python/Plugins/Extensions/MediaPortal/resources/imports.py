@@ -29,6 +29,11 @@ try:
 	from Components.config import ConfigPassword
 except ImportError:
 	ConfigPassword = ConfigText
+try:
+	from Components.config import ConfigOnOff
+except ImportError:
+	from Components.config import ConfigEnableDisable
+	ConfigOnOff = ConfigEnableDisable	
 from Components.Label import Label
 from Components.Language import language
 from Components.MenuList import MenuList

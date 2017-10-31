@@ -60,18 +60,6 @@ except ImportError:
 from twisted.internet import task
 from resources.twisted_hang import HangWatcher
 
-try:
-	from enigma import eWall, eWallPythonMultiContent, BT_SCALE
-	from Components.BaseWall import BaseWall
-	class CoverWall(BaseWall):
-		def setentry(self, entry):
-			res = [entry]
-			res.append((eWallPythonMultiContent.TYPE_COVER, eWallPythonMultiContent.SHOW_ALWAYS, loadPNG(entry[2]), BT_SCALE))
-			return res
-	mp_globals.isVTi = True
-except:
-	mp_globals.isVTi = False
-
 CONFIG = "/usr/lib/enigma2/python/Plugins/Extensions/MediaPortal/additions/additions.xml"
 
 desktopSize = getDesktop(0).size()
@@ -104,6 +92,18 @@ except:
 	mp_globals.covercollection = False
 
 try:
+	from enigma import eWall, eWallPythonMultiContent, BT_SCALE
+	from Components.BaseWall import BaseWall
+	class CoverWall(BaseWall):
+		def setentry(self, entry):
+			res = [entry]
+			res.append((eWallPythonMultiContent.TYPE_COVER, eWallPythonMultiContent.SHOW_ALWAYS, loadPNG(entry[2]), BT_SCALE))
+			return res
+	mp_globals.isVTi = True
+except:
+	mp_globals.isVTi = False
+
+try:
 	from enigma import getVTiVersionString
 	mp_globals.fakeScale = True
 except:
@@ -122,13 +122,6 @@ except:
 	requestsModule = False
 else:
 	requestsModule = True
-
-try:
-	import mechanize
-except:
-	mechanizeModule = False
-else:
-	mechanizeModule = True
 
 try:
 	from Plugins.Extensions.MediaInfo.plugin import MediaInfo
@@ -174,7 +167,11 @@ def grabpage(pageurl, method='GET', postdata={}):
 	else:
 		return None
 
-from Components.config import ConfigEnableDisable, ConfigClock
+from Components.config import ConfigClock, ConfigSequence
+
+class ConfigPORNPIN(ConfigInteger):
+        def __init__(self, default, len = 4, censor = ""):
+                ConfigSequence.__init__(self, seperator = ":", limits = [(1000, (10**len)-1)], censor_char = censor, default = default)
 
 config.mediaportal = ConfigSubsection()
 
@@ -182,9 +179,9 @@ config.mediaportal = ConfigSubsection()
 config.mediaportal.fake_entry = NoSave(ConfigNothing())
 
 # EPG Import
-config.mediaportal.epg_enabled = ConfigEnableDisable(default = False)
-config.mediaportal.epg_runboot = ConfigEnableDisable(default = False)
-config.mediaportal.epg_wakeupsleep = ConfigEnableDisable(default = False)
+config.mediaportal.epg_enabled = ConfigOnOff(default = False)
+config.mediaportal.epg_runboot = ConfigOnOff(default = False)
+config.mediaportal.epg_wakeupsleep = ConfigOnOff(default = False)
 config.mediaportal.epg_wakeup = ConfigClock(default = calcDefaultStarttime())
 config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices = [
 		("wakeup", _("Wake up and import")),
@@ -192,10 +189,22 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="911"))
-config.mediaportal.versiontext = NoSave(ConfigText(default="9.1.1"))
+config.mediaportal.version = NoSave(ConfigText(default="912"))
+config.mediaportal.versiontext = NoSave(ConfigText(default="9.1.2"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
+
+config.mediaportal.retries = ConfigSubsection()
+
 config.mediaportal.pincode = ConfigPIN(default = 0000)
+config.mediaportal.retries.pincode = ConfigSubsection()
+config.mediaportal.retries.pincode.tries = ConfigInteger(default = 3)
+config.mediaportal.retries.pincode.time = ConfigInteger(default = 0)
+
+config.mediaportal.adultpincode = ConfigPORNPIN(default = random.randint(1,999), len = 4)
+config.mediaportal.retries.adultpin = ConfigSubsection()
+config.mediaportal.retries.adultpin.tries = ConfigInteger(default = 3)
+config.mediaportal.retries.adultpin.time = ConfigInteger(default = 0)
+
 config.mediaportal.showporn = ConfigYesNo(default = False)
 config.mediaportal.showuseradditions = ConfigYesNo(default = False)
 config.mediaportal.pinuseradditions = ConfigYesNo(default = False)
@@ -226,10 +235,10 @@ else:
 
 if mp_globals.covercollection:
 	config.mediaportal.ansicht = ConfigSelection(default = "wall2", choices = [("liste", _("List")),("wall", _("Wall")),("wall2", _("Wall 2.0"))])
-elif mp_globals.videomode == 2 and mp_globals.fakeScale and not mp_globals.isVTi:
-	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("liste", _("List")),("wall", _("Wall"))])
 elif mp_globals.videomode == 2 and mp_globals.isVTi:
-	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("liste", _("List")),("wall", _("Wall")),("wall_vti", _("Wall VTi"))])
+	config.mediaportal.ansicht = ConfigSelection(default = "wall_vti", choices = [("liste", _("List")),("wall", _("Wall")),("wall_vti", _("Wall VTi"))])
+elif mp_globals.videomode == 2 and mp_globals.fakeScale:
+	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("liste", _("List")),("wall", _("Wall"))])
 elif mp_globals.videomode == 2 and not mp_globals.isDreamOS:
 	config.mediaportal.ansicht = ConfigSelection(default = "liste", choices = [("liste", _("List"))])
 else:
@@ -354,15 +363,12 @@ for x in conf.getroot():
 			if x.tag == "plugin":
 				if x.get("type") == "mod":
 					modfile = x.get("modfile")
-					if modfile == "music.canna" and not mechanizeModule:
-						pass
+					if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
+						sys.path.append('/etc/enigma2/mp_override')
+						exec("from "+modfile.split('.')[1]+" import *")
 					else:
-						if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
-							sys.path.append('/etc/enigma2/mp_override')
-							exec("from "+modfile.split('.')[1]+" import *")
-						else:
-							exec("from additions."+modfile+" import *")
-						exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
+						exec("from additions."+modfile+" import *")
+					exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
 
 try:
 	xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
@@ -378,15 +384,12 @@ try:
 						if x.tag == "plugin":
 							if x.get("type") == "mod":
 								modfile = x.get("modfile")
-								if modfile == "music.canna" and not mechanizeModule:
-									pass
+								if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
+									sys.path.append('/etc/enigma2/mp_override')
+									exec("from "+modfile.split('.')[1]+" import *")
 								else:
-									if fileExists('/etc/enigma2/mp_override/'+modfile.split('.')[1]+'.py'):
-										sys.path.append('/etc/enigma2/mp_override')
-										exec("from "+modfile.split('.')[1]+" import *")
-									else:
-										exec("from additions."+modfile+" import *")
-									exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
+									exec("from additions."+modfile+" import *")
+								exec("config.mediaportal."+x.get("confopt")+" = ConfigYesNo(default = "+x.get("default")+")")
 except:
 	pass
 
@@ -560,7 +563,7 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		self['F3'] = Label("")
 		self['F4'] = Label("")
 
-		self["actions"] = ActionMap(["MP_Actions"], {
+		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok"    : self.keySave,
 			"cancel": self.keyCancel,
 			"nextBouquet": self.keyPreviousSection,
@@ -618,11 +621,12 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		self._separator()
 		self.configlist.append(getConfigListEntry(_("YOUTH PROTECTION"), ))
 		self._separator()
-		self.configlist.append(getConfigListEntry(_("Pincode:"), config.mediaportal.pincode, False))
-		self.configlist.append(getConfigListEntry(_("Setup-Pincode Query:"), config.mediaportal.setuppin, False))
-		self.configlist.append(getConfigListEntry(_("Kids-Pincode Query:"), config.mediaportal.kidspin, False))
-		self.configlist.append(getConfigListEntry(_("Adult-Pincode Query:"), config.mediaportal.pornpin, False))
-		self.configlist.append(getConfigListEntry(_("Remember Adult-Pincode:"), config.mediaportal.pornpin_cache, False))
+		self.configlist.append(getConfigListEntry(_("Setup PIN:"), config.mediaportal.pincode, False))
+		self.configlist.append(getConfigListEntry(_("Setup PIN Query:"), config.mediaportal.setuppin, False))
+		self.configlist.append(getConfigListEntry(_("Kids PIN Query:"), config.mediaportal.kidspin, False))
+		self.configlist.append(getConfigListEntry(_("Adult PIN:"), config.mediaportal.adultpincode, False))
+		self.configlist.append(getConfigListEntry(_("Adult PIN Query:"), config.mediaportal.pornpin, False))
+		self.configlist.append(getConfigListEntry(_("Remember Adult PIN:"), config.mediaportal.pornpin_cache, False))
 		self._separator()
 		self.configlist.append(getConfigListEntry(_("OTHER"), ))
 		self._separator()
@@ -688,16 +692,10 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 						if x.get("type") == "mod":
 							modfile = x.get("modfile")
 							gz = x.get("gz")
-							if modfile == "music.canna" and not mechanizeModule:
-								if not config.mediaportal.showuseradditions.value and gz == "1":
-									pass
-								else:
-									exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
+							if not config.mediaportal.showuseradditions.value and gz == "1":
+								pass
 							else:
-								if not config.mediaportal.showuseradditions.value and gz == "1":
-									pass
-								else:
-									exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
+								exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
 
 		try:
 			xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
@@ -714,16 +712,10 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 									if x.get("type") == "mod":
 										modfile = x.get("modfile")
 										gz = x.get("gz")
-										if modfile == "music.canna" and not mechanizeModule:
-											if not config.mediaportal.showuseradditions.value and gz == "1":
-												pass
-											else:
-												exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+" (not available)\", config.mediaportal.fake_entry, False))")
+										if not config.mediaportal.showuseradditions.value and gz == "1":
+											pass
 										else:
-											if not config.mediaportal.showuseradditions.value and gz == "1":
-												pass
-											else:
-												exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
+											exec("self."+x.get("confcat")+".append(getConfigListEntry(\""+x.get("name").replace("&amp;","&")+"\", config.mediaportal."+x.get("confopt")+", False))")
 		except:
 			pass
 
@@ -848,16 +840,13 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 
 	def keyOK2(self, answer):
 		if answer is True:
-			self.session.openWithCallback(self.validcode, PinInputExt, pinList = [(int(self.a+self.b+self.c+self.d))], triesEntry = self.getTriesEntry(), title = _("Please enter the correct code"), windowTitle = _("Enter code"))
+			self.session.openWithCallback(self.validcode, PinInputExt, pinList = [(int(self.a+self.b+self.c+self.d))], triesEntry = config.mediaportal.retries.pincode, title = _("Please enter the correct code"), windowTitle = _("Enter code"))
 		else:
 			config.mediaportal.showuseradditions.value = False
 			config.mediaportal.showuseradditions.save()
 			config.mediaportal.pinuseradditions.value = False
 			config.mediaportal.pinuseradditions.save()
 			self.keySave()
-
-	def getTriesEntry(self):
-		return config.ParentalControl.retries.setuppin
 
 	def validcode(self, code):
 		if code:
@@ -1010,9 +999,7 @@ class MPList(Screen, HelpableScreen):
 						if x.get("type") == "mod":
 							modfile = x.get("modfile")
 							confcat = x.get("confcat")
-							if modfile == "music.canna" and not mechanizeModule:
-								pass
-							elif not config.mediaportal.showporn.value and confcat == "porn":
+							if not config.mediaportal.showporn.value and confcat == "porn":
 								pass
 							else:
 								gz = x.get("gz")
@@ -1037,9 +1024,7 @@ class MPList(Screen, HelpableScreen):
 									if x.get("type") == "mod":
 										modfile = x.get("modfile")
 										confcat = x.get("confcat")
-										if modfile == "music.canna" and not mechanizeModule:
-											pass
-										elif not config.mediaportal.showporn.value and confcat == "porn":
+										if not config.mediaportal.showporn.value and confcat == "porn":
 											pass
 										else:
 											gz = x.get("gz")
@@ -1185,7 +1170,7 @@ class MPList(Screen, HelpableScreen):
 			configfile.save()
 			self.restart()
 		else:
-			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 
 	def showPornOK(self, pincode):
 		if pincode:
@@ -1197,16 +1182,13 @@ class MPList(Screen, HelpableScreen):
 
 	def keySetup(self):
 		if config.mediaportal.setuppin.value:
-			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = config.mediaportal.retries.pincode, title = _("Please enter the correct PIN"), windowTitle = _("Enter setup PIN"))
 		else:
 			self.session.openWithCallback(self.restart, MPSetup)
 
 	def keySimpleList(self):
 		mp_globals.activeIcon = "simplelist"
 		self.session.open(simplelistGenreScreen)
-
-	def getTriesEntry(self):
-		return config.ParentalControl.retries.setuppin
 
 	def pinok(self, pincode):
 		if pincode:
@@ -1620,7 +1602,7 @@ class MPList(Screen, HelpableScreen):
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
-					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 				else:
 					if self.par1 == "":
 						self.session.open(self.pornscreen)
@@ -1785,9 +1767,7 @@ class MPWall(Screen, HelpableScreen):
 						if x.get("type") == "mod":
 							modfile = x.get("modfile")
 							confcat = x.get("confcat")
-							if modfile == "music.canna" and not mechanizeModule:
-								pass
-							elif not config.mediaportal.showporn.value and confcat == "porn":
+							if not config.mediaportal.showporn.value and confcat == "porn":
 								pass
 							else:
 								gz = x.get("gz")
@@ -1812,9 +1792,7 @@ class MPWall(Screen, HelpableScreen):
 									if x.get("type") == "mod":
 										modfile = x.get("modfile")
 										confcat = x.get("confcat")
-										if modfile == "music.canna" and not mechanizeModule:
-											pass
-										elif not config.mediaportal.showporn.value and confcat == "porn":
+										if not config.mediaportal.showporn.value and confcat == "porn":
 											pass
 										else:
 											gz = x.get("gz")
@@ -2563,7 +2541,7 @@ class MPWall(Screen, HelpableScreen):
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
-					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 				else:
 					if self.par1 == "":
 						self.session.open(self.pornscreen)
@@ -2727,16 +2705,13 @@ class MPWall(Screen, HelpableScreen):
 
 	def keySetup(self):
 		if config.mediaportal.setuppin.value:
-			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = config.mediaportal.retries.pincode, title = _("Please enter the correct PIN"), windowTitle = _("Enter setup PIN"))
 		else:
 			self.session.openWithCallback(self.restart, MPSetup)
 
 	def keySimpleList(self):
 		mp_globals.activeIcon = "simplelist"
 		self.session.open(simplelistGenreScreen)
-
-	def getTriesEntry(self):
-		return config.ParentalControl.retries.setuppin
 
 	def pinok(self, pincode):
 		if pincode:
@@ -2811,7 +2786,7 @@ class MPWall(Screen, HelpableScreen):
 			configfile.save()
 			self.restart()
 		else:
-			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 
 	def showPornOK(self, pincode):
 		if pincode:
@@ -2841,10 +2816,12 @@ class MPWall(Screen, HelpableScreen):
 			self.session.openWithCallback(self.gotFilter, MPchooseFilter, self.dump_liste, config.mediaportal.filter.value)
 
 	def gotFilter(self, filter):
-		if filter != True:
-			print "Set new filter to:", filter
+		if not config.mediaportal.showporn.value and filter == "Porn":
+			return
+		elif not config.mediaportal.showuseradditions.value and filter == "User-additions":
+			return
+		elif filter != True:
 			config.mediaportal.filter.value = filter
-			print "Filter changed:", config.mediaportal.filter.value
 			self.restartAndCheck()
 
 class MPWall2(Screen, HelpableScreen):
@@ -2869,9 +2846,7 @@ class MPWall2(Screen, HelpableScreen):
 						if x.get("type") == "mod":
 							modfile = x.get("modfile")
 							confcat = x.get("confcat")
-							if modfile == "music.canna" and not mechanizeModule:
-								pass
-							elif not config.mediaportal.showporn.value and confcat == "porn":
+							if not config.mediaportal.showporn.value and confcat == "porn":
 								pass
 							else:
 								gz = x.get("gz")
@@ -2896,9 +2871,7 @@ class MPWall2(Screen, HelpableScreen):
 									if x.get("type") == "mod":
 										modfile = x.get("modfile")
 										confcat = x.get("confcat")
-										if modfile == "music.canna" and not mechanizeModule:
-											pass
-										elif not config.mediaportal.showporn.value and confcat == "porn":
+										if not config.mediaportal.showporn.value and confcat == "porn":
 											pass
 										else:
 											gz = x.get("gz")
@@ -3457,7 +3430,7 @@ class MPWall2(Screen, HelpableScreen):
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
-					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 				else:
 					if self.par1 == "":
 						self.session.open(self.pornscreen)
@@ -3547,16 +3520,13 @@ class MPWall2(Screen, HelpableScreen):
 
 	def keySetup(self):
 		if config.mediaportal.setuppin.value:
-			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = config.mediaportal.retries.pincode, title = _("Please enter the correct PIN"), windowTitle = _("Enter setup PIN"))
 		else:
 			self.session.openWithCallback(self.restart, MPSetup)
 
 	def keySimpleList(self):
 		mp_globals.activeIcon = "simplelist"
 		self.session.open(simplelistGenreScreen)
-
-	def getTriesEntry(self):
-		return config.ParentalControl.retries.setuppin
 
 	def pinok(self, pincode):
 		if pincode:
@@ -3631,7 +3601,7 @@ class MPWall2(Screen, HelpableScreen):
 			configfile.save()
 			self.restart()
 		else:
-			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 
 	def showPornOK(self, pincode):
 		if pincode:
@@ -3661,10 +3631,12 @@ class MPWall2(Screen, HelpableScreen):
 			self.session.openWithCallback(self.gotFilter, MPchooseFilter, self.dump_liste, config.mediaportal.filter.value)
 
 	def gotFilter(self, filter):
-		if filter != True:
-			print "Set new filter to:", filter
+		if not config.mediaportal.showporn.value and filter == "Porn":
+			return
+		elif not config.mediaportal.showuseradditions.value and filter == "User-additions":
+			return
+		elif filter != True:
 			config.mediaportal.filter.value = filter
-			print "Filter changed:", config.mediaportal.filter.value
 			self.restartAndCheck()
 
 class MPWallVTi(Screen, HelpableScreen):
@@ -3689,9 +3661,7 @@ class MPWallVTi(Screen, HelpableScreen):
 						if x.get("type") == "mod":
 							modfile = x.get("modfile")
 							confcat = x.get("confcat")
-							if modfile == "music.canna" and not mechanizeModule:
-								pass
-							elif not config.mediaportal.showporn.value and confcat == "porn":
+							if not config.mediaportal.showporn.value and confcat == "porn":
 								pass
 							else:
 								gz = x.get("gz")
@@ -3716,9 +3686,7 @@ class MPWallVTi(Screen, HelpableScreen):
 									if x.get("type") == "mod":
 										modfile = x.get("modfile")
 										confcat = x.get("confcat")
-										if modfile == "music.canna" and not mechanizeModule:
-											pass
-										elif not config.mediaportal.showporn.value and confcat == "porn":
+										if not config.mediaportal.showporn.value and confcat == "porn":
 											pass
 										else:
 											gz = x.get("gz")
@@ -4282,7 +4250,7 @@ class MPWallVTi(Screen, HelpableScreen):
 		if self.pornscreen:
 			if config.mediaportal.pornpin.value:
 				if pincheck.pin_entered == False:
-					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+					self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 				else:
 					if self.par1 == "":
 						self.session.open(self.pornscreen)
@@ -4373,16 +4341,13 @@ class MPWallVTi(Screen, HelpableScreen):
 
 	def keySetup(self):
 		if config.mediaportal.setuppin.value:
-			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.pinok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = config.mediaportal.retries.pincode, title = _("Please enter the correct PIN"), windowTitle = _("Enter setup PIN"))
 		else:
 			self.session.openWithCallback(self.restart, MPSetup)
 
 	def keySimpleList(self):
 		mp_globals.activeIcon = "simplelist"
 		self.session.open(simplelistGenreScreen)
-
-	def getTriesEntry(self):
-		return config.ParentalControl.retries.setuppin
 
 	def pinok(self, pincode):
 		if pincode:
@@ -4457,7 +4422,7 @@ class MPWallVTi(Screen, HelpableScreen):
 			configfile.save()
 			self.restart()
 		else:
-			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+			self.session.openWithCallback(self.showPornOK, PinInputExt, pinList = [(config.mediaportal.adultpincode.value)], triesEntry = config.mediaportal.retries.adultpin, title = _("Please enter the correct PIN"), windowTitle = _("Enter adult PIN"))
 
 	def showPornOK(self, pincode):
 		if pincode:
@@ -4487,10 +4452,12 @@ class MPWallVTi(Screen, HelpableScreen):
 			self.session.openWithCallback(self.gotFilter, MPchooseFilter, self.dump_liste, config.mediaportal.filter.value)
 
 	def gotFilter(self, filter):
-		if filter != True:
-			print "Set new filter to:", filter
+		if not config.mediaportal.showporn.value and filter == "Porn":
+			return
+		elif not config.mediaportal.showuseradditions.value and filter == "User-additions":
+			return
+		elif filter != True:
 			config.mediaportal.filter.value = filter
-			print "Filter changed:", config.mediaportal.filter.value
 			self.restartAndCheck()
 
 class MPchooseFilter(Screen):

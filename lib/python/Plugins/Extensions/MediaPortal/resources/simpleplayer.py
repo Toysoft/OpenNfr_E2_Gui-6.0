@@ -2,17 +2,9 @@
 
 from Plugins.Extensions.MediaPortal.plugin import _
 from debuglog import printlog as printl
-from enigma import ePoint
+from enigma import ePoint, eSize
 from Components.Pixmap import MultiPixmap
 import mp_globals
-
-try:
-	import mechanize
-except:
-	mechanizeModule = False
-else:
-	mechanizeModule = True
-
 import uuid
 import Queue
 import random
@@ -23,10 +15,9 @@ from Components.ProgressBar import ProgressBar
 from Screens.InfoBarGenerics import *
 from imports import *
 from youtubelink import YoutubeLink
-if mechanizeModule:
-	from cannalink import CannaLink
-from eightieslink import EightiesLink
 from mtvdelink import MTVdeLink
+from cannalink import CannaLink
+from eightieslink import EightiesLink
 from coverhelper import CoverHelper
 from Components.Pixmap import MovingPixmap
 from simpleevent import SimpleEvent
@@ -1486,7 +1477,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 
 			if ltype == 'youtube':
 				YoutubeLink(self.session).getLink(self.playStream, self.dataError, titel, url, imgurl)
-			elif mechanizeModule and ltype == 'canna':
+			elif ltype == 'canna':
 				CannaLink(self.session).getLink(self.playStream, self.dataError, titel, artist, album, url, imgurl)
 			elif ltype == 'eighties':
 				token = self.playList2[self.playIdx][6]
