@@ -43,7 +43,7 @@ from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPag
 from Plugins.Extensions.MediaPortal.resources.pininputext import PinInputExt
 
 config.mediaportal.movie4klang2 = ConfigText(default="de", fixed_size=False)
-config.mediaportal.movie4kdomain3 = ConfigText(default="http://movie4k.to", fixed_size=False)
+config.mediaportal.movie4kdomain3 = ConfigText(default="http://movie4k.me", fixed_size=False)
 
 m4k = config.mediaportal.movie4kdomain3.value.replace('https://','').replace('http://','')
 m4k_url = "%s/" % config.mediaportal.movie4kdomain3.value
@@ -71,17 +71,6 @@ import thread
 m4k_cookies = CookieJar()
 m4k_ck = {}
 m4k_agent = ''
-
-def m4k_grabpage(pageurl):
-	if requestsModule:
-		try:
-			s = requests.session()
-			url = urlparse.urlparse(pageurl)
-			headers = {'User-Agent': m4k_agent}
-			page = s.get(url.geturl(), cookies=m4k_cookies, headers=headers)
-			return page.content
-		except:
-			pass
 
 def m4kcancel_defer(deferlist):
 	try:
@@ -166,7 +155,7 @@ class m4kGenreScreen(MPScreen):
 			reactor.callFromThread(self.m4k_error)
 
 	def m4k_error(self):
-		message = self.session.open(MessageBoxExt, _("Some mandatory Python modules are missing!"), MessageBoxExt.TYPE_ERROR)
+		message = self.session.open(MessageBoxExt, _("Mandatory depends python-requests and/or python-pyexecjs and nodejs are missing!"), MessageBoxExt.TYPE_ERROR)
 		self.keyCancel()
 
 	def getGenres(self):
@@ -236,7 +225,7 @@ class m4kGenreScreen(MPScreen):
 			self.session.open(m4kKinoAlleFilmeListeScreen, self.url, name)
 
 	def pincheck(self):
-		self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+		self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct PIN"), windowTitle = _("Enter PIN"))
 
 	def getTriesEntry(self):
 		return config.ParentalControl.retries.setuppin
@@ -245,13 +234,13 @@ class m4kGenreScreen(MPScreen):
 		if pincode:
 			self.pin = True
 			self.keyOK()
-			
+
 	def keyDomain(self):
 		if self.domain == "https://movie4k.am":
 			config.mediaportal.movie4kdomain3.value = "https://movie.to"
 		elif self.domain == "https://movie.to":
-			config.mediaportal.movie4kdomain3.value = "http://movie4k.to"
-		elif self.domain == "http://movie4k.to":
+			config.mediaportal.movie4kdomain3.value = "http://movie4k.pe"
+		elif self.domain == "http://movie4k.pe":
 			config.mediaportal.movie4kdomain3.value = "https://movie4k.tv"
 		elif self.domain == "https://movie4k.tv":
 			config.mediaportal.movie4kdomain3.value = "http://movie4k.me"
@@ -363,7 +352,7 @@ class m4kSucheAlleFilmeListeScreen(MPScreen):
 		filmdaten = re.findall('<div style="float:left">.*?<img src="(.*?)".*?<div class="moviedescription">(.*?)</div>', data, re.S)
 		if filmdaten:
 			streamPic, handlung = filmdaten[0]
-			CoverHelper(self['coverArt']).getCover(streamPic)
+			CoverHelper(self['coverArt']).getCover(streamPic, agent=m4k_agent, cookieJar=m4k_cookies)
 			self['handlung'].setText(decodeHtml(handlung).strip())
 
 	def keyOK(self):
@@ -490,7 +479,7 @@ class m4kKinoAlleFilmeListeScreen(MPScreen):
 		filmdaten = re.findall('<div style="float:left">.*?<img src="(.*?)".*?<div class="moviedescription">(.*?)</div>', data, re.S)
 		if filmdaten:
 			streamPic, handlung = filmdaten[0]
-			CoverHelper(self['coverArt']).getCover(streamPic)
+			CoverHelper(self['coverArt']).getCover(streamPic, agent=m4k_agent, cookieJar=m4k_cookies)
 			self['handlung'].setText(decodeHtml(handlung).strip())
 
 	def keyOK(self):
@@ -573,7 +562,7 @@ class m4kupdateFilme(MPScreen):
 		image = re.search('<img\ssrc="(http[s]?.*?/thumbs/.*?movie4k-film.jpg)"\sborder=0', data, re.S)
 		if image:
 			image = image.group(1)
-			CoverHelper(self['coverArt']).getCover(image)
+			CoverHelper(self['coverArt']).getCover(image, agent=m4k_agent, cookieJar=m4k_cookies)
 		handlung = re.findall('<div class="moviedescription">(.*?)<', data, re.S)
 		if handlung:
 			handlung = re.sub(r"\s+", " ", handlung[0])
@@ -648,11 +637,12 @@ class m4kFilme(MPScreen):
 		streamName = self['liste'].getCurrent()[0][0]
 		self['name'].setText(streamName)
 		streamUrl = self['liste'].getCurrent()[0][1]
-		m4kcancel_defer(self.deferreds)
-		downloads = ds.run(twAgentGetPage, streamUrl, agent=m4k_agent, cookieJar=m4k_cookies, timeout=30).addCallback(self.showHandlung).addErrback(self.dataError)
-		self.deferreds.append(downloads)
+		if streamUrl:
+			m4kcancel_defer(self.deferreds)
+			downloads = ds.run(twAgentGetPage, streamUrl, agent=m4k_agent, cookieJar=m4k_cookies, timeout=30).addCallback(self.showHandlung).addErrback(self.dataError)
+			self.deferreds.append(downloads)
 		streamPic = self['liste'].getCurrent()[0][2]
-		CoverHelper(self['coverArt']).getCover(streamPic)
+		CoverHelper(self['coverArt']).getCover(streamPic, agent=m4k_agent, cookieJar=m4k_cookies)
 
 	def showHandlung(self, data):
 		handlung = re.findall('<div class="moviedescription">(.*?)<', data, re.S)
@@ -749,7 +739,7 @@ class m4kStreamListeScreen(MPScreen):
 			image = image.group(1)
 		else:
 			image = None
-		CoverHelper(self['coverArt']).getCover(image)
+		CoverHelper(self['coverArt']).getCover(image, agent=m4k_agent, cookieJar=m4k_cookies)
 
 	def keyOK(self):
 		exist = self['liste'].getCurrent()
@@ -1020,7 +1010,7 @@ class m4kXXXListeScreen(MPScreen):
 				image = None
 		elif not image.startswith('http'):
 			image = m4k_url + image
-		CoverHelper(self['coverArt']).getCover(image)
+		CoverHelper(self['coverArt']).getCover(image, agent=m4k_agent, cookieJar=m4k_cookies)
 		handlung = re.findall('<div class="moviedescription">(.*?)<', data, re.S)
 		if handlung:
 			handlung = re.sub(r"\s+", " ", handlung[0])

@@ -45,14 +45,16 @@ myagent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, 
 mdh_ck = {}
 mdh_cookies = CookieJar()
 
+default_cover = "file://%s/mydirtyhobby.png" % (config.mediaportal.iconcachepath.value + "logos")
+
 class MDHGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -81,6 +83,7 @@ class MDHGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self['name'].setText(_("Please wait..."))
 		url = "http://stream-mydirtyhobby.biz"
 		getPage(url, agent=myagent, cookies=mdh_ck, headers={'Referer':'http://stream-mydirtyhobby.biz/'}).addCallback(self.checkData).addErrback(self.dataError)
@@ -241,10 +244,8 @@ class MDHFilmScreen(MPScreen, ThumbsHelper):
 		url = re.findall('iframe\ssrc="(.*?)"', data, re.S|re.I)
 		if url:
 			get_stream_link(self.session).check_link(url[0], self.got_link)
-		else:
 			self.keyLocked = False
 
 	def got_link(self, url):
-		self.keyLocked = False
 		Title = self['liste'].getCurrent()[0][0]
 		self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='mydirtyhobby')

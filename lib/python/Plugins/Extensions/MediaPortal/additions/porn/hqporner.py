@@ -74,6 +74,7 @@ class hqpornerGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.genreData)
 
 	def genreData(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.filmliste.append(("--- Search ---", None))
 		self.filmliste.append(("Newest", "http://hqporner.com/hdporn"))
 		self.filmliste.append(("Genres", "categories"))
@@ -81,10 +82,6 @@ class hqpornerGenreScreen(MPScreen):
 		self.filmliste.append(("Girls", "girls"))
 		self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 		self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

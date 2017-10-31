@@ -4,7 +4,6 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 from Plugins.Extensions.MediaPortal.resources.keyboardext import VirtualKeyBoardExt
 
 from kinoxto import *
-from movie4k import *
 from ddl_me import DDLME_FilmListeScreen
 
 class timdbGenreScreen(MPScreen):
@@ -33,14 +32,12 @@ class timdbGenreScreen(MPScreen):
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
 			"green" : self.kinoxSearch,
-			"yellow" : self.movie4kSearch,
 			"blue" : self.ddlmeSearch
 		}, -1)
 
 		self['title'] = Label("Top IMDb")
 		self['ContentTitle'] = Label(_("Selection:"))
 		self['F2'] = Label("Kinox")
-		self['F3'] = Label("Movie4k")
 		self['F4'] = Label("ddl.me")
 
 		self['Page'] = Label(_("Page:"))
@@ -93,16 +90,6 @@ class timdbGenreScreen(MPScreen):
 		if callbackStr is not None:
 			url = "http://kinox.to/Search.html?q="
 			self.session.open(kxSucheAlleFilmeListeScreen, url, callbackStr)
-
-	def movie4kSearch(self):
-		self.searchTitle = self['liste'].getCurrent()[0][1]
-		self.session.openWithCallback(self.searchMovie4kCallback, VirtualKeyBoardExt, title = (_("Enter search criteria")), text = self.searchTitle, is_dialog=True, auto_text_init=True)
-
-	def searchMovie4kCallback(self, callbackStr):
-		if callbackStr is not None:
-			url = "http://www.movie4k.tv/movies.php?list=search&search=%s" %(callbackStr)
-			name = "Suche: %s" %(callbackStr)
-			self.session.open(m4kFilme, url, name)
 
 	def ddlmeSearch(self):
 		self.searchTitle = self['liste'].getCurrent()[0][1]

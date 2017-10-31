@@ -240,7 +240,7 @@ class sharedirMenueScreen(sharedirHelper, MPScreen):
 			self.session.openWithCallback(self.cancelSetValue, sharedirListScreen, self.suchString, Name, self.hoster, self.type, self.size, self.sort)
 
 	def pincheck(self):
-		self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct pin code"), windowTitle = _("Enter pin code"))
+		self.session.openWithCallback(self.pincheckok, PinInputExt, pinList = [(config.mediaportal.pincode.value)], triesEntry = self.getTriesEntry(), title = _("Please enter the correct PIN"), windowTitle = _("Enter PIN"))
 
 	def getTriesEntry(self):
 		return config.ParentalControl.retries.setuppin

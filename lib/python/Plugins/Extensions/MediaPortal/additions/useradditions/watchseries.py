@@ -2,7 +2,7 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
-ws_url = "watchseriesfree.to"
+ws_url = "ewatchseries.to"
 
 class watchseriesGenreScreen(MPScreen):
 
@@ -34,10 +34,9 @@ class watchseriesGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		self.genreliste = [('Series',"https://%s/letters/" % ws_url),
-							('Newest Episodes Added',"https://%s/latest" % ws_url),
-							('Popular Episodes Added This Week',"https://%s/new" % ws_url),
-							('TV Schedule',"https://%s/tvschedule/-1" % ws_url)]
+		self.genreliste = [('Series',"http://%s/letters/" % ws_url),
+							('Newest Episodes Added',"http://%s/latest" % ws_url),
+							('Popular Episodes Added This Week',"http://%s/new" % ws_url)]
 
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
@@ -88,12 +87,13 @@ class watchseriesNewSeriesScreen(MPScreen):
 		twAgentGetPage(self.streamGenreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		eps = re.findall('<a itemprop="url" href="(/episode/.*?)".*?<span itemprop="seasonNumber">(.*?)</span></span>.*?<span itemprop="episodeNumber">(.*?)</span>.*?<span itemprop="name">(.*?)</span></span><em> - <span itemprop="name">(.*?)</span>', data, re.S)
+		parse = re.search('class="listings">(.*?)class="pagination">', data, re.S)
+		eps = re.findall('<a\shref="(.*?)"\stitle="(.*?)".*?<span.*?>(.*?)</span>', parse.group(1), re.S)
 		if eps:
-			for link,title in eps:
-				title = title.replace('Seas. ','- S').replace('Ep. ','E')
-				url = "https://%s%s" % (ws_url, link)
-				self.genreliste.append((title, url))
+			for url,title,epi in eps:
+				season,episode = epi.split('x')
+				title = title + ' - S'+season+'E'+episode
+				self.genreliste.append((decodeHtml(title), url))
 			self.ml.setList(map(self._defaultlistleft, self.genreliste))
 			self.keyLocked = False
 
@@ -136,7 +136,7 @@ class watchseriesSeriesLetterScreen(MPScreen):
 	def loadPage(self):
 		abc = ["09","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 		for letter in abc:
-			url = "https://%s/letters/%s" % (ws_url, letter)
+			url = "http://%s/letters/%s" % (ws_url, letter)
 			self.genreliste.append((letter, url))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
@@ -188,16 +188,14 @@ class watchseriesSeriesScreen(MPScreen, ThumbsHelper):
 		twAgentGetPage(self.streamGenreLink).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		# FIXME: fix regex and implement multipage
-		series = re.findall('<li><a title="(.*?)" href="((?:/serie)?/.*?)">.*?</li>', data, re.S)
+		series = re.findall('<li><a href="(http://ewatchseries.to/serie/.*?)" title="(.*?)">.*?</li>', data, re.S)
 		if series:
 			self.filmliste = []
-			for (title,link) in series:
-				url = "https://%s%s" % (ws_url, link)
+			for (url,title) in series:
 				self.filmliste.append((decodeHtml(title),url))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 			self.keyLocked = False
-			self.th_ThumbsQuery(self.filmliste, 0, 1, None, None, '<div class="show-summary".*?<img src="(.*?)".*?Description', 1, 1, maxtoken=3)
+			self.th_ThumbsQuery(self.filmliste, 0, 1, None, None, 'property="og:image" content="(.*?)"', 1, 1, maxtoken=3)
 			self.showInfos()
 
 	def showInfos(self):
@@ -206,8 +204,8 @@ class watchseriesSeriesScreen(MPScreen, ThumbsHelper):
 		twAgentGetPage(url).addCallback(self.getDetails).addErrback(self.dataError)
 
 	def getDetails(self, data):
-		image = re.findall('<div class="show-summary".*?<img src="(.*?)".*?Description', data, re.S)
-		details = re.findall('Description :</b>\s(.*?)<br>', data, re.S)
+		image = re.findall('property="og:image" content="(.*?)"', data, re.S)
+		details = re.findall('Description: </strong>(.*?)<br/>', data, re.S)
 		handlung = ""
 		if details:
 				handlung = re.sub(r'<.*?>', '', details[0])
@@ -262,10 +260,10 @@ class watchseriesEpisodeListeScreen(MPScreen):
 	def loadPageData(self, data):
 		parse = re.search('<ul class="listings(.*)class="sp-leader-bottom">', data, re.S)
 		if parse:
-			eps = re.findall('href="(/episode/.*?)">.*?>(Episode\s\d+|)(&nbsp;){0,10}(.*?)<', parse.group(1), re.S)
+			eps = re.findall('content="(http://ewatchseries.to/episode/.*?)"/>.*?itemprop="name"\s{0,1}>(?:Episode\s\d+|)(?:&nbsp;){0,10}(.*?)<', parse.group(1), re.S)
 			if eps:
 				self.filmliste = []
-				for (url, dummy, dummy, title) in eps:
+				for (url, title) in eps:
 					epinfo = re.findall('_s(\d+)_e(\d+).html', url)
 					if epinfo:
 						(season, episode) = epinfo[0]
@@ -278,10 +276,9 @@ class watchseriesEpisodeListeScreen(MPScreen):
 						else:
 							episode = "E"+str(episode)
 						episode = "%s%s - %s" % (season, episode, title)
-						url = "https://%s%s" % (ws_url, url)
 						self.filmliste.append((decodeHtml(episode),url))
 		if len(self.filmliste) == 0:
-			self.filmliste.append((_("No shows found!"), ''))
+			self.filmliste.append((_("No episodes found!"), ''))
 		self.filmliste = list(set(self.filmliste))
 		self.filmliste.sort()
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -318,7 +315,6 @@ class watchseriesStreamListeScreen(MPScreen):
 		self['title'] = Label("watchseries")
 		self['ContentTitle'] = Label("Streams:")
 
-
 		self.keyLocked = True
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -335,35 +331,27 @@ class watchseriesStreamListeScreen(MPScreen):
 			self.filmliste = []
 			self.filmliste.append(("There are no links available for this episode", None))
 		else:
-			streams = re.findall('<td><i class="fa fa-youtube link-logo"></i>(.*?)<.*?<td><a target="_blank" href="(/open/cale/.*?)"', data, re.S)
+			streams = re.findall('class="download_link.*?<a target="_blank"\s+href=".*?cale.html\?r=(.*?)".*?title="(.*?)"', data, re.S)
 			if streams:
 				self.filmliste = []
-				for (hostername,url) in streams:
+				for (url,hostername) in streams:
 					if isSupportedHoster(hostername, True):
-						url = "https://%s%s" % (ws_url, url)
+						import base64
+						url = base64.b64decode(url)
 						self.filmliste.append((decodeHtml(hostername),url))
-				if len(self.filmliste) == 0:
-					self.filmliste.append(("No supported streams found.", None))
-				else:
-					self.keyLocked = False
+			if len(self.filmliste) == 0:
+				self.filmliste.append((_("No supported streams found!"), None))
 			else:
-				self.filmliste.append(("Wrong parsing...", None))
+				self.keyLocked = False
 		self.ml.setList(map(self._defaultlisthoster, self.filmliste))
 		self['name'].setText(self.streamGenreName)
 
 	def keyOK(self):
 		if self.keyLocked:
 			return
-		streamName = self['liste'].getCurrent()[0][0]
 		streamLink = self['liste'].getCurrent()[0][1]
-		twAgentGetPage(streamLink).addCallback(self.getLink).addErrback(self.dataError)
-
-	def getLink(self, data):
-		link = re.findall('<a href="(.*?)" class="action-btn txt-ell W btn btn-success btn-3d".*?">Click Here To Play</a>', data)
-		if link:
-			get_stream_link(self.session).check_link(link[0], self.got_link)
-		else:
-			message = self.session.open(MessageBoxExt, _("Broken URL parsing, please report to the developers."), MessageBoxExt.TYPE_INFO, timeout=3)
+		if streamLink:
+			get_stream_link(self.session).check_link(streamLink, self.got_link)
 
 	def got_link(self, stream_url):
 		self.session.open(SimplePlayer, [(self.streamGenreName, stream_url)], showPlaylist=False, ltype='watchseries')

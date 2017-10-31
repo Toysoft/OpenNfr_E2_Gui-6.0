@@ -78,6 +78,7 @@ class PornVortexxGenreScreen(MPScreen):
 
 	def layoutFinished(self):
 		self.keyLocked = True
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = 'http://pornvortexx.com/browse.html'
 		getPage(url).addCallback(self.genreData).addErrback(self.dataError)
 
@@ -210,7 +211,7 @@ class PornVortexxFilmScreen(MPScreen, ThumbsHelper):
 			getPage(Link).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall('<iframe src="(.*?)"', data, re.S)
+		videoPage = re.findall('<iframe src="(.*?)"', data, re.S|re.I)
 		if videoPage:
 			get_stream_link(self.session).check_link(str(videoPage[0]), self.got_link)
 

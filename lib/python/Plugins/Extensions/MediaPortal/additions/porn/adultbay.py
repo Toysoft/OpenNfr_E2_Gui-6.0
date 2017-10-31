@@ -39,6 +39,8 @@
 from Plugins.Extensions.MediaPortal.plugin import _
 from Plugins.Extensions.MediaPortal.resources.imports import *
 
+default_cover = "file://%s/adultbay.png" % (config.mediaportal.iconcachepath.value + "logos")
+
 BASE_NAME = "The Adult Bay"
 
 class adultbayGenreScreen(MPScreen):
@@ -46,9 +48,9 @@ class adultbayGenreScreen(MPScreen):
 	def __init__(self, session):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -72,6 +74,7 @@ class adultbayGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.genreData)
 
 	def genreData(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.filmliste.append(("--- Search ---", None))
 		self.filmliste.append(("Newest (Clips)", "http://adultbay.org/category/clips/"))
 		self.filmliste.append(("Newest (Movies)", "http://adultbay.org/category/movies/"))
@@ -201,7 +204,7 @@ class adultbayListScreen(MPScreen, ThumbsHelper):
 		self.keyLocked = True
 		self.filmliste = []
 		if re.match(".*?Search", self.Name):
-			url = "http://adultbay.org/search/%s/page/%s/" % (self.Link, str(self.page))
+			url = "http://adultbay.org/page/%s/?s=%s" % (str(self.page), self.Link)
 		else:
 			if self.page == 1:
 				url = self.Link
@@ -220,30 +223,21 @@ class adultbayListScreen(MPScreen, ThumbsHelper):
 			self.filmliste.append(("Search is temporarily disabled...", None, None, None))
 			self.ml.setList(map(self._defaultlistleft, self.filmliste))
 		else:
-			parse = re.search('class="wp-pagenavi">(.*?)</div>', data, re.S)
+			parse = re.search('class=\'wp-pagenavi\'>(.*?)</div>', data, re.S)
 			if parse:
-				lastpage = re.findall('\d{0,1},{0,1}\d+', parse.group(1), re.S)
-				lastpage = [x.replace(',', '') for x in lastpage]
-				lastpage = [int(x) for x in lastpage]
-				lastpage.sort(key=int)
-				self.lastpage = int(lastpage[-1])
-				self['page'].setText("%s / %s" % (str(self.page), str(self.lastpage)))
+				self.getLastPage(data, 'class=\'wp-pagenavi\'>(.*?)</div>', '.*\/(\d+)\/')
 			else:
-				parse = re.search('class="navigation">.*?/page/(.*?)/.*?Older Entries', data, re.S)
+				parse = re.search('class="pagination">.*?/page/(.*?)/.*?Older Posts', data, re.S)
 				if parse:
 					self.lastpage = int(parse.group(1))
 				else:
 					self.lastpage = 1
-			self['page'].setText("%s / %s" % (str(self.page), str(self.lastpage)))
+				self['page'].setText("%s / %s" % (str(self.page), str(self.lastpage)))
 
-			raw = re.findall('class="post".*?<a\shref="(.*?)"\stitle="(.*?)".*?img\ssrc="(.*?)".*?(?:<strong>|<p>)(.*?)(?:</strong>|<br\s/>|</p>).*?<p>(.*?)(?:Read\smore|\(more...\))', data, re.S)
+			raw = re.findall('class="post-\d+.*?<h2><a\shref="(.*?)">(.*?)</a.*?img\ssrc="(.*?)"', data, re.S)
 			if raw:
-				for (link, fallbacktitle, image, title, desc) in raw:
-					title = stripAllTags(title).strip()
-					if title == "":
-						title = fallbacktitle
-					desc = stripAllTags(desc).strip()
-					self.filmliste.append((decodeHtml(title), link, image, desc))
+				for (link, title, image) in raw:
+					self.filmliste.append((decodeHtml(title), link, image))
 				self.ml.setList(map(self._defaultlistleft, self.filmliste))
 				self.ml.moveToIndex(0)
 			self.keyLocked = False
@@ -253,8 +247,6 @@ class adultbayListScreen(MPScreen, ThumbsHelper):
 	def showInfos(self):
 		title = self['liste'].getCurrent()[0][0]
 		self['name'].setText(title)
-		desc = self['liste'].getCurrent()[0][3]
-		self['handlung'].setText(desc)
 		coverUrl = self['liste'].getCurrent()[0][2]
 		CoverHelper(self['coverArt']).getCover(coverUrl)
 
@@ -306,7 +298,7 @@ class StreamAuswahl(MPScreen):
 		getPage(url).addCallback(self.loadPageData).addErrback(self.dataError)
 
 	def loadPageData(self, data):
-		parse = re.search('class="post_header">(.*?)Recommends:</h2>', data, re.S)
+		parse = re.search('class="post-header">(.*?)Recommends:</strong>', data, re.S)
 		streams = re.findall('(http[s]?://(?!adultbay.org)(.*?)\/.*?)[\'|"|\&|<]', parse.group(1), re.S)
 		if streams:
 			for (stream, hostername) in streams:

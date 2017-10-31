@@ -365,9 +365,9 @@ class YourPornSexyFilmScreen(MPScreen, ThumbsHelper):
 		if not videoUrl:
 			videoUrl = re.findall('<video.*?src=[\'|"](.*?.mp4)[\'|"]', data, re.S)
 		if videoUrl:
-			self.keyLocked = False
 			Title = self['liste'].getCurrent()[0][0]
 			url = videoUrl[-1]
 			if url.startswith('//'):
 				url = "http:" + url
 			self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='yourpornsexy')
+		self.keyLocked = False

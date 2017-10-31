@@ -40,7 +40,7 @@ from . import _
 from update import *
 
 config.mpgz = ConfigSubsection()
-config.mpgz.version = NoSave(ConfigText(default="2017101301"))
+config.mpgz.version = NoSave(ConfigText(default="2017103101"))
 
 def autostart(reason, session=None, **kwargs):
 	"called with reason=1 to during shutdown, with reason=0 at startup?"
@@ -50,6 +50,7 @@ def autostart(reason, session=None, **kwargs):
 			registerFont(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/") + "mediaportal%s.ttf" % config.mediaportal.font.value, "mediaportal", 100, False)
 			registerFont(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/") + "mediaportal_clean.ttf", "mediaportal_clean", 100, False)
 			if config.mediaportal.autoupdate.value:
+				config.misc.standbyCounter.addNotifier(checkupdate(session).standbyCounterChanged, initial_call = False)
 				checkupdate(session).checkforupdate()
 
 def Plugins(path, **kwargs):

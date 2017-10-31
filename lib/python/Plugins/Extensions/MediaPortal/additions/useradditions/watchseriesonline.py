@@ -395,7 +395,7 @@ class wsoEpisodes(MPScreen):
 				self.updates_read.close()
 		parse = re.search('<div id="episode-list">(.*?)</footer>', data, re.S)
 		if parse:
-			episodes = re.findall('<li.*?<a\shref="(https://(?:watchseries-online.pl|wseries.org)/.*?)".*?</span>(.*?)</a>', parse.group(1), re.S)
+			episodes = re.findall('<li.*?<a\shref=[\"|\'](https://(?:watchseries-online.pl|wseries.org)/.*?)[\"|\'].*?</span>(.*?)</a>', parse.group(1), re.S)
 			if episodes:
 				for url, title in episodes:
 					url = url.replace('wseries.org','watchseries-online.pl')

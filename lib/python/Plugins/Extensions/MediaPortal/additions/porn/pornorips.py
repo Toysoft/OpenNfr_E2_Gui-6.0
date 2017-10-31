@@ -74,6 +74,7 @@ class pornoRipsGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.genreData)
 
 	def genreData(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.genreliste.append(("--- Search ---", None))
 		self.genreliste.append(("Newest (Clips)", "http://pornorips.com/category/clips/"))
 		self.genreliste.append(("Newest (Movies)", "http://pornorips.com/category/movies/"))
@@ -83,10 +84,6 @@ class pornoRipsGenreScreen(MPScreen):
 		self.genreliste.append(("Classic/Vintage", "http://pornorips.com/category/classic-porn/"))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 		self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):

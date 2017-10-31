@@ -126,7 +126,7 @@ class show_MFMP3_Genre(MenuHelper):
 			reactor.callFromThread(self.mh_errorMenu)
 
 	def mh_errorMenu(self):
-		message = self.session.open(MessageBoxExt, _("Some mandatory Python modules are missing!"), MessageBoxExt.TYPE_ERROR)
+		message = self.session.open(MessageBoxExt, _("Mandatory depends python-requests and/or python-pyexecjs and nodejs are missing!"), MessageBoxExt.TYPE_ERROR)
 		self.keyCancel()
 
 	def parseHash(self, js, err=False):

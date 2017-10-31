@@ -44,9 +44,10 @@ myagent = 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0'
 
 class PornStreamsGenreScreen(MPScreen):
 
-	def __init__(self, session):
+	def __init__(self, session, mode=''):
 		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+		self.mode = mode
 		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
@@ -74,23 +75,33 @@ class PornStreamsGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.layoutFinished)
 
 	def layoutFinished(self):
-		url = "http://pornstreams.eu/studios/"
+		if self.mode == "Studios":
+			url = "http://pornstreams.eu/studios/"
+		else:
+			url = "http://pornstreams.eu/"
 		twAgentGetPage(url, agent=myagent, gzip_decoding=True).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
-		Cats =  re.findall('<a\stitle="(.*?)"\shref="(.*?)">.*?</a>', data, re.S)
-		if Cats:
-			for (Title, Url) in Cats:
-				Url = Url + 'page/'
-				self.genreliste.append((Title, Url))
-			# remove duplicates
-			self.genreliste = list(set(self.genreliste))
-			self.genreliste.sort()
-		self.genreliste.insert(0, ("Spanish Clips", "http://pornstreams.eu/clips/spanish-clips/page/", None))
-		self.genreliste.insert(0, ("German Clips", "http://pornstreams.eu/clips/german-clips/page/", None))
-		self.genreliste.insert(0, ("French Clips", "http://pornstreams.eu/clips/french-clips/page/", None))
-		self.genreliste.insert(0, ("Dutch Clips", "http://pornstreams.eu/clips/dutch-clips/page/", None))
-		self.genreliste.insert(0, ("Clips", "http://pornstreams.eu/clips/page/", None))
+		if self.mode == 'Studios':
+			Cats =  re.findall('<a\stitle="(.*?)"\shref="(.*?)">.*?</a>', data, re.S)
+			if Cats:
+				for (Title, Url) in Cats:
+					Url = Url + 'page/'
+					if not Title.startswith('['):
+						if not '.png' in Title:
+							if not '%d1%81lips4sale' in Url:
+								self.genreliste.append((decodeHtml(Title), Url))
+		else:
+			parse = re.search('<span>Categories</span>(.*?)</div>', data, re.S)
+			Cats = re.findall('cat-item-\d+"><a\shref="(.*?)"\s{0,1}>(.*?)(?:\sVideos|\sPorn|)</a>', parse.group(1), re.S)
+			if Cats:
+				for (Url, Title) in Cats:
+					Url = Url + 'page/'
+					self.genreliste.append((decodeHtml(Title), Url))
+		# remove duplicates
+		self.genreliste = list(set(self.genreliste))
+		self.genreliste.sort(key=lambda t : t[0].lower())
+		self.genreliste.insert(0, ("Studios", None, None))
 		self.genreliste.insert(0, ("Newest", "http://pornstreams.eu/page/", None))
 		self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 		self.ml.setList(map(self._defaultlistcenter, self.genreliste))
@@ -109,6 +120,8 @@ class PornStreamsGenreScreen(MPScreen):
 		Name = self['liste'].getCurrent()[0][0]
 		if Name == "--- Search ---":
 			self.suchen()
+		elif Name == "Studios":
+			self.session.open(PornStreamsGenreScreen, "Studios")
 		else:
 			Link = self['liste'].getCurrent()[0][1]
 			self.session.open(PornStreamsFilmScreen, Link, Name)

@@ -133,7 +133,7 @@ class hdfilmeMain(MPScreen):
 			reactor.callFromThread(self.hf_error)
 
 	def hf_error(self):
-		message = self.session.open(MessageBoxExt, _("Some mandatory Python modules are missing!"), MessageBoxExt.TYPE_ERROR)
+		message = self.session.open(MessageBoxExt, _("Mandatory depends python-requests and/or python-pyexecjs and nodejs are missing!"), MessageBoxExt.TYPE_ERROR)
 		self.keyCancel()
 
 	def getPage(self):
@@ -260,19 +260,19 @@ class hdfilmeStreams(MPScreen):
 			{
 				'1080' : 4, #MP4 1080p
 				'720' : 3, #MP4 720p
-				'540' : 2, #MP4 540p
+				'480' : 2, #MP4 480p
 				'360' : 1, #MP4 360p
 			},
 			{
 				'1080' : 4, #MP4 1080p
 				'720' : 3, #MP4 720p
-				'540' : 1, #MP4 540p
+				'480' : 1, #MP4 480p
 				'360' : 2, #MP4 360p
 			},
 			{
 				'1080' : 1, #MP4 1080p
 				'720' : 2, #MP4 720p
-				'540' : 3, #MP4 540p
+				'480' : 3, #MP4 480p
 				'360' : 4, #MP4 360p
 			}
 		)

@@ -72,6 +72,7 @@ class justPornGenreScreen(MPScreen):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
+		CoverHelper(self['coverArt']).getCover(default_cover)
 		self.filmliste = []
 		url = "http://justporn.to/"
 		getPage(url).addCallback(self.parseData).addErrback(self.dataError)
@@ -89,10 +90,6 @@ class justPornGenreScreen(MPScreen):
 			self.filmliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.filmliste))
 			self.keyLocked = False
-		self.showInfos()
-
-	def showInfos(self):
-		CoverHelper(self['coverArt']).getCover(default_cover)
 
 	def SuchenCallback(self, callback = None, entry = None):
 		if callback is not None and len(callback):
