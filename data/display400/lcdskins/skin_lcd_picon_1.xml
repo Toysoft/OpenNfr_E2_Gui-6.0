@@ -44,5 +44,10 @@
 			<convert type="ConditionalShowHide">Blink</convert>
 		</widget>
 	</screen>
+<screen name="StandbySummary" position="0,0" size="400,240">
+		<widget source="global.CurrentTime" render="Label" position="center,center" size="400,100" font="LCD;90" halign="center" valign="bottom" noWrap="1">
+			<convert type="ClockToText"></convert>
+		</widget>
+</screen>
 	<include filename="/usr/share/enigma2/display/lcdskins/skin_display.xml" />
 </skin>

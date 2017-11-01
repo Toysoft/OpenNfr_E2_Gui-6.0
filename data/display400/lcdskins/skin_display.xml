@@ -145,7 +145,11 @@
 			<convert type="ConditionalShowHide">Blink</convert>
 		</widget>
 	</screen>
-
+<screen name="StandbySummary" position="0,0" size="400,240">
+		<widget source="global.CurrentTime" render="Label" position="center,center" size="400,100" font="LCD;90" halign="center" valign="bottom" noWrap="1">
+			<convert type="ClockToText"></convert>
+		</widget>
+</screen>
 <!-- Movieplayer -->
 	<screen name="InfoBarMoviePlayerSummary" position="0,0" size="400,240">
 		<widget source="session.CurrentService" render="Label" position="0,0" size="400,133" font="FdLcD;38" foregroundColor="#87CEFA" halign="center" valign="center" transparent="1" zPosition="2">
