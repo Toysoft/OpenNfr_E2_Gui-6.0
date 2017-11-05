@@ -30,7 +30,7 @@
 
 <!-- main-->
 	<screen name="InfoBarSummary" position="0,0" size="220,176">
-		<widget source="session.CurrentService" render="LcdPicon" position="center,center" zPosition="1" size="220,132" alphatest="on">
+		<widget source="session.CurrentService" render="LcdPicon" position="center,center" zPosition="1" size="220,176" alphatest="on">
 			<convert type="ServiceName">Reference</convert>
 		</widget>
 		<!--widget source="global.CurrentTime" render="Label" position="132,145" size="88,46" font="RegularLCD;35" noWrap="1">
@@ -44,5 +44,10 @@
 			<convert type="ConditionalShowHide">Blink</convert>
 		</widget>
 	</screen>
+<screen name="StandbySummary" position="0,0" size="220,176">
+		<widget source="global.CurrentTime" render="Label" position="center,center" size="220,100" font="LCD;50" halign="center" valign="bottom" noWrap="1">
+			<convert type="ClockToText"></convert>
+		</widget>
+</screen>
 	<include filename="/usr/share/enigma2/display/lcdskins/skin_display.xml" />
 </skin>

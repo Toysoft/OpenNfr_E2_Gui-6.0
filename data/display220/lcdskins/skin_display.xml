@@ -34,7 +34,7 @@
 		<widget source="session.Event_Now" render="Label" position="0,80" size="220,40" font="FdLcD;19" halign="center" >
 			<convert type="EventName">Name</convert>
 		</widget>
-		<widget source="session.Event_Now" render="Progress" position="0,125" size="150,10" borderWidth="1" >
+		<widget source="session.Event_Now" render="Progress" pixmap="/usr/share/enigma2/display/lcdskins/progress.png" position="0,125" size="150,10" borderWidth="1" >
 			<convert type="EventTime">Progress</convert>
 		</widget>
 		<widget source="session.Event_Now" render="Label" position="160,120" size="70,20" font="Regular; 15" foregroundColor="#F78181" >
