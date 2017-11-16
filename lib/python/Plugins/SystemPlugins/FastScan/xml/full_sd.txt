@@ -42,7 +42,7 @@ Sky Cinema +24
 Sky Cinema Action
 Sky Cinema Comedy
 Sky Cinema Emotion
-Sky Cinema Bourne
+Sky Cinema Hits
 Sky Cinema Family
 Sky Cinema Nostalgie
 Sky Krimi
@@ -57,7 +57,7 @@ RTL Passion
 RTL Living
 Romance TV
 SAT.1 emotions
-Syfy
+SYFY
 TNT Serie
 TNT Film (TCM)
 TLC
