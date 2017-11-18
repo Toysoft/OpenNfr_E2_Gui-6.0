@@ -14390,3 +14390,54 @@ msgstr "Helligkeit (gedimmt)"
 
 msgid "Configure the brightness level of the front panel display for dimmed operation."
 msgstr "Konfigurieren Sie die Helligkeit des Displays für den gedimmten Zustand."
+
+msgid "Standard (always)"
+msgstr "Standard (immer)"
+
+msgid "without Query"
+msgstr "ohne Rückfrage"
+
+msgid "Maximum number of days in EPG"
+msgstr "Maximale Anzahl von Tagen vom EPG"
+
+msgid "Use for load only x days in EPG"
+msgstr "Festlegen der Tage zum Laden des EPG"
+
+msgid "Red button"
+msgstr "Rote-Taste"
+
+msgid "Green button"
+msgstr "Grüne-Taste"
+
+msgid "Yellow button"
+msgstr "Gelbe-Taste"
+
+msgid "Blue button"
+msgstr "Blaue-Taste"
+
+msgid "Alignment of service names"
+msgstr "Ausrichtung der Sendernamen"
+
+msgid "Alignment of events"
+msgstr "Ausrichtung der Sendungsnamen"
+
+msgid "Position of recording icons"
+msgstr "Ausrichtung der Aufnahme-Symbole"
+
+msgid "Start mode"
+msgstr "Start Modus"
+
+msgid "Here can set the EPG will alway open at the current channel, the first channel or one of both with primetime. If no primetime selected, the current time is used."
+msgstr "Hier können Sie einstellen ob das EPG mit dem aktuellem Kanal, dem erstem Kanal oder eines von beiden mit der Primetime geöffnet wird. Wenn keine Primetime ausgewählt ist wird die aktuelle Zeit verwendet."
+
+msgid "Set to the desired primetime (minutes."
+msgstr "Wählen Sie die gewünschte Primetime (Minuten)."
+
+msgid "Configure the alignment of events."
+msgstr "Konfigurieren Sie die Ausrichtung der Sendungsnamen."
+
+msgid "Configure the alignment of service names."
+msgstr "Konfigurieren Sie die Ausrichtung der Sendernamen."
+
+msgid "Set the position of the recording icons"
+msgstr "Legen Sie die Positionen der Aufnahme-Symbole fest."
