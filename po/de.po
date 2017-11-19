@@ -7358,9 +7358,6 @@ msgstr "Aufnahme Einstellungen"
 msgid "Recording type"
 msgstr "Aufnahmetyp"
 
-msgid "Recording(s) are in progress or coming up in few seconds!"
-msgstr "Zurzeit sind Aufnahmen aktiv oder starten gleich!"
-
 msgid "Recordings"
 msgstr "Aufnahmen"
 
@@ -13471,3 +13468,10 @@ msgstr "Legen Sie die Positionen der Aufnahme-Symbole fest."
 
 msgid "Shows the Covers in Movielist and Moviebar"
 msgstr "Zeigt die Covers in Filmlist und Filmbar an"
+
+msgid "Recording(s) are in progress or coming up in few seconds!"
+msgstr "Zurzeit ist eine/sind Aufnahmen aktiv oder starten gleich!"
+
+msgid "Edit new entry"
+msgstr "Timer bearbeiten"
+
