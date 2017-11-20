@@ -13475,3 +13475,17 @@ msgstr "Zurzeit ist eine/sind Aufnahmen aktiv oder starten gleich!"
 msgid "Edit new entry"
 msgstr "Timer bearbeiten"
 
+msgid "Show blinking Clock in Standby on Display during recording"
+msgstr "Zeige im Standby blinkende Uhr im Display bei Aufnahmen"
+
+msgid "In the Standby blinking Clock on the LCD Display"
+msgstr "Im Standby blinkende Uhr im LCD-Display "
+
+msgid "When the content has an aspect ratio of 4:3, choose whether to stretch the picture to fill the screen."
+msgstr "Wenn der Bildinhalt ein Seitenverhältnis von 4:3 hat, wähle ob das Bild gestreckt werden soll um den ganzen Bildschirm zu füllen."
+
+msgid "Stretch linear"
+msgstr "linear strecken"
+
+msgid "Stretch nonlinear"
+msgstr "nichtlinear strecken"
