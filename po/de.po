@@ -13489,3 +13489,6 @@ msgstr "linear strecken"
 
 msgid "Stretch nonlinear"
 msgstr "nichtlinear strecken"
+
+msgid "Miscellaneous languages"
+msgstr "Verschiedene Sprachen"
