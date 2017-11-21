@@ -43,15 +43,7 @@ from Plugins.Extensions.MediaPortal.resources.twagenthelper import TwAgentHelper
 class wsoMain(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -92,24 +84,7 @@ class wsoMain(MPScreen):
 class wsoIndex(MPScreen, SearchHelper):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		self.skin = self.skin.replace('</screen>', '')
-		path = "%s/%s/search_widgets.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/search_widgets.xml"
-		with open(path, "r") as f:
-			self.skin += f.read()
-			f.close()
-		self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin', widgets=('MP_widget_search',))
 		SearchHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -189,15 +164,7 @@ class wsoIndex(MPScreen, SearchHelper):
 class wsoNewEpisodes(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -251,15 +218,7 @@ class wsoNewEpisodes(MPScreen):
 class wsoWatchlist(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -344,15 +303,7 @@ class wsoEpisodes(MPScreen):
 	def __init__(self, session, Url, Title):
 		self.Url = Url
 		self.Title = Title
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -429,15 +380,7 @@ class wsoStreams(MPScreen):
 		self.serieUrl = url
 		self.Title = title
 		self.episode = episode
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,

@@ -36,19 +36,17 @@
 #
 ###############################################################################################
 
-from . import _
 from update import *
 
 config.mpgz = ConfigSubsection()
-config.mpgz.version = NoSave(ConfigText(default="2017103101"))
+config.mpgz.version = NoSave(ConfigText(default="2017112002"))
 
 def autostart(reason, session=None, **kwargs):
-	"called with reason=1 to during shutdown, with reason=0 at startup?"
 	if reason == 0:
 		if session is not None:
 			_session = session
-			registerFont(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/") + "mediaportal%s.ttf" % config.mediaportal.font.value, "mediaportal", 100, False)
-			registerFont(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/") + "mediaportal_clean.ttf", "mediaportal_clean", 100, False)
+			addFont(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/") + "mediaportal1.ttf", "mediaportal", 100, False)
+			addFont(resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/resources/") + "mediaportal_clean.ttf", "mediaportal_clean", 100, False)
 			if config.mediaportal.autoupdate.value:
 				config.misc.standbyCounter.addNotifier(checkupdate(session).standbyCounterChanged, initial_call = False)
 				checkupdate(session).checkforupdate()

@@ -50,15 +50,7 @@ default_cover = "file://%s/mydirtyhobby.png" % (config.mediaportal.iconcachepath
 class MDHGenreScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -106,17 +98,18 @@ class MDHGenreScreen(MPScreen):
 		try:
 			import execjs
 			node = execjs.get("Node")
-			js = re.search('(.*?)if\(\$\(window', data, re.S).group(1)
-			js = js + "function go(){ cookie = toHex(BFCrypt.decrypt(c, 2, a, b)) };"
-			js = js + 'go(); return cookie;'
-			result = node.exec_(js)
-			printl('BLAZINGFAST-WEB-PROTECT: '+result,self,'A')
-			mdh_ck.update({'BLAZINGFAST-WEB-PROTECT':str(result)})
-			url = "http://stream-mydirtyhobby.biz/empty"
-			getPage(url, agent=myagent, cookies=mdh_ck, headers={'Referer':'http://stream-mydirtyhobby.biz/'}).addCallback(self.genreData).addErrback(self.genreData)
 		except:
 			printl('nodejs not found',self,'E')
 			self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+			return
+		js = re.search('(.*?)if\(\$\(window', data, re.S).group(1)
+		js = js + "function go(){ cookie = toHex(BFCrypt.decrypt(c, 2, a, b)) };"
+		js = js + 'go(); return cookie;'
+		result = node.exec_(js)
+		printl('BLAZINGFAST-WEB-PROTECT: '+result,self,'A')
+		mdh_ck.update({'BLAZINGFAST-WEB-PROTECT':str(result)})
+		url = "http://stream-mydirtyhobby.biz/empty"
+		getPage(url, agent=myagent, cookies=mdh_ck, headers={'Referer':'http://stream-mydirtyhobby.biz/'}).addCallback(self.genreData).addErrback(self.genreData)
 
 	def genreData(self, data=None):
 		self['name'].setText('')
@@ -150,15 +143,7 @@ class MDHFilmScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {

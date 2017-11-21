@@ -4,15 +4,7 @@ from Plugins.Extensions.MediaPortal.resources.imports import *
 
 class nwanimeMain(MPScreen):
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -56,24 +48,7 @@ class nwanimeMain(MPScreen):
 class nwanimeAnimes(MPScreen, SearchHelper):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		self.skin = self.skin.replace('</screen>', '')
-		path = "%s/%s/search_widgets.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/search_widgets.xml"
-		with open(path, "r") as f:
-			self.skin += f.read()
-			f.close()
-		self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin', widgets=('MP_widget_search',))
 		SearchHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -145,16 +120,7 @@ class nwanimeAnimes(MPScreen, SearchHelper):
 
 class nwanimeWatchlist(MPScreen):
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -230,16 +196,7 @@ class nwanimeEpisoden(MPScreen):
 	def __init__(self, session, serienUrl, serienTitle):
 		self.serienUrl = serienUrl
 		self.serienTitle = serienTitle
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -330,16 +287,7 @@ class nwanimeStreams(MPScreen):
 		self.streamname = streamId
 		self.animeName = animeName
 		self.episodenTitel = episodenTitel
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,

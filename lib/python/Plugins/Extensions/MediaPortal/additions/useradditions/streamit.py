@@ -25,17 +25,6 @@ else:
 import urlparse
 import thread
 
-if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/TMDb/plugin.pyo'):
-	from Plugins.Extensions.TMDb.plugin import *
-	TMDbPresent = True
-elif fileExists('/usr/lib/enigma2/python/Plugins/Extensions/IMDb/plugin.pyo'):
-	TMDbPresent = False
-	IMDbPresent = True
-	from Plugins.Extensions.IMDb.plugin import *
-else:
-	IMDbPresent = False
-	TMDbPresent = False
-
 BASE_URL = "https://streamit.ws"
 sit_cookies = CookieJar()
 sit_ck = {}
@@ -140,31 +129,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 		self.seriesImg = series_img
 		self.seasonData = season_data
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		widgets_files = ('cover_widgets.xml',)
-		self.skin = self.skin.replace('</screen>', '')
-		for wf in widgets_files:
-			path = "%s/%s/%s" % (self.skin_path, config.mediaportal.skin.value, wf)
-			if not fileExists(path):
-				path = self.skin_path + mp_globals.skinFallback + "/%s" % wf
-
-			f = open(path, "r")
-			for widget in f:
-				self.skin += widget
-			f.close()
-		self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr', widgets=('MP_widget_rating',))
 		ThumbsHelper.__init__(self)
 
 		self["hdpic"] = Pixmap()
@@ -198,9 +163,6 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 			"9" : self.key_9,
 			"0": self.closeAll,
 			"yellow" : self.keySort,
-			"red" :  self.keyTxtPageUp,
-			"blue" :  self.keyTxtPageDown,
-			"info" :  self.keyTMDbInfo
 		}, -1)
 
 		self.sortFuncs = None
@@ -208,9 +170,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 		self['title'] = Label("STREAMIT")
 
 		self['Page'] = Label(_("Page:"))
-		self['F1'] = Label(_("Text-"))
 		self['F3'] = Label(_("Sort by..."))
-		self['F4'] = Label(_("Text+"))
 		self['F3'].hide()
 
 		self.timerStart = False
@@ -333,7 +293,7 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 			self['liste'].moveToIndex(0)
 			self.loadPicQueued()
 		else:
-			self.filmListe.append((_("No entrys found!"),"","","", 0, False))
+			self.filmListe.append((_("No entries found!"),"","","", 0, False))
 			self.ml.setList(map(self.streamitFilmListEntry,	self.filmListe))
 			if self.filmQ.empty():
 				self.eventL.clear()
@@ -495,14 +455,6 @@ class streamitFilmListeScreen(MPScreen, ThumbsHelper):
 	def key_9(self):
 		self.keyPageUpFast(10)
 
-	def keyTMDbInfo(self):
-		if not self.keyLocked and TMDbPresent:
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(TMDbMain, title)
-		elif not self.keyLocked and IMDbPresent:
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(IMDB, title)
-
 	def keySort(self):
 		if not self.keyLocked and self.sortFuncs:
 			self.handleSort()
@@ -529,26 +481,12 @@ class streamitStreams(MPScreen):
 		self.postData = post_data
 		self.postUrl = post_url
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"red" 		: self.keyTxtPageUp,
-			"blue" 		: self.keyTxtPageDown,
 			"green" 	: self.keyTrailer,
 			"ok"    	: self.keyOK,
-			"info" 		: self.keyTMDbInfo,
-			"0"			: self.closeAll,
+			"0"		: self.closeAll,
 			"cancel"	: self.keyCancel
 		}, -1)
 
@@ -556,8 +494,6 @@ class streamitStreams(MPScreen):
 		self['ContentTitle'] = Label(_("Stream Selection"))
 
 		self['name'] = Label(filmName)
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.trailerId = None
 		self.streamListe = []
@@ -653,12 +589,6 @@ class streamitStreams(MPScreen):
 				showPlaylist=False,
 				showCover=True
 				)
-
-	def keyTMDbInfo(self):
-		if TMDbPresent:
-			self.session.open(TMDbMain, self.filmName)
-		elif IMDbPresent:
-			self.session.open(IMDB, self.filmName)
 
 	def keyOK(self):
 		if self.keyLocked:

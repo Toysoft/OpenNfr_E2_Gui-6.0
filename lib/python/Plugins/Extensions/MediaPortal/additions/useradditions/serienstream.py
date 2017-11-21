@@ -80,15 +80,7 @@ def ss_grabpage(pageurl):
 class ssMain(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -190,20 +182,11 @@ class ssMain(MPScreen):
 	def setupCallback(self):
 		pass
 
-class ssSetupScreen(Screen, ConfigListScreenExt):
+class ssSetupScreen(MPSetupScreen, ConfigListScreenExt):
 
 	def __init__(self, session):
+		MPSetupScreen.__init__(self, session, skin='MP_PluginSetup')
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/PluginUserDefault.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/PluginUserDefault.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		Screen.__init__(self, session)
 		self['title'] = Label("Serienstream.to " + _("Setup"))
 		self['F4'] = Label('')
 		self.setTitle("Serienstream.to " + _("Setup"))
@@ -234,24 +217,7 @@ class ssSetupScreen(Screen, ConfigListScreenExt):
 class ssSerien(MPScreen, SearchHelper):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		self.skin = self.skin.replace('</screen>', '')
-		path = "%s/%s/search_widgets.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/search_widgets.xml"
-		with open(path, "r") as f:
-			self.skin += f.read()
-			f.close()
-		self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr', widgets=('MP_widget_search',))
 		SearchHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -373,15 +339,7 @@ class ssSerien(MPScreen, SearchHelper):
 class ssNeueEpisoden(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"0" : self.closeAll,
@@ -497,15 +455,7 @@ class ssNeueEpisoden(MPScreen):
 class ssWatchlist(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -609,15 +559,7 @@ class ssStaffeln(MPScreen):
 		self.Url = Url
 		self.Title = Title
 		self.cover = Cover
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -680,15 +622,7 @@ class ssEpisoden(MPScreen):
 		self.Staffel = Staffel
 		self.Title = Title
 		self.cover = Cover
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -788,15 +722,7 @@ class ssStreams(MPScreen):
 		self.cover = cover
 		self.Title = title
 		self.episode = episode
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -847,7 +773,7 @@ class ssStreams(MPScreen):
 			return
 		url = self['liste'].getCurrent()[0][1]
 		if url:
-			if url.startswith('/out/'):
+			if url.startswith('/redirect/'):
 				url = BASE_URL + url
 				headers = {'User-Agent': ss_agent}
 				try:

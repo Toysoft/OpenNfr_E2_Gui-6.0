@@ -87,15 +87,7 @@ def postData(filter, type, page):
 class video4kMain(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -170,29 +162,7 @@ class video4kParsing(MPScreen):
 		self.genre = genre
 		self.type = type
 		self.filter = filter
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		widgets_files = ('cover_widgets.xml',)
-		self.skin = self.skin.replace('</screen>', '')
-		for wf in widgets_files:
-			path = "%s/%s/%s" % (self.skin_path, config.mediaportal.skin.value, wf)
-			if not fileExists(path):
-				path = self.skin_path + mp_globals.skinFallback + "/%s" % wf
-
-			f = open(path, "r")
-			for widget in f:
-				self.skin += widget
-			f.close()
-		self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr', widgets=('MP_widget_rating',))
 
 		self["hdpic"] = Pixmap()
 		self['rating10'] = ProgressBar()
@@ -209,17 +179,13 @@ class video4kParsing(MPScreen):
 			"left" : self.keyLeft,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"green" : self.keyPageNumber,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"green" : self.keyPageNumber
 		}, -1)
 
 		self['title'] = Label("Video4K")
 		self['ContentTitle'] = Label("")
 		self['Page'] = Label(_("Page:"))
-		self['F1'] = Label(_("Text-"))
 		self['F2'] = Label(_("Page"))
-		self['F4'] = Label(_("Text+"))
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -357,15 +323,7 @@ class video4kStreams(MPScreen):
 		self.id = id
 		self.cover = cover
 		self.lang = lang
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,

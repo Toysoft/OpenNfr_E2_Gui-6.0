@@ -77,16 +77,7 @@ class javhd3xGenreScreen(MPScreen):
 			self.delim = "%20"
 			self.default_cover = "file://%s/pornhdxto.png" % (config.mediaportal.iconcachepath.value + "logos")
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -163,16 +154,7 @@ class javhd3xFilmScreen(MPScreen, ThumbsHelper):
 		self.Name = Name
 		self.portal = portal
 		self.baseurl = baseurl
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -273,6 +255,9 @@ class javhd3xFilmScreen(MPScreen, ThumbsHelper):
 			else:
 				ajax = re.findall('ajax\({url:\s(.*?)\s', data, re.S)
 				uri = re.findall('var\s_0x[a-fA-F0-9]+=\[\"(.*?)\"\];.*?var\s%s' % ajax[0], data, re.S)
+				if not uri:
+					ajax2 = re.findall('var\s%s=(.*?)\[\d\]' % ajax[0], data, re.S)
+					uri = re.findall('var\s%s=\[\"(.*?)\"\]' % ajax2[0], data, re.S)
 				url = 'http://%s/%s/%s' % (self.baseurl, uri[0].decode('string_escape').strip('/'), uuid[0])
 			twAgentGetPage(url, agent=javagent).addCallback(self.getVideoLink).addErrback(self.dataError)
 
@@ -286,4 +271,11 @@ class javhd3xFilmScreen(MPScreen, ThumbsHelper):
 			videoLink = decrypt(videos[-1][0], key=cryptkey)
 			title = self['liste'].getCurrent()[0][0]
 			mp_globals.player_agent = javagent
-			self.session.open(SimplePlayer, [(title, videoLink)], showPlaylist=False, ltype='javhd3x')
+			if "googleusercontent.com" in videoLink:
+				get_stream_link(self.session).check_link(videoLink, self.got_link)
+			else:
+				self.session.open(SimplePlayer, [(title, videoLink)], showPlaylist=False, ltype='javhd3x')
+
+	def got_link(self, stream_url):
+		title = self['liste'].getCurrent()[0][0]
+		self.session.open(SimplePlayer, [(title, stream_url)], showPlaylist=False, ltype='javhd3x')

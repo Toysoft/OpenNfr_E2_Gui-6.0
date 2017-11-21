@@ -8,17 +8,6 @@ from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 
-if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/TMDb/plugin.pyo'):
-	from Plugins.Extensions.TMDb.plugin import *
-	TMDbPresent = True
-elif fileExists('/usr/lib/enigma2/python/Plugins/Extensions/IMDb/plugin.pyo'):
-	TMDbPresent = False
-	IMDbPresent = True
-	from Plugins.Extensions.IMDb.plugin import *
-else:
-	IMDbPresent = False
-	TMDbPresent = False
-
 DDLME_Version = "ddl.me"
 
 class show_DDLME_Genre(MenuHelper):
@@ -141,16 +130,7 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.genreLink = genreLink
 		self.genreName = genreName
 		self.imgLink = imgLink
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -178,19 +158,14 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 			"7" : self.key_7,
 			"9" : self.key_9,
 			"0" : self.closeAll,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp,
-			"yellow" :  self.keyYellow,
-			"info"	: self.keyTMDbInfo
+			"yellow" :  self.keyYellow
 		}, -1)
 
 		self.sortOrderTxt = ['Letztem Update', 'Blockbuster', 'IMDb Rating', 'Jahr']
 		self.baseUrl = "http://de.ddl.me"
 		self.genreTitle = ""
 		self['title'] = Label(DDLME_Version)
-		self['F1'] = Label(_("Text-"))
 		self['F3'] = Label(_("Sorting"))
-		self['F4'] = Label(_("Text+"))
 		self['Page'] = Label(_("Page:"))
 
 
@@ -459,14 +434,6 @@ class DDLME_FilmListeScreen(MPScreen, ThumbsHelper):
 	def key_9(self):
 		self.keyPageUpFast(10)
 
-	def keyTMDbInfo(self):
-		if not self.keyLocked and TMDbPresent:
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(TMDbMain, title)
-		elif not self.keyLocked and IMDbPresent:
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(IMDB, title)
-
 	def keyYellow(self):
 		if not (self.keyLocked or self.genreSpecials):
 			self.keyLocked = True
@@ -483,23 +450,12 @@ class DDLMEStreams(MPScreen):
 		self.filmName = filmName
 		self.imageUrl = imageLink
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"red" 		: self.keyTxtPageUp,
-			"blue" 		: self.keyTxtPageDown,
 			"green" 	: self.keyTrailer,
 			"ok"    	: self.keyOK,
-			"0"			: self.closeAll,
+			"0"		: self.closeAll,
 			"cancel"	: self.keyCancel
 		}, -1)
 
@@ -507,8 +463,6 @@ class DDLMEStreams(MPScreen):
 		self['ContentTitle'] = Label("Streams")
 
 		self['name'] = Label(filmName)
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.trailerId = None
 		self.streamListe = []

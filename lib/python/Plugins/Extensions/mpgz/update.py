@@ -98,7 +98,6 @@ class MPUpdateScreen(Screen):
 		self.session = session
 		self.updateurl = updateurl
 
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/MP_Update.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
@@ -119,7 +118,10 @@ class MPUpdateScreen(Screen):
 
 	def __onLayoutFinished(self):
 		height = self['mplog'].l.getItemSize().height()
-		self.ml.l.setFont(gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
+		try:
+			self.ml.l.setFont(gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
+		except:
+			pass
 		self.list.append(_("Starting update, please wait..."))
 		self.ml.setList(self.list)
 		self.ml.moveToIndex(len(self.list)-1)
@@ -144,8 +146,6 @@ class MPUpdateScreen(Screen):
 			config.mediaportal.filter.save()
 			configfile.save()
 			self.session.openWithCallback(self.restartGUI, MessageBoxExt, _("%s successfully updated!\nDo you want to restart the Enigma2 GUI now?" % "mpgz"), MessageBoxExt.TYPE_YESNO)
-		elif retval == 2:
-			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("%s update failed! Please check free space on your root filesystem, at least 10MB are required for installation.\nCheck the update log carefully!" % "mpgz"), MessageBoxExt.TYPE_ERROR)
 		else:
 			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("%s update failed! Check the update log carefully!" % "mpgz"), MessageBoxExt.TYPE_ERROR)
 

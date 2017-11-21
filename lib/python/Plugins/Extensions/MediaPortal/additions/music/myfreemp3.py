@@ -47,9 +47,9 @@ class show_MFMP3_Genre(MenuHelper):
 		self.genre_type = genre_type
 		self.genre_title = genre_title
 		if genre_type[0] == 'albums':
-			skin_name='defaultListScreen.xml'
+			skin_name='MP_PluginDescr'
 		else:
-			skin_name='defaultGenreScreen.xml'
+			skin_name='MP_Plugin'
 
 		MenuHelper.__init__(self, session, 0, None, BASE_URL, "", self._defaultlistleft, cookieJar=mfmp3_cookies, skin_name=skin_name)
 

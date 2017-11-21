@@ -50,16 +50,7 @@ BASE_URL = 'http://streamxxx.tv'
 class streamxxxGenreScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -80,9 +71,9 @@ class streamxxxGenreScreen(MPScreen):
 
 	def genreData(self):
 		self.genreliste.append(("--- Search ---", None))
-		self.genreliste.append(("New Movies and Clips", "%s/" % BASE_URL))
-		self.genreliste.append(("Clips", "Clips"))
+		self.genreliste.append(("Newest", "%s/" % BASE_URL))
 		self.genreliste.append(("Category", "Category"))
+		self.genreliste.append(("Networks", "Networks"))
 		self.genreliste.append(("Movies", "%s/category/movies-xxx/" % BASE_URL))
 		self.genreliste.append(("International Movies", "%s/category/movies/international-movies/" % BASE_URL))
 		self.genreliste.append(("German Movies", "%s/category/international-movies/?s=german" % BASE_URL))
@@ -106,7 +97,7 @@ class streamxxxGenreScreen(MPScreen):
 		Link = self['liste'].getCurrent()[0][1]
 		if Name == "--- Search ---":
 			self.suchen()
-		elif Name == "Clips" or Name == "Category":
+		elif Name == "Networks" or Name == "Category":
 			self.session.open(streamxxxSubGenreScreen, Link, Name)
 		else:
 			self.session.open(streamxxxFilmScreen, Link, Name)
@@ -116,17 +107,7 @@ class streamxxxSubGenreScreen(MPScreen):
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"	: self.keyOK,
@@ -150,15 +131,16 @@ class streamxxxSubGenreScreen(MPScreen):
 
 	def parseData(self, data):
 		if self.Link == "Category":
-			preparse = re.search('>ALL CATEGORIES(.*?)</select>', data, re.S|re.I)
+			preparse = re.search('>TOP TAGS(.*?)</ul>', data, re.S|re.I)
 			if preparse:
-				parse = re.findall('value=[\'|"](.*?)[\'|"]\s*>(.*?)\s', preparse.group(1), re.S)
+				parse = re.findall('href="(.*?)">(.*?)</a', preparse.group(1), re.S)
 		else:
-			preparse = re.search('<h3>CLIPS</h3>(.*?)</div>', data, re.S|re.I)
+			preparse = re.search('>BEST NETWORKS</h4>(.*?)</div>', data, re.S|re.I)
 			if preparse:
-				parse = re.findall('href=[\'|"](.*?)[\'|"]\s*>\s*(.*?)<', preparse.group(1), re.S)
+				parse = re.findall('href="(.*?)"(?: rel="tag"|)>(.*?)</a', preparse.group(1), re.S)
 		if parse:
 			for (Url, Title) in parse:
+				Title = Title.lower().title()
 				if not re.match('http', Url):
 					Url = "%s%s" % (BASE_URL, Url)
 				self.genreliste.append((decodeHtml(Title), Url))
@@ -181,16 +163,7 @@ class streamxxxFilmScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -237,13 +210,13 @@ class streamxxxFilmScreen(MPScreen, ThumbsHelper):
 		twAgentGetPage(url, agent=myagent).addCallback(self.loadData).addErrback(self.dataError)
 
 	def loadData(self, data):
-		self.getLastPage(data, '', '>(?:Page|Pagina)\s+\d+\s+(?:of|di)\s+(.*?)</span>')
-		Movies = re.findall('class="quadrato">\s+<a\shref="(.*?)"\s+title="(.*?)".*?\ssrc="(.*?)".*?Added:(.*?)<', data, re.S)
+		self.getLastPage(data, 'class=\'page-numbers\'>(.*?)</ul>', '.*>((?:\d+.)\d+)<')
+		Movies = re.findall('<article\sid="post-\d+.*?<a\shref="(.*?)"\stitle="(.*?)".*?<img src="(.*?)".*?(\d+)\sViews', data, re.S)
 		if Movies:
-			for (Url, Title, Image, Date) in Movies:
+			for (Url, Title, Image, Views) in Movies:
 				if not re.match('http', Url):
 					Url = BASE_URL + "/" + Url
-				self.filmliste.append((decodeHtml(Title), Url, Image, Date))
+				self.filmliste.append((decodeHtml(Title), Url, Image, Views))
 		if len(self.filmliste) == 0:
 			self.filmliste.append((_('No movies found!'), None, None, None, None))
 		self.ml.setList(map(self._defaultlistleft, self.filmliste))
@@ -255,8 +228,8 @@ class streamxxxFilmScreen(MPScreen, ThumbsHelper):
 	def showInfos(self):
 		Title = self['liste'].getCurrent()[0][0]
 		Image = self['liste'].getCurrent()[0][2]
-		Date = self['liste'].getCurrent()[0][3]
-		handlung = "Date: %s" % (Date)
+		Views = self['liste'].getCurrent()[0][3]
+		handlung = "Views: %s" % (Views)
 		self['name'].setText(Title)
 		self['handlung'].setText(decodeHtml(handlung))
 		CoverHelper(self['coverArt']).getCover(Image)
@@ -277,16 +250,7 @@ class streamxxxStreamListeScreen(MPScreen):
 		self.streamFilmLink = streamFilmLink
 		self.streamName = streamName
 		self.streamImage = streamImage
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,

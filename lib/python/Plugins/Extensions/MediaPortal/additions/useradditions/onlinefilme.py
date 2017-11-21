@@ -11,17 +11,6 @@ from Plugins.Extensions.MediaPortal.resources.menuhelper import MenuHelper
 from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage
 
-if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/TMDb/plugin.pyo'):
-	from Plugins.Extensions.TMDb.plugin import *
-	TMDbPresent = True
-elif fileExists('/usr/lib/enigma2/python/Plugins/Extensions/IMDb/plugin.pyo'):
-	TMDbPresent = False
-	IMDbPresent = True
-	from Plugins.Extensions.IMDb.plugin import *
-else:
-	IMDbPresent = False
-	TMDbPresent = False
-
 SKTO_Version = "OnlineFilme.to"
 SKTO_siteEncoding = 'utf-8'
 BASE_URL = "http://onlinefilme.to"
@@ -119,15 +108,7 @@ class SKTO_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.genreName = genreName
 		self.searchForm = searchForm
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -155,10 +136,7 @@ class SKTO_FilmListeScreen(MPScreen, ThumbsHelper):
 			"7" : self.key_7,
 			"9" : self.key_9,
 			"0"	: self.closeAll,
-			"yellow" : self.keySort,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp,
-			"info" :  self.keyTMDbInfo
+			"yellow" : self.keySort
 		}, -1)
 
 		self.sortFuncs = None
@@ -168,9 +146,7 @@ class SKTO_FilmListeScreen(MPScreen, ThumbsHelper):
 
 		self.searchMovies = searchForm != None
 		self['title'] = Label(SKTO_Version)
-		self['F1'] = Label(_("Text-"))
 		self['F3'] = Label(_("Sort by..."))
-		self['F4'] = Label(_("Text+"))
 		self['Page'] = Label(_("Page:"))
 		self['F3'].hide()
 
@@ -422,14 +398,6 @@ class SKTO_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.setGenreStrTitle()
 		self.loadPage()
 
-	def keyTMDbInfo(self):
-		if not self.keyLocked and TMDbPresent:
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(TMDbMain, title)
-		elif not self.keyLocked and IMDbPresent:
-			title = self['liste'].getCurrent()[0][0]
-			self.session.open(IMDB, title)
-
 	def keySort(self):
 		if not self.keyLocked and self.sortFuncs:
 			self.handleSort()
@@ -456,34 +424,18 @@ class SKTO_Streams(MPScreen):
 		self.imageUrl = imageLink
 		self.infos = infos
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"red" 		: self.keyTxtPageUp,
-			"blue" 		: self.keyTxtPageDown,
 			"green" 	: self.keyTrailer,
 			"ok"    	: self.keyOK,
-			"info" 		: self.keyTMDbInfo,
-			"0"			: self.closeAll,
+			"0"		: self.closeAll,
 			"cancel"	: self.keyCancel
 		}, -1)
 
 		self['title'] = Label(SKTO_Version)
 		self['ContentTitle'] = Label(_("Stream Selection")+': '+filmName)
 
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.trailerId = None
 		self.cookies = CookieJar()
@@ -579,12 +531,6 @@ class SKTO_Streams(MPScreen):
 				showPlaylist=False,
 				showCover=True
 				)
-
-	def keyTMDbInfo(self):
-		if TMDbPresent:
-			self.session.open(TMDbMain, self.filmName)
-		elif IMDbPresent:
-			self.session.open(IMDB, self.filmName)
 
 	def keyOK(self):
 		if self.keyLocked:

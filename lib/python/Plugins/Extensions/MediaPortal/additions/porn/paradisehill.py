@@ -44,18 +44,7 @@ class paradisehillGenreScreen(MPScreen):
 
 	def __init__(self, session):
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"    : self.keyOK,
@@ -89,12 +78,12 @@ class paradisehillGenreScreen(MPScreen):
 				Url = Url + "?page="
 				self.genreliste.append((Title, Url, Count))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Popular (All Time)", "/popular/?page=", default_cover))
-			self.genreliste.insert(0, ("Popular (Monthly)", "/popular/?filter=month&page=", default_cover))
-			self.genreliste.insert(0, ("Popular (Weekly)", "/popular/?filter=week&page=", default_cover))
-			self.genreliste.insert(0, ("Popular (Daily)", "/popular/?filter=day&page=", default_cover))
-			self.genreliste.insert(0, ("Newest", "/porn/?page=", default_cover))
-			self.genreliste.insert(0, ("--- Search ---", "callSuchen", default_cover))
+			self.genreliste.insert(0, ("Popular (All Time)", "/popular/?page=", None))
+			self.genreliste.insert(0, ("Popular (Monthly)", "/popular/?filter=month&page=", None))
+			self.genreliste.insert(0, ("Popular (Weekly)", "/popular/?filter=week&page=", None))
+			self.genreliste.insert(0, ("Popular (Daily)", "/popular/?filter=day&page=", None))
+			self.genreliste.insert(0, ("Newest", "/porn/?page=", None))
+			self.genreliste.insert(0, ("--- Search ---", "callSuchen", None))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
 
@@ -123,18 +112,7 @@ class paradisehillFilmListeScreen(MPScreen, ThumbsHelper):
 		self.genreLink = genreLink
 		self.genreName = genreName
 		self.count = count
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -223,18 +201,7 @@ class paradisehillFilmAuswahlScreen(MPScreen):
 		self.genreLink = genreLink
 		self.genreName = genreName
 		self.cover = cover
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"    : self.keyOK,

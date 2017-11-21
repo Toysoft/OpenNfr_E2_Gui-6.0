@@ -44,15 +44,7 @@ BASE_URL = "https://bs.to"
 class bsMain(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -95,24 +87,7 @@ class bsMain(MPScreen):
 class bsSerien(MPScreen, SearchHelper):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		self.skin = self.skin.replace('</screen>', '')
-		path = "%s/%s/search_widgets.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/search_widgets.xml"
-		with open(path, "r") as f:
-			self.skin += f.read()
-			f.close()
-		self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr', widgets=('MP_widget_search',))
 		SearchHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -206,15 +181,7 @@ class bsSerien(MPScreen, SearchHelper):
 class bsWatchlist(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -338,29 +305,17 @@ class bsStaffeln(MPScreen):
 	def __init__(self, session, Title, Url):
 		self.Url = BASE_URL + "/api/series/" + Url
 		self.Title = Title
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
 			"ok" : self.keyOK,
-			"cancel": self.keyCancel,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"cancel": self.keyCancel
 		}, -1)
 
 		self['title'] = Label("Burning-Series")
 		self['ContentTitle'] = Label(_("Season Selection"))
 		self['name'] = Label(self.Title)
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -425,15 +380,7 @@ class bsEpisoden(MPScreen):
 		self.Staffel = Staffel
 		self.Title = Title
 		self.Cover = Cover
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
@@ -442,16 +389,12 @@ class bsEpisoden(MPScreen):
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"left" : self.keyLeft
 		}, -1)
 
 		self['title'] = Label("Burning-Series")
 		self['ContentTitle'] = Label(_("Episode Selection"))
 		self['name'] = Label(self.Title)
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -555,30 +498,18 @@ class bsStreams(MPScreen):
 		self.Title = Title
 		self.episode = Episode
 		self.staffel = Staffel
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0" : self.closeAll,
 			"ok" : self.keyOK,
-			"cancel": self.keyCancel,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"cancel": self.keyCancel
 		}, -1)
 
 		self['title'] = Label("Burning-Series")
 		self['leftContentTitle'] = Label(_("Stream Selection"))
 		self['ContentTitle'] = Label(_("Stream Selection"))
 		self['name'] = Label(self.Title)
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.streamList = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
