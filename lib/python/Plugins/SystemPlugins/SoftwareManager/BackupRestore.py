@@ -650,8 +650,6 @@ class RestorePlugins(Screen):
 		ipkname = ipkname + "*"
 		search_dirs = [ "/media/hdd", "/media/usb" ]
 		sdirs = " ".join(search_dirs)
-		cmd = 'find %s -name "%s" | grep -iv "./NFR4XBootI/*" | head -n 1' % (sdirs, ipkname)
-		res = popen(cmd).read()
 		if res == "":
 			return None
 		else:

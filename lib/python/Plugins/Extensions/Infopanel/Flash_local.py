@@ -1,5 +1,4 @@
 from Plugins.SystemPlugins.Hotplug.plugin import hotplugNotifier
-from Plugins.Extensions.NFR4XBoot.plugin import *
 from Components.Button import Button
 from Components.Label import Label
 from Components.ActionMap import ActionMap
@@ -38,7 +37,7 @@ if distro.lower() == "opennfr":
 if getBrandOEM() == "fulan":
 	feedurl_nfr = 'http://dev.nachtfalke.biz/nfr/feeds/%s/images' %ImageVersion
 else:
-	feedurl_nfr = 'http://dev.nachtfalke.biz/nfr/feeds/6.0/images'
+	feedurl_nfr = 'http://dev.nachtfalke.biz/nfr/feeds/6.1/images'
 	
 imagePath = '/media/hdd/images'
 flashPath = '/media/hdd/images/flash'
@@ -108,11 +107,6 @@ class FlashOnline(Screen):
 			print "[Flash Online] MULTI:",self.multi
 
 	def check_hdd(self):
-		if os.path.exists("/media/nfr4xboot"):
-			message = _('NFR4XBoot is still installed!\nNow removing NFR4XBoot and reboot the box. After reboot FlashLocal is available.\nYour installed images are not deleted and available after re-installing NFR4XBoot again.')
-			ybox = self.session.openWithCallback(self.removenfrxboot, MessageBox, message, MessageBox.TYPE_YESNO)
-			ybox.setTitle(_('Remove NFR4XBoot'))
-			return False
 		if not os.path.exists("/media/hdd"):
 			self.session.open(MessageBox, _("No /hdd found !!\nPlease make sure you have a HDD mounted.\n\nExit plugin."), type = MessageBox.TYPE_ERROR)
 			return False
@@ -140,20 +134,6 @@ class FlashOnline(Screen):
 			pass
 		return True
 	
-	def removenfrxboot(self, yesno):
-		if yesno:
-			os.system('rm /sbin/nfr4xinit')
-			os.system('rm /sbin/init')
-			os.system('ln -sfn /sbin/init.sysvinit /sbin/init')
-			os.system('chmod 777 /sbin/init')
-			os.system('mv /etc/init.d/volatile-media.sh.back /etc/init.d/volatile-media.sh')
-			os.system('rm /media/nfr4xboot/NFR4XBootI/.nfr4xboot')
-			os.system('rm /media/nfr4xboot/NFR4XBootI/.Flash')
-			os.system('rm /usr/lib/enigma2/python/Plugins/Extensions/NFR4XBoot/.nfr4xboot_location')
-			os.system('reboot -p')
-		else:
-			return
-            
 	def quit(self):
 		self.close()	
 		
