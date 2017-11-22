@@ -671,7 +671,7 @@ class get_stream_link:
 				link = data
 				getPage(link).addCallback(self.mega3x).addErrback(self.errorload)
 
-			elif re.search("dato.porn", data, re.S):
+			elif re.search("dato.porn|datoporn.co", data, re.S):
 				link = data
 				getPage(link).addCallback(self.datoporn).addErrback(self.errorload)
 
@@ -776,7 +776,8 @@ class get_stream_link:
 				link = data
 				getPage(link).addCallback(self.kodik).addErrback(self.errorload)
 
-			elif re.search('(docs|drive)\.google\.com/|youtube\.googleapis\.com', data, re.S):
+			elif re.search('(docs|drive)\.google\.com/|youtube\.googleapis\.com|googleusercontent.com', data, re.S):
+				print "1"
 				if 'youtube.googleapis.com' in data:
 					docid = re.search('docid=([\w]+)', data)
 					link = 'https://drive.google.com/file/d/%s/edit' % docid.groups(1)
@@ -784,7 +785,17 @@ class get_stream_link:
 					link = data
 				mp_globals.player_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
 				self.google_ck = {}
-				getPage(link, agent=mp_globals.player_agent, cookies=self.google_ck).addCallback(self.google).addErrback(self.errorload)
+				if "googleusercontent.com" in link:
+					import requests
+					s = requests.session()
+					page = s.head(link, allow_redirects=False)
+					link = page.headers['Location']
+					self.google_ck = requests.utils.dict_from_cookiejar(s.cookies)
+					headers = '&Cookie=%s' % ','.join(['%s=%s' % (key, urllib.quote_plus(self.google_ck[key])) for key in self.google_ck])
+					url = link.replace("\u003d","=").replace("\u0026","&") + '#User-Agent='+mp_globals.player_agent+headers
+					self._callback(url)
+				else:
+					getPage(link, agent=mp_globals.player_agent, cookies=self.google_ck).addCallback(self.google).addErrback(self.errorload)
 
 			elif re.search('rapidvideo\.ws', data, re.S):
 				if re.search('rapidvideo\.ws/embed', data, re.S):

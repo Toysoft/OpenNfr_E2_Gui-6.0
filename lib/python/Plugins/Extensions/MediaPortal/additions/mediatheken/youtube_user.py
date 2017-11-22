@@ -9,18 +9,7 @@ class show_USER_Genre(MPScreen):
 
 	def __init__(self, session):
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-
-		print path
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0"	: self.closeAll,
@@ -62,7 +51,7 @@ class show_USER_Genre(MPScreen):
 			self.getUserFile()
 
 	def getUserFile(self, fInit=False):
-		fname = self.plugin_path + "/userfiles/userchan.xml"
+		fname = mp_globals.pluginPath + "/userfiles/userchan.xml"
 		try:
 			if fInit:
 				shutil.copyfile(fname, self.user_path)

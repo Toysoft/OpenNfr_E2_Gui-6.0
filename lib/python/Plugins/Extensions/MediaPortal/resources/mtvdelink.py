@@ -17,9 +17,9 @@ class MTVdeLink:
 		getPage(url, timeout=15).addCallback(self._parseData).addErrback(cb_err)
 
 	def _parseData(self, data):
-		rtmplink = re.findall('<src>(.*?)</src>', data)
-		if rtmplink:
-			videourl = rtmplink[-1].replace('&amp;','&')
+		hlsurl = re.findall('<src>(.*?)</src>', data)
+		if hlsurl:
+			videourl = hlsurl[-1].replace('&amp;','&')
 		else:
 			self._errback('MTVdeLink: Cannot get link!')
 			videourl = None

@@ -10,6 +10,7 @@ class YoutubeLink(object):
 		self.videoPrio = int(config.mediaportal.youtubeprio.value)
 
 	def getLink(self, cb_play, cb_err, title, url, imgurl, album='', artist='', dash=None, fmt_map=None):
+		dash = config.mediaportal.youtubeenabledash.value
 		self._callback = cb_play
 		self.title = title
 		self.imgurl = imgurl
@@ -26,5 +27,5 @@ class YoutubeLink(object):
 			y.addCallback(self.cbYTLink)
 			y.getVideoUrl(url, self.videoPrio, dash=dash, fmt_map=fmt_map)
 
-	def cbYTLink(self, link, buffering=False, proxy=None):
-		self._callback(self.title, link, imgurl=self.imgurl, album=self.album, artist=self.artist, buffering=buffering, proxy=proxy)
+	def cbYTLink(self, url, suburi=None, buffering=False, proxy=None):
+		self._callback(self.title, url, suburi=suburi, imgurl=self.imgurl, album=self.album, artist=self.artist, buffering=buffering, proxy=proxy)

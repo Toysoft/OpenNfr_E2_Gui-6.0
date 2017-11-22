@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
+from Plugins.Extensions.MediaPortal.plugin import _
 from imports import *
 import mp_globals
 from Components.ActionMap import HelpableActionMap
@@ -9,11 +10,10 @@ last_text = ""
 class VirtualKeyBoardExtInputHelpDialog(NumericalTextInputHelpDialog):
 
 	def __init__(self, session, textinput):
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/InputHelpDialog.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_InputHelpDialog.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/InputHelpDialog.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/MP_InputHelpDialog.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -24,11 +24,10 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 
 	def __init__(self, session, title="", text="", captcha=None, is_dialog=False, auto_text_init=False, suggest_func=None):
 		global last_text
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/VirtualKeyBoardExt.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_VirtualKeyBoard.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/VirtualKeyBoardExt.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/MP_VirtualKeyBoard.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()
@@ -698,7 +697,6 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 		selectedKey = entry[1]
 		shiftMode = entry[2]
 
-		plugin_path = mp_globals.pluginPath
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		vkeys = ["backspace", "bg", "clr", "esc", "ok", "sel", "shift", "shift_sel", "space"]

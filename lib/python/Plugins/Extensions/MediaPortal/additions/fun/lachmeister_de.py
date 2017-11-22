@@ -11,23 +11,6 @@ LMDE_Version = "Lachmeister.de"
 
 LMDE_siteEncoding = 'ISO-8859-1'
 
-"""
-Sondertastenbelegung:
-
-Genre Auswahl:
-	KeyCancel		: Menu Up / Exit
-	KeyOK			: Menu Down / Select
-
-Doku Auswahl:
-	Bouquet +/-				: Seitenweise blättern in 1er Schritten Up/Down
-	'1', '4', '7',
-	'3', 6', '9'			: blättern in 2er, 5er, 10er Schritten Down/Up
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-
-Stream Auswahl:
-	Rot/Blau				: Die Beschreibung Seitenweise scrollen
-"""
-
 class show_LMDE_Genre(MenuHelper):
 
 	def __init__(self, session):
@@ -59,15 +42,7 @@ class LMDE_FilmListeScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, genreLink, genreName):
 		self.genreLink = genreLink
 		self.genreName = genreName
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -94,9 +69,7 @@ class LMDE_FilmListeScreen(MPScreen, ThumbsHelper):
 			"6" : self.key_6,
 			"7" : self.key_7,
 			"9" : self.key_9,
-			"0"	: self.closeAll,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"0" : self.closeAll
 		}, -1)
 
 		self.sortOrder = 0
@@ -108,8 +81,6 @@ class LMDE_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.sortOrderStrGenre = ""
 		self['title'] = Label(LMDE_Version)
 
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 		self['Page'] = Label(_("Page:"))
 
 		self.filmQ = Queue.Queue(0)

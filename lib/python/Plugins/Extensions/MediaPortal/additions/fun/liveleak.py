@@ -43,15 +43,7 @@ from Plugins.Extensions.MediaPortal.resources.youtubeplayer import YoutubePlayer
 class LiveLeakScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"    : self.keyOK,
@@ -92,15 +84,7 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 	def __init__(self, session, streamGenreLink, Name):
 		self.streamGenreLink = streamGenreLink
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -112,8 +96,6 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 			"down"  : self.keyDown,
 			"left"  : self.keyLeft,
 			"right" : self.keyRight,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown
 		}, -1)
@@ -123,8 +105,6 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 		self.lastpage = 999
 		self['title'] = Label("LiveLeak.com")
 		self['ContentTitle'] = Label("Auswahl: %s" %self.Name)
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
  		self['Page'] = Label(_("Page:"))
 		self['page'] = Label("1")
@@ -144,7 +124,7 @@ class LiveLeakClips(MPScreen, ThumbsHelper):
 			self.feedliste = []
 			for (title,url,desc,image) in rssfeed:
 				if not re.match('LiveLeak.com Rss Feed', title, re.S|re.I):
-					self.feedliste.append((decodeHtml(title.replace('&amp;','&')),url,image,decodeHtml(desc.strip())))
+					self.feedliste.append((decodeHtml(title),url,image,decodeHtml(desc.strip())))
 			self.ml.setList(map(self._defaultlistleft, self.feedliste))
 			self.ml.moveToIndex(0)
 			self.keyLocked = False

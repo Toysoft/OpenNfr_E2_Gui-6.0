@@ -41,15 +41,7 @@ class ZDFGenreScreen(MPScreen):
 
 	def __init__(self, session):
 		self.keyLocked = True
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0"		: self.closeAll,
@@ -152,15 +144,7 @@ class ZDFPreSelect(MPScreen):
 		self.gN = genreName
 		self.gF = genreFlag
 		self.pP = prePic
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0"		: self.closeAll,
@@ -218,7 +202,7 @@ class ZDFPreSelect(MPScreen):
 				for (title,info,assetId) in folgen:
 					title = decodeHtml(title)
 					self['name'].setText("Auswahl")
-					handlung = "Media"+": "+info
+					handlung = "Media: "+decodeHtml(info)
 					self.genreliste.append((title,assetId,handlung,bildchen,"-"))
 		elif self.gF == "5":	# Rubriken
 			self.genreliste.append(("Bestbewertet", "13", "https://www.zdf.de/assets/service-best-bewertet-100~768x432"))
@@ -332,15 +316,7 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 		self.pP = prePic
 		self.anzahl = anzahl
 		self.streamLink = streamLink
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -384,7 +360,7 @@ class ZDFPostSelect(MPScreen, ThumbsHelper):
 				anzahl = anzahl.strip()
 				image = image.replace("94x65","485x273")
 				image = "%s%s" % ("http://www.zdf.de",image)
-				handlung = "Clips: "+anzahl+"\n"+info
+				handlung = "Clips: "+anzahl+"\n"+decodeHtml(info)
 				self.genreliste.append((title,assetId,handlung,image,anzahl))
 			self.gN = "Sendung"	# Überschreibe den Wert als Kennung für Sendungen statt Clips
 
@@ -447,15 +423,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		self.anzahl = anzahl
 		self.sendung = sendung
 		self.image = image
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -485,7 +453,6 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 		self.onLayoutFinish.append(self.loadPage)
 
 	def loadPage(self):
-		self.keyLocked = True
 		self.keyLocked = True
 		if self.gF == "1" or self.gF == "6" or self.gF == "7" or self.gF == "8" or self.gF == "9":
 			self.streamLink = self.streamL + "&page=" + str(self.page)
@@ -539,7 +506,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 							if not "/static" in image:
 								image += "~768x432"
 						title = decodeHtml(title)
-						handlung = "Clip-Datum"+": "+airtime+clock+NL+"Dauer"+": "+dur
+						handlung = "Clip-Datum: "+airtime+clock+NL+"Dauer: "+dur
 						self.dur = dur
 						assetId = "https://api.zdf.de/content/documents/"+assetId+".json?profile=player"
 						assetPath = BASE_URL + assetPath
@@ -563,7 +530,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 					title = decodeHtml(title)
 					dur = int(dur)
 					self.dur = str(int(dur/60))+" min"
-					handlung = "Kanal"+": Podcast"+NL+"Clip-Datum"+": "+airtime+NL+"Dauer"+": "+self.dur+NL+info
+					handlung = "Kanal: Podcast"+NL+"Clip-Datum: "+airtime+NL+"Dauer: "+self.dur+NL+info
 					self.filmliste.append((title,streamLink,handlung,image,title,''))
 		else:
 			tmp = sorted(glob.glob(config.mediaportal.storagepath.value + "*.soap"))
@@ -665,7 +632,7 @@ class ZDFStreamScreen(MPScreen, ThumbsHelper):
 						genre = " ("+re.search('itemprop="genre">.*?class="teaser-cat-category">(.*?)</span',data,re.S).group(1).strip().split("|")[0].strip()+")"
 					except:
 						pass
-				handlung = "Sendung"+": "+sendung+genre+NL+"Clip-Datum"+": "+airtime+NL+"Dauer"+": "+dur+"\n"+info
+				handlung = "Sendung: "+decodeHtml(sendung)+genre+NL+"Clip-Datum: "+airtime+NL+"Dauer: "+dur+"\n"+info
 				assetId = "https://api.zdf.de/content/documents/"+assetId+".json?profile=player"
 				assetPath = BASE_URL + assetPath
 				self.filmliste.append((decodeHtml(title),assetId,handlung,image,sendung,assetPath))

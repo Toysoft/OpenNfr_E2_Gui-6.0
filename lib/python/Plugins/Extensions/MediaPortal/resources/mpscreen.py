@@ -111,11 +111,56 @@ class SearchHelper:
 		self["bg_search"].hide()
 		self.showInfos()
 
-class MPScreen(Screen):
+class MPSetupScreen(Screen):
+
+	def __init__(self, session, parent=None, skin=None, *ret_args):
+		if skin:
+			self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+			path = "%s/%s/%s.xml" % (self.skin_path, config.mediaportal.skin.value, skin)
+			if not fileExists(path):
+				path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % skin
+			with open(path, "r") as f:
+				self.skin = f.read()
+				f.close()
+
+		self.skinName = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+
+		Screen.__init__(self, session, parent)
+		screenList.append((self, ret_args))
+
+class MPScreen(Screen, HelpableScreen):
 
 	DEFAULT_LM = 0
 
-	def __init__(self, session, parent = None, *ret_args):
+	def __init__(self, session, parent=None, skin=None, widgets=None, *ret_args):
+		if skin:
+			self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
+			path = "%s/%s/%s.xml" % (self.skin_path, config.mediaportal.skin.value, skin)
+			if not fileExists(path):
+				path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % skin
+			with open(path, "r") as f:
+				self.skin = f.read()
+				f.close()
+
+			if skin == 'MP_Playlist':
+				if not mp_globals.isDreamOS:
+					self.skin = re.sub(r'progress_pointer="(.*?):\d+,\d+" render="PositionGauge"', r'pixmap="\1" render="Progress"', self.skin)
+					self.skin = re.sub(r'type="MPServicePosition">Gauge</convert>', r'type="MPServicePosition">Position</convert>', self.skin)
+
+			if widgets:
+				self.skin = self.skin.replace('</screen>', '')
+				for wf in widgets:
+					path = "%s/%s/%s" % (self.skin_path, config.mediaportal.skin.value, wf)
+					if not fileExists(path):
+						path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % wf
+					f = open(path, "r")
+					for widget in f:
+						self.skin += widget
+					f.close()
+				self.skin += '</screen>'
+
+		self.skinName = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+
 		if mp_globals.currentskin == "original":
 			self.DEFAULT_LM = 20	# default Left-Margin "original"
 		else:
@@ -130,9 +175,16 @@ class MPScreen(Screen):
 			"specTv": self.mp_showHide
 		}, -2)
 
-		self["mp_specActions2"]  = ActionMap(["MP_SpecialActions"], {
-			"specTmdb" : self.mp_tmdb
+		self["mp_specActions2"] = HelpableActionMap(self, "MP_SpecialActions", {
+			"specTmdb" : (self.mp_tmdb, _("Show TMDb info"))
 		}, -1)
+
+		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
+			"deleteBackward" : (self.keyTxtPageUp, _("Scroll description backward")),
+			"deleteForward"  : (self.keyTxtPageDown, _("Scroll description forward"))
+		}, -1)
+
+		HelpableScreen.__init__(self)
 
 		self['title'] = Label("")
 		self['ContentTitle'] = Label("")
@@ -482,7 +534,6 @@ class MPScreen(Screen):
 		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
 		res = [entry]
 
-		plugin_path = mp_globals.pluginPath
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		path = "%s/%s/images/watched.png" % (skin_path, config.mediaportal.skin.value)
@@ -540,7 +591,6 @@ class MPScreen(Screen):
 ####### simplelist
 	@staticmethod
 	def getIconPath(icon_name):
-		plugin_path = mp_globals.pluginPath
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		path = "%s/%s/images/%s" % (skin_path, config.mediaportal.skin.value, icon_name)
@@ -623,18 +673,6 @@ class MPScreen(Screen):
 		return res
 ##################
 
-####### kinokiste
-	def kinokisteFilmLetterListEntry(entry):
-		width = self['liste'].instance.size().width()
-		height = self['liste'].l.getItemSize().height()
-		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
-		res = [entry]
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width - 320, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[0]))
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, width - 310, 0, 150, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[1]))
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, width - 150, 0, 150, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[2]))
-		return res
-##################
-
 ####### pornhub
 	def pornhubPlayListEntry(self, entry):
 		width = self['liste'].instance.size().width()
@@ -663,7 +701,6 @@ class MPScreen(Screen):
 		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
 		res = [entry]
 
-		plugin_path = mp_globals.pluginPath
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		try:
@@ -876,7 +913,6 @@ class MPScreen(Screen):
 		elif entry[2] == 2:
 			icon_name = "musiccd.png"
 
-		plugin_path = mp_globals.pluginPath
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		path = "%s/%s/images/%s" % (skin_path, config.mediaportal.skin.value, icon_name)
@@ -917,31 +953,6 @@ class MPScreen(Screen):
 		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
 		res = [entry]
 		res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[2] + " - " + entry[0]))
-		return res
-##################
-
-####### allucxxx
-	def allucHostersEntry(self, entry):
-		width = self['liste'].instance.size().width()
-		height = self['liste'].l.getItemSize().height()
-		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
-		res = [entry]
-		if (config.mediaportal.premiumize_use.value and re.search(mp_globals.premium_hosters_prz, entry[0], re.S|re.I)) or (config.mediaportal.realdebrid_use.value and re.search(mp_globals.premium_hosters_rdb, entry[0], re.S|re.I)):
-			premiumFarbe = int(config.mediaportal.premium_color.value, 0)
-			res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width, height, 0, RT_HALIGN_CENTER | RT_VALIGN_CENTER, entry[0]+"  Links: "+entry[1], premiumFarbe))
-			return res
-		else:
-			res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width, height, 0, RT_HALIGN_CENTER | RT_VALIGN_CENTER, entry[0]+"  Links: "+entry[1]))
-			return res
-
-	def allucSubHostersEntry(self, entry):
-		width = self['liste'].instance.size().width()
-		height = self['liste'].l.getItemSize().height()
-		self.ml.l.setFont(0, gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
-		res = [entry]
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, 0, 0, width - 370, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[1]))
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, width - 360, 0, 150, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, "Rate: "+entry[3]))
-		res.append((eListboxPythonMultiContent.TYPE_TEXT, width - 200, 0, 200, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, "Hits: "+entry[4]))
 		return res
 ##################
 

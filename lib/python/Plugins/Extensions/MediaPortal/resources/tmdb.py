@@ -10,21 +10,12 @@ from Components.ProgressBar import ProgressBar
 
 api_key = mp_globals.bdmt
 
-class MediaPortalTmdbScreen(Screen):
+class MediaPortalTmdbScreen(MPScreen):
 
 	def __init__(self, session, movie_title):
 		self.session = session
 		self.movie_title = movie_title
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		Screen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"]  = ActionMap(["MP_Actions"], {
 			"ok": self.keyOk,
@@ -62,30 +53,30 @@ class MediaPortalTmdbScreen(Screen):
 		getPage(url).addCallback(self.getResults).addErrback(self.dataError)
 
 	def getResults(self, data):
-		list = re.findall('poster_path":(.*?),(?:"adult|"popu).*?"id":(.*?),.*?original_(?:title|name)":"(.*?)".*?(?:title|name)":"(.*?)"', data, re.S)
-		if list:
-			for coverPath,id,otitle,title in list:
-				if coverPath == "null":
-					url_cover = None
-				else:
-					url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/').strip('"')
-				url = "http://api.themoviedb.org/3/movie/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (id, api_key, "de")
-				type = _("Movie")
-				self.filmliste.append((title, url_cover, url, id, type, 'movie'))
+		res = json.loads(data)
+		for node in res["results"]:
+			cover = str(node["poster_path"])
+			id = str(node["id"])
+			otitle = str(node["original_title"])
+			title = str(node["title"])
+			url_cover = "http://image.tmdb.org/t/p/original%s" % cover
+			url = "http://api.themoviedb.org/3/movie/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (id, api_key, "de")
+			type = _("Movie")
+			self.filmliste.append((title, url_cover, url, id, type, 'movie'))
 		url = "http://api.themoviedb.org/3/search/tv?api_key=%s&query=%s&language=%s" % (api_key, self.movie_title.replace(' ','%20'), "de")
 		getPage(url).addCallback(self.getResults2).addErrback(self.dataError)
 
 	def getResults2(self, data):
-		list = re.findall('poster_path":(.*?),(?:"adult|"popu).*?"id":(.*?),.*?(?:title|name)":"(.*?)".*?original_(?:title|name)":"(.*?)"', data, re.S)
-		if list:
-			for coverPath,id,title,otitle in list:
-				if coverPath == "null":
-					url_cover = None
-				else:
-					url_cover = "http://image.tmdb.org/t/p/original%s" % coverPath.replace('\/','/').strip('"')
-				url = "http://api.themoviedb.org/3/tv/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (id, api_key, "de")
-				type = _("TV Show")
-				self.filmliste.append((title, url_cover, url, id, type, 'tv'))
+		res = json.loads(data)
+		for node in res["results"]:
+			cover = str(node["poster_path"])
+			id = str(node["id"])
+			otitle = str(node["original_name"])
+			title = str(node["name"])
+			url_cover = "http://image.tmdb.org/t/p/original%s" % cover
+			url = "http://api.themoviedb.org/3/tv/%s?api_key=%s&append_to_response=releases,trailers,casts&language=%s" % (id, api_key, "de")
+			type = _("TV Show")
+			self.filmliste.append((title, url_cover, url, id, type, 'tv'))
 		self.ml.setList(map(self.movielist, self.filmliste))
 		if len(self.filmliste) > 0:
 			self['name'].setText(_("Results for \"%s\"") % self.movie_title)
@@ -168,7 +159,7 @@ class MediaPortalTmdbScreen(Screen):
 		res.append((eListboxPythonMultiContent.TYPE_TEXT, 160, 0, width - 110, height, 0, RT_HALIGN_LEFT | RT_VALIGN_CENTER, entry[0]))
 		return res
 
-class MediaPortaltmdbScreenMovie(Screen):
+class MediaPortaltmdbScreenMovie(MPScreen):
 
 	def __init__(self, session, mname, url, cover, id, type):
 		self.session = session
@@ -177,16 +168,7 @@ class MediaPortaltmdbScreenMovie(Screen):
 		self.cover = cover
 		self.id = id
 		self.type = type
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/tmdbinfo.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/tmdbinfo.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		Screen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_TMDb')
 
 		self["actions"]  = ActionMap(["MP_Actions"], {
 			"cancel": self.cancel,

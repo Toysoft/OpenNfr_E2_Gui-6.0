@@ -15,7 +15,7 @@ class realdebrid_oauth2(Screen):
 		self.rclient_secret = config.mediaportal.realdebrid_rclient_secret.value
 		self.rAPPid = "2BKDBPNPA4D3U"
 		self.rdevicecode = ''
-		self.mpversion = config.mediaportal.versiontext.value
+		self.mpversion = config.mediaportal.version.value
 		self.agent = None
 
 		Screen.__init__(self, session)

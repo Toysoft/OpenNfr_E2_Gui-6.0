@@ -8,35 +8,11 @@ from debuglog import printlog as printl
 MDEBUG = False
 
 class MenuHelper(MPScreen):
-	def __init__(self, session, menuMaxLevel, genreMenu, baseUrl, genreBase, menuListentry, skin_name='defaultGenreScreen.xml', red_label=True, widgets_files=(), cookieJar=None):
+	def __init__(self, session, menuMaxLevel, genreMenu, baseUrl, genreBase, menuListentry, skin_name='MP_Plugin', red_label=True, widgets_files=None, cookieJar=None):
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		self.mh_cookieJar = cookieJar
 
-		path = "%s/%s/%s" % (self.skin_path, config.mediaportal.skin.value, skin_name)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/%s" % skin_name
-
-		self.d_print(path)
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		if widgets_files:
-			self.skin = self.skin.replace('</screen>', '')
-			for wf in widgets_files:
-				path = "%s/%s/%s" % (self.skin_path, config.mediaportal.skin.value, wf)
-				if not fileExists(path):
-					path = self.skin_path + mp_globals.skinFallback + "/%s" % wf
-
-				f = open(path, "r")
-				for widget in f:
-					self.skin += widget
-				f.close()
-			self.skin += '</screen>'
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin=skin_name, widgets=widgets_files)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
 			"ok"    : self.mh_keyOK,

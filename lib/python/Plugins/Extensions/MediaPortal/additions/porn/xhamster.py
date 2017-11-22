@@ -67,15 +67,7 @@ def writeFavSub():
 class xhamsterGenreScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -118,7 +110,7 @@ class xhamsterGenreScreen(MPScreen):
 		except:
 			pass
 
-	def layoutFinished(self):	
+	def layoutFinished(self):
 		CoverHelper(self['coverArt']).getCover(default_cover)
 		url = base_url + "/categories"
 		ck.update({'x_ndvkey':'s%3A8%3A%22bef3e026%22%3B'})
@@ -204,16 +196,7 @@ class xhamsterSubscriptionsScreen(MPScreen):
 
 	def __init__(self, session, name):
 		self.Name = name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -256,35 +239,52 @@ class xhamsterSubscriptionsScreen(MPScreen):
 		if Link:
 			getPage(Link, agent=xhAgent, cookies=ck).addCallback(self.showInfos2).addErrback(self.dataError)
 
+	def dataError(self, error):
+		self.showInfos2("error")
+
 	def showInfos2(self, data):
-		self.username = re.findall('class="user-name.*?href="https://xhamster.com/users/(.*?)".*? class="value">(.*?)</a', data, re.S)
-		title = self['liste'].getCurrent()[0][0]
-		pic = re.findall('class="xh-avatar large" src="(.*?)"', data, re.S)
-		if pic:
-			import requests
-			r = requests.head(pic[0])
-			size = int(r.headers['content-length'])
-			if size < 100000:
-				pic = pic[0]
-			else:
-				pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon-152x152.png"
+		if data == "error":
+			CoverHelper(self['coverArt']).getCover(default_cover)
+			self['handlung'].setText("User not found")
+			url = self['liste'].getCurrent()[0][2]
+			self.username = ((url.split('/')[-2], ""),)
+			global subscriptions
+			found = False
+			for t in subscriptions:
+				if t[0] == self.username[0][0]:
+					submsg = "\nUser: " + self.username[0][1]
+					self['F1'].setText(_("Unsubscribe"))
+					self.subscribed = True
+					found = True
 		else:
-			pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon-152x152.png"
-		self['name'].setText(title)
-		global subscriptions
-		found = False
-		for t in subscriptions:
-			if t[0] == self.username[0][0]:
+			self.username = re.findall('class="user-name.*?href="https://xhamster.com/users/(.*?)".*? class="value">(.*?)</a', data, re.S)
+			title = self['liste'].getCurrent()[0][0]
+			pic = re.findall('class="xh-avatar largest" src="(.*?)"', data, re.S)
+			if pic:
+				import requests
+				r = requests.head(pic[0])
+				size = int(r.headers['content-length'])
+				if size < 100000:
+					pic = pic[0]
+				else:
+					pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon.png"
+			else:
+				pic = "https://static-ec.xhcdn.com/xh-tpl3/images/favicon/apple-touch-icon.png"
+			self['name'].setText(title)
+			global subscriptions
+			found = False
+			for t in subscriptions:
+				if t[0] == self.username[0][0]:
+					submsg = "\nUser: " + self.username[0][1]
+					self['F1'].setText(_("Unsubscribe"))
+					self.subscribed = True
+					found = True
+			if not found:
 				submsg = "\nUser: " + self.username[0][1]
-				self['F1'].setText(_("Unsubscribe"))
-				self.subscribed = True
-				found = True
-		if not found:
-			submsg = "\nUser: " + self.username[0][1]
-			self['F1'].setText(_("Subscribe"))
-			self.subscribed = False
-		self['handlung'].setText(submsg.strip('\n'))
-		CoverHelper(self['coverArt']).getCover(pic)
+				self['F1'].setText(_("Subscribe"))
+				self.subscribed = False
+			self['handlung'].setText(submsg.strip('\n'))
+			CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:
@@ -321,16 +321,7 @@ class xhamsterPornstarsScreen(MPScreen):
 	def __init__(self, session, link, name):
 		self.Link = link
 		self.Name = name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -387,7 +378,7 @@ class xhamsterPornstarsScreen(MPScreen):
 
 	def showInfos2(self, data):
 		self.username = [(self['liste'].getCurrent()[0][1], self['liste'].getCurrent()[0][0])]
-		pic = re.findall('data-thumb="(.*?)">', data, re.S)
+		pic = re.findall('class="thumb-image-container__image" src="(.*?)"', data, re.S)
 		if pic:
 			get_random = random.randint(0, len(pic)-1)
 			pic = pic[get_random]
@@ -452,15 +443,7 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -592,52 +575,76 @@ class xhamsterFilmScreen(MPScreen, ThumbsHelper):
 		if Link:
 			getPage(Link, agent=xhAgent, cookies=ck).addCallback(self.showInfos2).addErrback(self.dataError)
 
+	def dataError(self, error):
+		self.showInfos2("error")
+
 	def showInfos2(self, data):
-		self.videoId = re.findall('"videoId":(\d+),', data, re.S)[0]
-		self.username = re.findall('"entity-author-container__name(?: link|)" (?:href="https://xhamster.com/users/(.*?)"\s|data-tooltip="User is retired").*?itemprop="name">(.*?)</span', data, re.S)
-		title = self['liste'].getCurrent()[0][0]
-		if self.Link == "favs":
-			pic = re.findall('itemprop="thumbnailUrl" href="(.*?)">', data, re.S)[0]
-		else:
-			pic = self['liste'].getCurrent()[0][1]
-		runtime = self['liste'].getCurrent()[0][3]
-		views = self['liste'].getCurrent()[0][4]
-		rating = self['liste'].getCurrent()[0][5]
-		self['name'].setText(title)
-		found = False
-		global subscriptions
-		for t in subscriptions:
-			if self.username[0][0]:
-				if t[0] == self.username[0][0]:
-					submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
-					self['F1'].setText(_("Unsubscribe"))
-					self.subscribed = True
+		if data == "error":
+			CoverHelper(self['coverArt']).getCover(default_cover)
+			self['handlung'].setText("Video not found")
+			self['F1'].setText("")
+			self['F2'].setText("")
+			self['F3'].setText("")
+			url = self['liste'].getCurrent()[0][2]
+			self.videoId = url.split('/')[-1]
+			global favourites
+			for t in favourites:
+				if t[0] == self.videoId:
+					favmsg = "\nFavourited"
+					self.favourited = True
+					self['F4'].setText(_("Remove Favourite"))
 					found = True
-		if not found:
-			if self.username[0][0]:
-				submsg = "\nUser: " + self.username[0][1]
-				self['F1'].setText(_("Subscribe"))
-			else:
-				submsg = "\nUser: " + self.username[0][1] + " (retired)"
-				self['F1'].setText('')
-			self.subscribed = False
-		found = False
-		global favourites
-		for t in favourites:
-			if t[0] == self.videoId:
-				favmsg = "\nFavourited"
-				self.favourited = True
-				self['F4'].setText(_("Remove Favourite"))
-				found = True
-		if not found:
-			favmsg = ""
-			self['F4'].setText(_("Add Favourite"))
-			self.favourited = False
-		if self.Link == "favs":
-			self['handlung'].setText(submsg.strip('\n'))
 		else:
-			self['handlung'].setText("Runtime: %s\nViews: %s\nRating: %s%s%s" % (runtime, views, rating, submsg, favmsg))
-		CoverHelper(self['coverArt']).getCover(pic)
+			if self.Link == "favs":
+				self['F2'].setText("")
+			else:
+				self['F2'].setText(_("Page"))
+			self['F3'].setText(_("Show Related"))
+			self.videoId = re.findall('"videoId":(\d+),', data, re.S)[0]
+			self.username = re.findall('"entity-author-container__name(?: link|)" (?:href="https://xhamster.com/users/(.*?)"\s|data-tooltip="User is retired").*?itemprop="name">(.*?)</span', data, re.S)
+			title = self['liste'].getCurrent()[0][0]
+			if self.Link == "favs":
+				pic = re.findall('itemprop="thumbnailUrl" href="(.*?)">', data, re.S)[0]
+			else:
+				pic = self['liste'].getCurrent()[0][1]
+			runtime = self['liste'].getCurrent()[0][3]
+			views = self['liste'].getCurrent()[0][4]
+			rating = self['liste'].getCurrent()[0][5]
+			self['name'].setText(title)
+			found = False
+			global subscriptions
+			for t in subscriptions:
+				if self.username[0][0]:
+					if t[0] == self.username[0][0]:
+						submsg = "\nUser: " + self.username[0][1] + " - Subscribed"
+						self['F1'].setText(_("Unsubscribe"))
+						self.subscribed = True
+						found = True
+			if not found:
+				if self.username[0][0]:
+					submsg = "\nUser: " + self.username[0][1]
+					self['F1'].setText(_("Subscribe"))
+				else:
+					submsg = "\nUser: " + self.username[0][1] + " (retired)"
+					self['F1'].setText('')
+				self.subscribed = False
+			found = False
+			global favourites
+			for t in favourites:
+				if t[0] == self.videoId:
+					favmsg = "\nFavourited"
+					self.favourited = True
+					self['F4'].setText(_("Remove Favourite"))
+					found = True
+			if not found:
+				favmsg = ""
+				self['F4'].setText(_("Add Favourite"))
+				self.favourited = False
+			if self.Link == "favs":
+				self['handlung'].setText(submsg.strip('\n'))
+			else:
+				self['handlung'].setText("Runtime: %s\nViews: %s\nRating: %s%s%s" % (runtime, views, rating, submsg, favmsg))
+			CoverHelper(self['coverArt']).getCover(pic)
 
 	def keyOK(self):
 		if self.keyLocked:

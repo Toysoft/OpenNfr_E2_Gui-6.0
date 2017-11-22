@@ -22,17 +22,10 @@ class show_DMAX_Genre(MenuHelper):
 		self.series_id = series_id
 		self.series_nm = series_nm
 
-		MenuHelper.__init__(self, session, 0, None, None, "", self._defaultlistleft, skin_name='defaultListWideScreen.xml')
-
-		self["dmax_actions"] = ActionMap(['MP_Actions'], {
-			"blue" :  self.keyTxtPageDown,
-			"yellow" :  self.keyTxtPageUp
-		}, -1)
+		MenuHelper.__init__(self, session, 0, None, None, "", self._defaultlistleft, skin_name='MP_PluginDescr')
 
 		self['title'] = Label(glob_portal_nm)
 		self['ContentTitle'] = Label(self.genre_title)
-		self['F3'] = Label('Text-')
-		self['F4'] = Label('Text+')
 		self.mh_On_setGenreStrTitle.append((self.showInfos,()))
 		self.onLayoutFinish.append(self.mh_initMenu)
 

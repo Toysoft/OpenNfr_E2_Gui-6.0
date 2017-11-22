@@ -33,7 +33,7 @@ try:
 	from Components.config import ConfigOnOff
 except ImportError:
 	from Components.config import ConfigEnableDisable
-	ConfigOnOff = ConfigEnableDisable	
+	ConfigOnOff = ConfigEnableDisable
 from Components.Label import Label
 from Components.Language import language
 from Components.MenuList import MenuList
@@ -52,7 +52,7 @@ from Screens.Standby import TryQuitMainloop
 from Screens.NumericalTextInputHelpDialog import NumericalTextInputHelpDialog
 from Screens.HelpMenu import HelpableScreen
 
-from Tools.Directories import fileExists, resolveFilename, SCOPE_PLUGINS, SCOPE_SKIN, SCOPE_CURRENT_SKIN, createDir
+from Tools.Directories import fileExists, resolveFilename, SCOPE_PLUGINS, SCOPE_SKIN, SCOPE_CURRENT_SKIN, SCOPE_FONTS, createDir
 from Tools.LoadPixmap import LoadPixmap
 from Tools.NumericalTextInput import NumericalTextInput
 
@@ -110,17 +110,14 @@ except:
 
 from mp_globals import std_headers
 from streams import isSupportedHoster, get_stream_link
-from mpscreen import MPScreen, SearchHelper
+from mpscreen import MPScreen, MPSetupScreen, SearchHelper
 from simpleplayer import SimplePlayer
 from coverhelper import CoverHelper
 from showAsThumb import ThumbsHelper
 from messageboxext import MessageBoxExt
 
 def registerFont(file, name, scale, replacement):
-	try:
-		addFont(file, name, scale, replacement)
-	except Exception, ex: #probably just openpli
-		addFont(file, name, scale, replacement, 0)
+	addFont(file, name, scale, replacement)
 
 def getUserAgent():
 	userAgents = [
@@ -182,6 +179,7 @@ def testWebConnection():
 	return False
 
 def decodeHtml(text):
+	text = text.replace('\u00b2','²')
 	text = text.replace('&auml;','ä')
 	text = text.replace('\u00e4','ä')
 	text = text.replace('&#228;','ä')
@@ -220,6 +218,8 @@ def decodeHtml(text):
 	text = text.replace('&egrave;','è')
 	text = text.replace('&Yacute;','Ý')
 	text = text.replace('&yacute;','ý')
+	#don't ask thy but only works if we do it twice
+	text = text.replace('&amp;','&')
 	text = text.replace('&amp;','&')
 	text = text.replace('&quot;','\"')
 	text = text.replace('&gt;','>')
@@ -256,6 +256,7 @@ def decodeHtml(text):
 	text = text.replace('&#039;','\'')
 	text = text.replace('&#39;','\'')
 	text = text.replace('&#160;',' ')
+	text = text.replace('&#x60;','`')
 	text = text.replace('\u00a0',' ')
 	text = text.replace('\u00b4','\'')
 	text = text.replace('\u003d','=')

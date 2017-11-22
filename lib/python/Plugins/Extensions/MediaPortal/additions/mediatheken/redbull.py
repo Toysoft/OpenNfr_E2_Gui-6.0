@@ -10,17 +10,7 @@ class RBtvGenreScreen(MPScreen):
 
 	def __init__(self, session):
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"	: self.keyOK,
@@ -76,18 +66,7 @@ class rbtvshows(MPScreen):
 	def __init__(self, session,name,url):
 		self.url = url
 		self.name = name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"	: self.keyOK,
@@ -96,17 +75,13 @@ class rbtvshows(MPScreen):
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"left" : self.keyLeft
 		}, -1)
 
 		self.keyLocked = True
 		self['title'] = Label(basename)
 		self['ContentTitle'] = Label("Genre: %s" % self.name)
 		self['name'] = Label(_("Please wait..."))
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
@@ -154,18 +129,7 @@ class rbtvepisodes(MPScreen):
 	def __init__(self, session,name,url):
 		self.url = url
 		self.name = name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"	: self.keyOK,
@@ -174,17 +138,13 @@ class rbtvepisodes(MPScreen):
 			"up" : self.keyUp,
 			"down" : self.keyDown,
 			"right" : self.keyRight,
-			"left" : self.keyLeft,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"left" : self.keyLeft
 		}, -1)
 
 		self.keyLocked = True
 		self['title'] = Label(basename)
 		self['ContentTitle'] = Label("Genre: %s" % self.name)
 		self['name'] = Label(_("Please wait..."))
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
 		self.filmliste = []
 		self.ml = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)

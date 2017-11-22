@@ -6,11 +6,10 @@ from Screens.InputBox import PinInput, InputBox
 class PinInputExt(PinInput, InputBox):
 
 	def __init__(self, session, service = "", triesEntry = None, pinList = [], *args, **kwargs):
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/PinInput.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_PinInput.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/PinInput.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/MP_PinInput.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()

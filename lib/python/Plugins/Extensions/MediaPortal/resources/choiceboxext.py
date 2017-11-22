@@ -31,7 +31,6 @@ class ChoiceBoxExt(Screen):
 
 		res = [data[1]]
 
-		plugin_path = mp_globals.pluginPath
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		key = "key_" + data[0] + ".png"
@@ -55,11 +54,10 @@ class ChoiceBoxExt(Screen):
 		return res
 
 	def __init__(self, session, title = "", list = [], keys = None, selection = 0, titlebartext = None, allow_cancel = True):
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/ChoiceBox.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_ChoiceBox.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/ChoiceBox.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/MP_ChoiceBox.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()

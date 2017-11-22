@@ -51,15 +51,7 @@ default_cover = "file://%s/hclips.png" % (config.mediaportal.iconcachepath.value
 class hclipsGenreScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -86,20 +78,20 @@ class hclipsGenreScreen(MPScreen):
 	def layoutFinished(self):
 		self.keyLocked = True
 		CoverHelper(self['coverArt']).getCover(default_cover)
-		url = "http://www.hclips.com/categories/"
+		url = "https://www.hclips.com/categories/"
 		getPage(url, agent=agent).addCallback(self.genreData).addErrback(self.dataError)
 
 	def genreData(self, data):
 		parse = re.search('class="thumb_holder(.*?)class="cat-text">', data, re.S)
-		Cats = re.findall('<a\shref="(http://www.hclips.com/categories/.*?)".*?class="img"\ssrc="(.*?)".*?class="title">(.*?)</strong', parse.group(1), re.S)
+		Cats = re.findall('<a\shref="(https://www.hclips.com/categories/.*?)".*?class="img"\ssrc="(.*?)".*?class="title">(.*?)</strong', parse.group(1), re.S)
 		if Cats:
 			for (Url, Image, Title) in Cats:
 				self.genreliste.append((Title, Url, Image))
 			self.genreliste.sort()
-			self.genreliste.insert(0, ("Longest", "http://www.hclips.com/longest/", default_cover))
-			self.genreliste.insert(0, ("Most Popular", "http://www.hclips.com/most-popular/", default_cover))
-			self.genreliste.insert(0, ("Top Rated", "http://www.hclips.com/top-rated/", default_cover))
-			self.genreliste.insert(0, ("Most Recent", "http://www.hclips.com/latest-updates/", default_cover))
+			self.genreliste.insert(0, ("Longest", "https://www.hclips.com/longest/", default_cover))
+			self.genreliste.insert(0, ("Most Popular", "https://www.hclips.com/most-popular/", default_cover))
+			self.genreliste.insert(0, ("Top Rated", "https://www.hclips.com/top-rated/", default_cover))
+			self.genreliste.insert(0, ("Most Recent", "https://www.hclips.com/latest-updates/", default_cover))
 			self.genreliste.insert(0, ("--- Search ---", "", default_cover))
 			self.ml.setList(map(self._defaultlistcenter, self.genreliste))
 			self.keyLocked = False
@@ -127,7 +119,7 @@ class hclipsGenreScreen(MPScreen):
 			self.session.open(hclipsFilmScreen, Link, Name)
 
 	def getSuggestions(self, text, max_res):
-		url = "http://www.hclips.com/cloudsearch/suggesters.php?char=%s" % urllib.quote_plus(text)
+		url = "https://www.hclips.com/cloudsearch/suggesters.php?char=%s" % urllib.quote_plus(text)
 		d = twAgentGetPage(url, agent=agent, headers=headers, timeout=5)
 		d.addCallback(self.gotSuggestions, max_res)
 		d.addErrback(self.gotSuggestions, max_res, err=True)
@@ -151,15 +143,7 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -209,7 +193,7 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 		if not re.search('Search', self.Name):
 			self.getLastPage(data, 'class="pagination(.*?)</div>')
 			parse = re.search('class="thumb_holder">(.*?)class="heading"', data, re.S)
-			Movies = re.findall('<a\shref="(http://www.hclips.com/videos/.*?)"\sclass="thumb">.*?<img\ssrc="(.*?)".*?class="dur">(.*?)</span>.*?class="title">(.*?)</strong>.*?small_views">Views:\s(\d+)</span>.*?small_added-date">Added:\s(.*?)</span>', parse.group(1), re.S)
+			Movies = re.findall('<a\shref="(https://www.hclips.com/videos/.*?)"\sclass="thumb">.*?<img\ssrc="(.*?)".*?class="dur">(.*?)</span>.*?class="title">(.*?)</strong>.*?small_views">Views:\s(\d+)</span>.*?small_added-date">Added:\s(.*?)</span>', parse.group(1), re.S)
 			if Movies:
 				for (Url, Image, Runtime, Title, Views, Added) in Movies:
 					self.filmliste.append((decodeHtml(Title), Url, Image, Runtime, Views, Added))
@@ -262,27 +246,19 @@ class hclipsFilmScreen(MPScreen, ThumbsHelper):
 		getPage(Link, agent=agent).addCallback(self.getVideoPage).addErrback(self.dataError)
 
 	def getVideoPage(self, data):
-		videoPage = re.findall("file':\s'(http[s]?:(?:(?://)|(?:\\\\))+[\w\d:#@%/;$()~_?\+-=\\\.&]*.mp4.*?)\',type", data, re.S)
-		if videoPage:
-			url = videoPage[-1]
-		else:
-			try:
-				import execjs
-				node = execjs.get("Node")
-			except:
-				printl('nodejs not found',self,'E')
-				self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
-				return
-			decstring = re.findall('sources\[\d\]={type:\'mp4\',file:([a-zA-Z0-9]+)\(', data, re.S)
-			decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
-			if decoder:
-				video_url = re.findall('(var video_url.*?;)', data, re.S)
-				js = decoder[0] + "\n" + video_url[0] + "\n" + "vidurl = (%s(video_url));" % decstring[0] + "\n" + "return vidurl;"
-			else:
-				decoder = re.findall('(var (_0x[A-Za-z0-9]+)=.*?)var (?:m3u8|video)_url', data, re.S)
-				video_url = re.findall('(var video_url.*?;)', data, re.S)
-				js = decoder[0][0].replace('window[%s[1]]' % decoder[0][1],'%s[1]' % decoder[0][1])  + "\n" + video_url[0] + "\n" + "vidurl = (%s[1](video_url));" % decoder[0][1] + "\n" + "return vidurl;"
-			url = str(node.exec_(js))
+		try:
+			import execjs
+			node = execjs.get("Node")
+		except:
+			printl('nodejs not found',self,'E')
+			self.session.open(MessageBoxExt, _("This plugin requires packages python-pyexecjs and nodejs."), MessageBoxExt.TYPE_INFO)
+			return
+		decstring = re.findall('video_url=(.*?)\(', data, re.S)
+		decoder = re.findall('(%s=function.*?};)' % decstring[0], data, re.S)
+		if decoder:
+			video_url = re.findall('(var video_url.*?;)', data, re.S)
+			js = decoder[0] + "\n" + video_url[0] + "return video_url;"
+		url = str(node.exec_(js))
 		self.keyLocked = False
 		Title = self['liste'].getCurrent()[0][0]
 		self.session.open(SimplePlayer, [(Title, url)], showPlaylist=False, ltype='hclips')

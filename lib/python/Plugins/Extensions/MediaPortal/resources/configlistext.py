@@ -103,11 +103,14 @@ class ConfigListExt(HTMLComponent, GUIComponent, object):
 		self.__list = l
 		self.l.setList(self.__list)
 		self._headers = []
+		self._fake = []
 		if l is not None:
 			index = 0
 			for x in l:
 				if len(x) < 2:
 						self._headers.append(index)
+				elif len(x[0]) < 1:
+						self._fake.append(index)
 				else:
 						assert isinstance(x[1], ConfigElement), "entry in ConfigList " + str(x[1]) + " must be a ConfigElement"
 				index += 1
@@ -149,6 +152,18 @@ class ConfigListExt(HTMLComponent, GUIComponent, object):
 					return
 		self.pageUp()
 
+	def up(self):
+		self.instance.moveSelection(eListbox.moveUp)
+		index = self.getCurrentIndex()
+		if index in self._fake:
+			self.instance.moveSelection(eListbox.moveUp)
+
+	def down(self):
+		self.instance.moveSelection(eListbox.moveDown)
+		index = self.getCurrentIndex()
+		if index in self._fake:
+			self.instance.moveSelection(eListbox.moveDown)
+
 	def getList(self):
 		return self.__list
 
@@ -175,6 +190,8 @@ class ConfigListScreenExt:
 			"right": self.keyRight,
 			"home": self.keyHome,
 			"end": self.keyEnd,
+			"up": self.keyUp,
+			"down": self.keyDown,
 			"deleteForward": self.keyDelete,
 			"deleteBackward": self.keyBackspace,
 			"toggleOverwrite": self.keyToggleOW,
@@ -274,6 +291,12 @@ class ConfigListScreenExt:
 
 	def keyNextSection(self):
 		self["config"].jumpToNextSection()
+
+	def keyUp(self):
+		self["config"].up()
+
+	def keyDown(self):
+		self["config"].down()
 
 	def saveAll(self):
 		for x in self["config"].list:

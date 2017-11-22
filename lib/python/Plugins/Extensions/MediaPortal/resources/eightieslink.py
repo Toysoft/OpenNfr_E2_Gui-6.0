@@ -4,7 +4,6 @@ from imports import *
 
 class EightiesLink:
 	def __init__(self, session):
-		print "EightiesLink:"
 		self.session = session
 		self._callback = None
 		self._errback = None
@@ -21,7 +20,7 @@ class EightiesLink:
 		self.artist = artist
 		self.album = album
 		self.imgurl = imgurl
-		self.baseurl = "http://www."+token+"smusicvids.com/"
+		self.baseurl = "http://www."+token+".com"
 
 		getPage(url).addCallback(self.getVid).addErrback(cb_err)
 
@@ -29,7 +28,6 @@ class EightiesLink:
 		stream_url = re.findall('(/vid/.*?.flv)', data, re.S)
 		if stream_url:
 			stream_url = "%s%s" % (self.baseurl, stream_url[0])
-			print stream_url
 			self._callback(self.title, stream_url, album=self.album, artist=self.artist, imgurl=self.imgurl)
 		else:
 			self._errback('stream_url not found!')

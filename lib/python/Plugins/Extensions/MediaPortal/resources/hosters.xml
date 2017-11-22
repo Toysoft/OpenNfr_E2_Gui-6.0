@@ -71,6 +71,7 @@
 <hoster>kodik</hoster><regex>kodik.biz</regex>
 <hoster>docs.google.com</hoster><regex>docs.google.com</regex>
 <hoster>drive.google.com</hoster><regex>drive.google.com</regex>
+<hoster>googleusercontent.com</hoster><regex>googleusercontent.com</regex>
 <hoster>rapidvideo.com</hoster><regex>rapidvideo.com</regex>
 <hoster>rapidvideo.ws</hoster><regex>rapidvideo.ws</regex>
 <hoster>powerwatch</hoster><regex>powerwatch.pw</regex>

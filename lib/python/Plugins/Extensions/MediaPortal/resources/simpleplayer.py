@@ -59,18 +59,6 @@ except:
 	except:
 		MediaInfoPresent = False
 
-try:
-	from Plugins.Extensions.TMDb.plugin import *
-	TMDbPresent = True
-except:
-	TMDbPresent = False
-
-try:
-	from Plugins.Extensions.IMDb.plugin import *
-	IMDbPresent = True
-except:
-	IMDbPresent = False
-
 seekbuttonpos = None
 STREAM_BUFFERING_ENABLED = False
 
@@ -193,18 +181,26 @@ class CoverSearchHelper:
 		title = re.sub(' - folge \d+|^hd_|dts_|ac3_|_premium|kinofassung|_full_|hd_plus|\(.*?\)', '', title, flags=re.I)
 		return title.replace("_"," ")
 
-	def searchCover(self, title):
+	def searchCover(self, title, fallback=''):
+		if not fallback:
+			fallback = ''
 		if not self.searchCoverSupp or not title: return
-		self.hideSPCover()
-		if self.playerMode in ('MP3','VIDEO'):
-			media = 'music' if self.pl_status[2] or title.endswith('.mp3') else 'movie'
+		if self.playerMode != 'RADIO':
+			self.hideSPCover()
+		if self.playerMode in ('MP3','VIDEO', 'RADIO'):
+			if self.playerMode == 'RADIO':
+				media = 'music'
+			elif self.pl_status[2] or title.endswith('.mp3'):
+				media = 'music'
+			else:
+				media = 'movie'
 			title = self.cleanTitle(title, False)
 			url = "https://itunes.apple.com/search?term=%s&limit=1&media=%s" % (urllib.quote_plus(title), media)
-			getPage(url, timeout=10).addCallback(self.cb_searchCover).addErrback(self.searchDataError)
+			getPage(url, timeout=10).addCallback(self.cb_searchCover, fallback).addErrback(self.searchDataError)
 		else:
 			self.cb_searchCover(None)
 
-	def cb_searchCover(self, jdata):
+	def cb_searchCover(self, jdata, fallback=''):
 		import json
 		try:
 			jdata = json.loads(jdata)
@@ -212,7 +208,7 @@ class CoverSearchHelper:
 			url = url.replace('100x100', '300x300')
 			self.hasGoogleCoverArt = True
 		except:
-			url = ""
+			url = fallback
 
 		if not self.hasEmbeddedCoverArt:
 			self.showCover(url, self.cb_coverDownloaded)
@@ -585,23 +581,10 @@ class SimplePlaylist(MPScreen):
 
 	def __init__(self, session, playList, playIdx, playMode, listTitle=None, plType='local', title_inr=0, queue=None, mp_event=None, listEntryPar=None, playFunc=None, playerMode=None):
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultPlaylistScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultPlaylistScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		if not mp_globals.isDreamOS:
-			self.skin = re.sub(r'progress_pointer="(.*?):\d+,\d+" render="PositionGauge"', r'pixmap="\1" render="Progress"', self.skin)
-			self.skin = re.sub(r'type="MPServicePosition">Gauge</convert>', r'type="MPServicePosition">Position</convert>', self.skin)
+		MPScreen.__init__(self, session, skin='MP_Playlist')
 
 		self["hidePig"] = Boolean()
 		self["hidePig"].setBoolean(config.mediaportal.minitv.value)
-
-		MPScreen.__init__(self, session)
 
 		self["actions"] = ActionMap(["OkCancelActions",'MediaPlayerSeekActions',"EPGSelectActions",'ColorActions','InfobarActions'],
 		{
@@ -803,6 +786,9 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 
 	def __init__(self, session, playList, playIdx=0, playAll=False, listTitle=None, plType='local', title_inr=0, cover=False, ltype='', autoScrSaver=False, showPlaylist=True, listEntryPar=None, playList2=[], playerMode='VIDEO', useResume=True, bufferingOpt='None', googleCoverSupp=False, embeddedCoverArt=False, forceGST=False):
 
+		if playerMode == 'RADIO':
+			googleCoverSupp = True
+
 		if (self.__class__.ctr + 1) > 1:
 			printl('[SP]: only 1 instance allowed',self,"E")
 		else:
@@ -816,7 +802,6 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			is_eServiceMP3 = True
 
 		Screen.__init__(self, session)
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		self.wallicon_path = config.mediaportal.iconcachepath.value + "icons/"
 		path = "%s/%s/simpleplayer/SimplePlayer.xml" % (self.skin_path, config.mediaportal.skin.value)
@@ -830,7 +815,6 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			self.skin = re.sub(r'progress_pointer="(.*?):\d+,\d+" render="PositionGauge"', r'pixmap="\1" render="Progress"', self.skin)
 			self.skin = re.sub(r'type="MPServicePosition">Gauge</convert>', r'type="MPServicePosition">Position</convert>', self.skin)
 
-		self.setActionPrio()
 		self["actions"] = ActionMap(["WizardActions",'MediaPlayerSeekActions','InfobarInstantRecord',"EPGSelectActions",'MoviePlayerActions','ColorActions','InfobarActions',"MenuActions","HelpActions","MP_SP_Move"],
 		{
 			"leavePlayer": self.leavePlayer,
@@ -842,16 +826,20 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			"back":		self.leavePlayer,
 			"left":		self.seekBack,
 			"right":	self.seekFwd,
-			"seekdef:1": self.Key1,
-			"seekdef:3": self.Key3,
-			"seekdef:4": self.Key4,
-			"seekdef:6": self.Key6,
-			"seekdef:7": self.Key7,
-			"seekdef:9": self.Key9,
 			"SPMoveDown": self.moveSkinDown,
 			"SPMoveUp": self.moveSkinUp
+		}, -1)
 
-		}, self.action_prio)
+		if config.mediaportal.sp_use_number_seek.value:
+			self["actions2"] = ActionMap(["WizardActions",'MediaPlayerSeekActions','InfobarInstantRecord',"EPGSelectActions",'MoviePlayerActions','ColorActions','InfobarActions',"MenuActions","HelpActions"],
+			{
+				"seekdef:1": self.Key1,
+				"seekdef:3": self.Key3,
+				"seekdef:4": self.Key4,
+				"seekdef:6": self.Key6,
+				"seekdef:7": self.Key7,
+				"seekdef:9": self.Key9,
+			}, -2)
 
 		M3U8Player.__init__(self)
 		CoverSearchHelper.__init__(self, googleCoverSupp)
@@ -964,7 +952,8 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		self.setPlayerAgent()
 
 		if mp_globals.isDreamOS:
-			self.onFirstExecBegin.append(self._animation)
+			self.onLayoutFinish.append(self._animation)
+
 		self.onFirstExecBegin.append(self.showIcon)
 		self.onFirstExecBegin.append(self.playVideo)
 
@@ -979,14 +968,30 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 					eServiceMP3.evPluginError: self.__evPluginError,
 					eServiceMP3.evStreamingSrcError: self.__evStreamingSrcError,
 					eServiceMP3.evEmbeddedCoverArt: self._evEmbeddedCoverArt,
-					iPlayableService.evStart: self.__serviceStarted
+					iPlayableService.evStart: self.__serviceStarted,
+					iPlayableService.evUpdatedInfo: self.__evUpdatedInfo
 				})
 		else:
 			self.embeddedCoverArt = False
 			self.__event_tracker = ServiceEventTracker(screen=self, eventmap=
 				{
-					iPlayableService.evStart: self.__serviceStarted
+					iPlayableService.evStart: self.__serviceStarted,
+					iPlayableService.evUpdatedInfo: self.__evUpdatedInfo
 				})
+
+	def __evUpdatedInfo(self):
+		if self.playerMode == 'RADIO':
+			currPlay=self.session.nav.getCurrentService()
+			if currPlay is not None:
+				sTitle=currPlay.info().getInfoString(iServiceInformation.sTagTitle)
+				if " - " in sTitle:
+					if " | " in sTitle:
+						sTitle = sTitle.split(' | ')[0]
+				if "www." in sTitle:
+					sTitle = ''
+				print sTitle
+				self.searchCover(sTitle, fallback=self.playList[self.playIdx][2])
+				InfoBarShowHide.lockShow(self)
 
 	def __evAudioDecodeError(self):
 		from enigma import iServiceInformation
@@ -995,7 +1000,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		try:
 			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
 		except:
-			self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagAudioCodec, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+			self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagAudioCodec, MessageBoxExt.TYPE_INFO, timeout=10)
 
 	def __evVideoDecodeError(self):
 		from enigma import iServiceInformation
@@ -1004,7 +1009,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		try:
 			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
 		except:
-			self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagVideoCodec, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+			self.session.open(MessageBoxExt, _("This STB can't decode %s streams!") % sTagVideoCodec, MessageBoxExt.TYPE_INFO, timeout=10)
 
 	def __evPluginError(self):
 		from enigma import iServiceInformation
@@ -1013,7 +1018,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		try:
 			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
 		except:
-			self.session.open(MessageBoxExt, message, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+			self.session.open(MessageBoxExt, message, MessageBoxExt.TYPE_INFO, timeout=10)
 
 	def __evStreamingSrcError(self):
 		if isinstance(self, SimplePlayerResume):
@@ -1024,7 +1029,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		try:
 			from Screens.InfoBarGenerics import InfoBarGstreamerErrorPopupSupport
 		except:
-			self.session.open(MessageBoxExt, _("Streaming error: %s") % message, type = MessageBoxExt.TYPE_INFO,timeout = 10 )
+			self.session.open(MessageBoxExt, _("Streaming error: %s") % message, MessageBoxExt.TYPE_INFO, timeout=10)
 
 	def _evEmbeddedCoverArt(self):
 		self.hasEmbeddedCoverArt = True
@@ -1071,7 +1076,8 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 				self.playlistQ.put(self.pl_status)
 				self.pl_event.genEvent()
 
-		self.session.openWithCallback(self.dataError2, MessageBoxExt, str(error), MessageBoxExt.TYPE_INFO, timeout=10)
+		printl(str(error),self,"E")
+		self.session.openWithCallback(self.dataError2, MessageBoxExt, str(error), MessageBoxExt.TYPE_INFO, timeout=5)
 
 	def dataError2(self, res):
 		self.keyPlayNextLocked = False
@@ -1153,7 +1159,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		else:
 			callback(url, *args, **kwargs)
 
-	def _initStream(self, title, url, album='', artist='', imgurl='', buffering=False, proxy=None, epg_id=None):
+	def _initStream(self, title, url, suburi=None, album='', artist='', imgurl='', buffering=False, proxy=None, epg_id=None):
 		self.hasGoogleCoverArt = self.hasEmbeddedCoverArt = False
 
 		if not mp_globals.yt_download_runs:
@@ -1223,7 +1229,17 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 						if self.youtubelive:
 							sref = eServiceReference(0x0001, 0, url)
 						else:
-							sref = eServiceReference(0x1001, 0, url)
+							if mp_globals.isDreamOS:
+								sref = eServiceReference(0x1001, 0, url)
+								if suburi:
+									try:
+										sref.setSuburi(suburi)
+									except:
+										pass
+							else:
+								if suburi:
+									url = url + "&suburi=" + suburi
+								sref = eServiceReference(0x1001, 0, url)
 					sref.setName(video_title)
 
 				self.session.nav.playService(sref)
@@ -1343,20 +1359,12 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		self.is_closing = True
 		if how == "ask":
 			if self.plType == 'local':
-				if 'rtmpbuffering' == self.bufferingOpt:
-					list = (
-						(_("Yes"), "quit"),
-						(_("Yes, but back to caching..."), "rtmpbuffering"),
-						(_("No"), "continue"),
-						(_("No, but start over from the beginning"), "restart")
-					)
-				else:
-					list = (
-						(_("Yes"), "quit"),
-						(_("Yes & Add Service to global Playlist-%02d") % config.mediaportal.sp_pl_number.value, "add"),
-						(_("No"), "continue"),
-						(_("No, but start over from the beginning"), "restart")
-					)
+				list = (
+					(_("Yes"), "quit"),
+					(_("Yes & Add Service to global Playlist-%02d") % config.mediaportal.sp_pl_number.value, "add"),
+					(_("No"), "continue"),
+					(_("No, but start over from the beginning"), "restart")
+				)
 			else:
 				list = (
 					(_("Yes"), "quit"),
@@ -1384,8 +1392,6 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		elif answer == "add":
 			self.addToPlaylist()
 			self.close()
-		elif answer == "rtmpbuffering":
-			self.close('continue')
 		try:
 			if mp_globals.isDreamOS and mp_globals.stateinfo:
 				InfoBarServiceErrorPopupSupport._stateInfo = self.session.instantiateDialog(InfoBarStateInfo,zPosition=-5)
@@ -1544,10 +1550,8 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 			title = title.translate(None,"[].;:!&?,")
 			title = title.replace(' ','_')
 			title = self.cleanTitle(title, False)
-			if TMDbPresent:
-				self.session.open(TMDbMain, title)
-			elif IMDbPresent:
-				self.session.open(IMDB, title)
+			from tmdb import MediaPortalTmdbScreen
+			self.session.open(MediaPortalTmdbScreen, title)
 
 	def openMenu(self):
 		self.session.openWithCallback(self.cb_Menu, SimplePlayerMenu, self.plType, self.showPlaylist or self.showGlobalPlaylist)
@@ -1637,7 +1641,11 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		self._Icon.showCoverFile(pm_file, showNoCoverart=False)
 
 	def _animation(self):
-		self.setShowHideAnimation(config.mediaportal.animation_simpleplayer.value)
+		try:
+			self.setShowHideAnimation(config.mediaportal.animation_simpleplayer.value)
+			self['Cover'].instance.setShowHideAnimation(config.mediaportal.animation_coverart.value)
+		except:
+			pass
 
 	def hideSPCover(self):
 		if not self.coverBGisHidden:
@@ -1678,12 +1686,6 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 
 	def createSummary(self):
 		return SimplePlayerSummary
-
-	def setActionPrio(self):
-		if config.mediaportal.sp_use_number_seek.value:
-			self.action_prio = -2
-		else:
-			self.action_prio = -1
 
 	def runPlugin(self, plugin):
 		plugin(session=self.session)
@@ -1735,7 +1737,6 @@ class SimpleConfig(Screen, ConfigListScreenExt):
 
 	def __init__(self, session):
 
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/simpleplayer/SimplePlayerConfig.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
@@ -1751,8 +1752,8 @@ class SimpleConfig(Screen, ConfigListScreenExt):
 		self.list.append(getConfigListEntry(_('Global playlist number:'), config.mediaportal.sp_pl_number))
 		self.list.append(getConfigListEntry(_('Playmode:'), config.mediaportal.sp_playmode))
 		self.list.append(getConfigListEntry(_('Screensaver:'), config.mediaportal.sp_scrsaver))
-		self.list.append(getConfigListEntry(_('Videoquality (YouTube):'), config.mediaportal.youtubeprio))
-		self.list.append(getConfigListEntry(_('Videoquality (others):'), config.mediaportal.videoquali_others))
+		self.list.append(getConfigListEntry(_('Highest resolution for playback (only YouTube):'), config.mediaportal.youtubeprio))
+		self.list.append(getConfigListEntry(_('Videoquality:'), config.mediaportal.videoquali_others))
 		self.list.append(getConfigListEntry(_('Save resume cache in flash memory:'), config.mediaportal.sp_save_resumecache))
 		self.list.append(getConfigListEntry(_('Behavior on movie start:'), config.mediaportal.sp_on_movie_start))
 		self.list.append(getConfigListEntry(_('Behavior on movie stop:'), config.mediaportal.sp_on_movie_stop))
@@ -1774,7 +1775,6 @@ class SimplePlayerMenu(Screen):
 
 	def __init__(self, session, pltype, showPlaylist=True):
 
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/simpleplayer/SimplePlayerMenu.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):

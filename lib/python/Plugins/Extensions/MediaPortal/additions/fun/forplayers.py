@@ -48,15 +48,7 @@ default_cover = "file://%s/4players.png" % (config.mediaportal.iconcachepath.val
 class forPlayersGenreScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok"    : self.keyOK,
@@ -100,15 +92,7 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, selectionLink, searchData):
 		self.selectionLink = selectionLink
 		self.searchData = searchData
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -120,8 +104,6 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 			"down"  : self.keyDown,
 			"left"  : self.keyLeft,
 			"right" : self.keyRight,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown
 		}, -1)
@@ -130,8 +112,6 @@ class forPlayersVideoScreen(MPScreen, ThumbsHelper):
 		self.lastpage = 999
 		self.keyLocked = True
 		self['title'] = Label("4Players")
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
  		self['Page'] = Label(_("Page:"))
 		self['page'] = Label("1")
@@ -293,15 +273,7 @@ class forPlayersSearchListScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session, videosListe):
 		self.searchVideoListe = videosListe
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
@@ -312,17 +284,13 @@ class forPlayersSearchListScreen(MPScreen, ThumbsHelper):
 			"up"    : self.keyUp,
 			"down"  : self.keyDown,
 			"left"  : self.keyLeft,
-			"right" : self.keyRight,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp,
+			"right" : self.keyRight
 		}, -1)
 
 		self.page = 1
 		self.lastpage = 999
 		self.keyLocked = True
 		self['title'] = Label("4Players")
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 
  		self['Page'] = Label(_("Page:"))
 		self['page'] = Label("1")

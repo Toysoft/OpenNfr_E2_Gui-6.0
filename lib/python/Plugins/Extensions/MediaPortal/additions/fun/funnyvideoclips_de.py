@@ -38,15 +38,7 @@ class FVCDE_FilmListeScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, genreLink, genreName):
 		self.genreLink = genreLink
 		self.genreName = genreName
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -73,9 +65,7 @@ class FVCDE_FilmListeScreen(MPScreen, ThumbsHelper):
 			"6" : self.key_6,
 			"7" : self.key_7,
 			"9" : self.key_9,
-			"0"	: self.closeAll,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp
+			"0"	: self.closeAll
 		}, -1)
 
 		self.sortOrder = 0
@@ -88,8 +78,6 @@ class FVCDE_FilmListeScreen(MPScreen, ThumbsHelper):
 		self.sortOrderStrGenre = ""
 		self['title'] = Label(FVCDE_Version)
 
-		self['F1'] = Label(_("Text-"))
-		self['F4'] = Label(_("Text+"))
 		self['Page'] = Label(_("Page:"))
 
 		self.filmQ = Queue.Queue(0)

@@ -56,16 +56,7 @@ json_headers = {
 class bongacamsGenreScreen(MPScreen):
 
 	def __init__(self, session):
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultGenreScreenCover.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreenCover.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"ok" : self.keyOK,
@@ -114,16 +105,7 @@ class bongacamsFilmScreen(MPScreen, ThumbsHelper):
 	def __init__(self, session, Link, Name):
 		self.Link = Link
 		self.Name = Name
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions2", "MP_Actions"], {
@@ -145,16 +127,12 @@ class bongacamsFilmScreen(MPScreen, ThumbsHelper):
 			"leftRepeated" : self.keyLeftRepeated,
 			"nextBouquet" : self.keyPageUp,
 			"prevBouquet" : self.keyPageDown,
-			"blue" :  self.keyTxtPageDown,
-			"red" :  self.keyTxtPageUp,
 			"green" : self.keyPageNumber
 		}, -1)
 
 		self['title'] = Label("BongaCams.com")
 		self['ContentTitle'] = Label("Genre: %s" % self.Name)
-		self['F1'] = Label(_("Text-"))
 		self['F2'] = Label(_("Page"))
-		self['F4'] = Label(_("Text+"))
 
 		self['Page'] = Label(_("Page:"))
 		self.keyLocked = True

@@ -335,6 +335,8 @@ class youtubeGenreScreen(MenuHelper):
 			('Rocket Beans TV', 'https://www.youtube.com/user/ROCKETBEANSTV'),
 			('Daheimkino', 'https://www.youtube.com/user/Daheimkino'),
 			('E2WORLD', 'https://www.youtube.com/channel/UC95hFgcA4hzKcOQHiEFX3UA'),
+			('The HDR Channel', 'https://www.youtube.com/channel/UCve7_yAZHFNipzeAGBI5t9g'),
+			('4K Relaxation Channel', 'https://www.youtube.com/channel/UCg72Hd6UZAgPBAUZplnmPMQ'),
 			]
 		self.SelectedChannels.sort(key=lambda t : t[0].lower())
 		self.subCatSelectedChannels = []
@@ -377,7 +379,7 @@ class youtubeGenreScreen(MenuHelper):
 			else:
 				self.subCatUserChannels.append(None)
 
-		MenuHelper.__init__(self, session, 2, None, "", "", self._defaultlistcenter, "ytSearchScreen.xml")
+		MenuHelper.__init__(self, session, 2, None, "", "", self._defaultlistcenter, 'MP_YouTube')
 
 		self["yt_actions"] = ActionMap(["MP_Actions"], {
 			"yellow": self.keyYellow,
@@ -762,15 +764,7 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		self.genreName = stvGenre
 		self.headers = std_headers
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path =  mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/defaultListWideScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultListWideScreen.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-		MPScreen.__init__(self, session)
+		MPScreen.__init__(self, session, skin='MP_PluginDescr')
 		ThumbsHelper.__init__(self)
 
 		self.favoGenre = self.genreName.startswith(_('Favorites'))
@@ -799,8 +793,6 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 			"leftRepeated"	: self.keyLeftRepeated,
 			"nextBouquet"	: self.keyPageUpFast,
 			"prevBouquet"	: self.keyPageDownFast,
-			"yellow" 	: self.keyTxtPageUp,
-			"blue" 		: self.keyTxtPageDown,
 			"green"		: self.keyGreen,
 			"0"		: self.closeAll,
 			"1" 		: self.key_1,
@@ -816,12 +808,8 @@ class YT_ListScreen(MPScreen, ThumbsHelper):
 		self['ContentTitle'] = Label(self.genreName)
 		if not self.favoGenre:
 			self['F2'] = Label(_("Favorite"))
-			self['F3'] = Label(_("Text-"))
-			self['F4'] = Label(_("Text+"))
 		else:
 			self['F2'] = Label(_("Delete"))
-			self['F3'] = Label(_("Text-"))
-			self['F4'] = Label(_("Text+"))
 
 		if ('order=' in self.stvLink) and ('type=video' in self.stvLink) or (self.apiUrl and '/uploads' in self.stvLink):
 			self['F1'] = Label(_("Sort by"))

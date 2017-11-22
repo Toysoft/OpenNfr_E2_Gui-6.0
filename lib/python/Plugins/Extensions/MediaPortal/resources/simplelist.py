@@ -3,15 +3,16 @@
 from os.path import isfile
 import glob
 import sys
+import mp_globals
 from Plugins.Extensions.MediaPortal.plugin import _
 from imports import *
 from simpleplayer import SimplePlayer, SimplePlaylistIO
 from Components.FileList import FileList
 from debuglog import printlog as printl
 from configlistext import ConfigListScreenExt
-from Plugins.Extensions.MediaPortal.resources.choiceboxext import ChoiceBoxExt
+from choiceboxext import ChoiceBoxExt
 from twisted.internet import task
-from Plugins.Extensions.MediaPortal.resources.twagenthelper import twAgentGetPage, twDownloadPage
+from twagenthelper import twAgentGetPage, twDownloadPage
 
 if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/SerienFilm/MovieSelection.pyo'):
 	from Plugins.Extensions.SerienFilm.MovieSelection import MovieSelection
@@ -143,21 +144,11 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 
 	def __init__(self, session):
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-
-		path = "%s/%s/defaultGenreScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/defaultGenreScreen.xml"
-
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
+		MPScreen.__init__(self, session, skin='MP_Plugin')
 
 		self["hidePig"] = Boolean()
 		self["hidePig"].setBoolean(config.mediaportal.minitv.value)
-		MPScreen.__init__(self, session)
-		ThumbsHelper.__init__(self)
+		ThumbsHelper.__init__(self)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"0"		: self.closeAll,
@@ -230,7 +221,7 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 			self.genreliste.append(('2', 'Global Playlist-%02d' % n, n))
 
 		self.m3u_list.clear()
-		path = self.plugin_path + "/userfiles/"
+		path = mp_globals.pluginPath + "/userfiles/"
 		list = glob.glob(path + '*.m3u')
 		for upath in list:
 			fn = upath.split('/')[-1]
@@ -287,7 +278,7 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 		self.filelist = SimplePlaylistIO.getPL('mp_global_pl_%02d' % self.playlist_num)
 		if self.filelist == []:
 			self.keyLocked = True
-			self.filelist.append((_("No entrys found!"), "", "dump", None))
+			self.filelist.append((_("No entries found!"), "", "dump", None))
 		else:
 			self.keyLocked = False
 		self.ml.setList(map(self._defaultlistleft, self.filelist))
@@ -442,7 +433,7 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 
 		if self.filelist == []:
 			self.keyLocked = True
-			self.filelist.append((_("No entrys found!"), "", "", (DEFAULT_COLOR,), ''))
+			self.filelist.append((_("No entries found!"), "", "", (DEFAULT_COLOR,), ''))
 		else:
 			self.keyLocked = False
 
@@ -731,7 +722,7 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 						self.filelist.append((n, (f, dpath+'_'+t+'_'+n+'.m3u', mode), "playlist.png", tvg_data))
 
 		if self.filelist == []:
-			self.filelist.append((_("No entrys found!"), "", "", (DEFAULT_COLOR,)))
+			self.filelist.append((_("No entries found!"), "", "", (DEFAULT_COLOR,)))
 		else:
 			self.keyLocked = False
 		self.ml.setList(map(self.simpleListTVGListEntry, self.filelist))
@@ -848,20 +839,11 @@ class simplelistGenreScreen(MPScreen, ThumbsHelper):
 			else:
 				self.buildMenulist()
 
-class SimplelistConfig(Screen, ConfigListScreenExt):
+class SimplelistConfig(MPSetupScreen, ConfigListScreenExt):
 
 	def __init__(self, session):
+		MPSetupScreen.__init__(self, session, skin='MP_PluginSetup')
 
-		self.plugin_path = mp_globals.pluginPath
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/PluginUserDefault.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/PluginUserDefault.xml"
-		with open(path, "r") as f:
-			self.skin = f.read()
-			f.close()
-
-		Screen.__init__(self, session)
 		self['title'] = Label(_("SimpleList Configuration"))
 		self['F4'] = Label('')
 		self.list = []

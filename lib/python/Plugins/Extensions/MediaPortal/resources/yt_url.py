@@ -71,7 +71,8 @@ class youtubeUrl(object):
   def cbYTErr(self, res):
 	return
 
-  def getVideoUrl(self, url, videoPrio=2, dash=False, fmt_map=None):
+  def getVideoUrl(self, url, videoPrio=2, dash=None, fmt_map=None):
+	dash = config.mediaportal.youtubeenabledash.value
 	# portions of this part is from mtube plugin
 
 	if not self.__callBack:
@@ -80,35 +81,90 @@ class youtubeUrl(object):
 
 	if fmt_map != None:
 		self.VIDEO_FMT_PRIORITY_MAP = fmt_map
-	elif videoPrio == 0:
+	elif videoPrio == 0: #360p
 		self.VIDEO_FMT_PRIORITY_MAP = {
-			'38' : 5, #MP4 Original (HD)
-			'37' : 5, #MP4 1080p (HD)
-			'22' : 4, #MP4 720p (HD)
-			'35' : 2, #FLV 480p
-			'18' : 1, #MP4 360p
-			'34' : 3, #FLV 360p
+			'18'  : 1, #MP4 360p
+			'34'  : 2, #FLV 360p
 		}
-	elif videoPrio == 1:
+	elif videoPrio == 1: #480p
 		self.VIDEO_FMT_PRIORITY_MAP = {
-			'38' : 5, #MP4 Original (HD)
-			'37' : 5, #MP4 1080p (HD)
-			'22' : 4, #MP4 720p (HD)
-			'35' : 1, #FLV 480p
-			'18' : 2, #MP4 360p
-			'34' : 3, #FLV 360p
+			'135' : 1, #MP4 480p (DASH)
+			'35'  : 2, #FLV 480p
+			'18'  : 3, #MP4 360p
+			'34'  : 4, #FLV 360p
 		}
-	else:
+	elif videoPrio == 2: #720p
 		self.VIDEO_FMT_PRIORITY_MAP = {
-			'38' : 2, #MP4 Original (HD)
-			'37' : 1, #MP4 1080p (HD)
-			'22' : 1, #MP4 720p (HD)
-			'35' : 3, #FLV 480p
-			'18' : 4, #MP4 360p
-			'34' : 5, #FLV 360p
+			'22'  : 1, #MP4 720p
+			'135' : 2, #MP4 480p (DASH)
+			'35'  : 3, #FLV 480p
+			'18'  : 4, #MP4 360p
+			'34'  : 5, #FLV 360p
 		}
+	elif videoPrio == 3: #1080p
+		self.VIDEO_FMT_PRIORITY_MAP = {
+			'299' : 3, #MP4 1080p60 (DASH)
+			'137' : 4, #MP4 1080p (DASH)
+			'22'  : 5, #MP4 720p
+			'135' : 6, #MP4 480p (DASH)
+			'35'  : 7, #FLV 480p
+			'18'  : 8, #MP4 360p
+			'34'  : 9, #FLV 360p
+		}
+		if config.mediaportal.youtubeenablevp9.value:
+			self.VIDEO_FMT_PRIORITY_MAP.update({
+			'303' : 1, #VP9 1080p60 (DASH)
+			'248' : 2, #VP9 1080p (DASH)
+			})
+	elif videoPrio == 4: #1440p
+		self.VIDEO_FMT_PRIORITY_MAP = {
+			'299' : 5, #MP4 1080p60 (DASH)
+			'137' : 6, #MP4 1080p (DASH)
+			'22'  : 7, #MP4 720p
+			'135' : 8, #MP4 480p (DASH)
+			'35'  : 9, #FLV 480p
+			'18'  : 10, #MP4 360p
+			'34'  : 11, #FLV 360p
+		}
+		if config.mediaportal.youtubeenablevp9.value:
+			self.VIDEO_FMT_PRIORITY_MAP.update({
+			'308' : 1, #VP9 1440p60 (DASH)
+			'271' : 2, #VP9 1440p (DASH)
+			'303' : 3, #VP9 1080p60 (DASH)
+			'248' : 4, #VP9 1080p (DASH)
+			})
+	elif videoPrio == 5: #2160p
+		self.VIDEO_FMT_PRIORITY_MAP = {
+			'299' : 7, #MP4 1080p60 (DASH)
+			'137' : 8, #MP4 1080p (DASH)
+			'22'  : 9, #MP4 720p
+			'135' : 10, #MP4 480p (DASH)
+			'35'  : 11, #FLV 480p
+			'18'  : 12, #MP4 360p
+			'34'  : 13, #FLV 360p
+		}
+		if config.mediaportal.youtubeenablevp9.value:
+			self.VIDEO_FMT_PRIORITY_MAP.update({
+			'315' : 1, #VP9 2160p60 (DASH)
+			'313' : 2, #VP9 2160p (DASH)
+			'308' : 3, #VP9 1440p60 (DASH)
+			'271' : 4, #VP9 1440p (DASH)
+			'303' : 5, #VP9 1080p60 (DASH)
+			'248' : 6, #VP9 1080p (DASH)
+			})
+
+	self.AUDIO_FMT_PRIORITY_MAP = {
+		'258' : 1, #AAC
+		'256' : 2, #AAC
+		'141' : 3, #AAC ABR256
+		'140' : 4, #AAC ABR128
+		'139' : 5, #AAC ABR48
+		'172' : 6, #VORBIS 256
+		'171' : 7, #VORBIS 128
+	}
 
 	self.video_url = None
+	self.audio_url = None
 	self.video_id = url
 	self.videoPrio = videoPrio
 	self.dash = dash
@@ -125,8 +181,14 @@ class youtubeUrl(object):
 		self.checkFlashvars(flashvars, videoinfo, True)
 	else:
 		links = {}
-		encoded_url_map = flashvars[u"url_encoded_fmt_stream_map"]
-		if self.dash: encoded_url_map += flashvars.get('adaptive_fmts', [])
+		audio = {}
+		encoded_url_map = ""
+		if self.dash:
+			try:
+				encoded_url_map += u"," + flashvars.get('adaptive_fmts', [])
+			except:
+				pass
+		encoded_url_map += u"," + flashvars[u"url_encoded_fmt_stream_map"]
 		for url_desc in encoded_url_map.split(u","):
 			url_desc_map = parse_qs(url_desc)
 			if not (url_desc_map.has_key(u"url") or url_desc_map.has_key(u"stream")):
@@ -164,17 +226,38 @@ class youtubeUrl(object):
 			try:
 				links[self.VIDEO_FMT_PRIORITY_MAP[str(key)]] = url
 			except KeyError:
-				continue
+				try:
+					audio[self.AUDIO_FMT_PRIORITY_MAP[str(key)]] = url
+				except KeyError:
+					continue
 
-		if not links:
-			url = flashvars.get('hlsvp','')
-			if url:
-				links[0] = url
+		url = flashvars.get('hlsvp','')
+		if url:
+			links = {}
+			links[0] = url
 
+		#print "#####################################################################################"
+		#try:
+		#	for i in links:
+		#		type = re.search('.*?itag=(\d+)', links[i]).group(1)
+		#		print type + "\t" + links[i]
+		#except:
+		#	pass
+		#print "#####################################################################################"
 		try:
 			self.video_url = links[sorted(links.iterkeys())[0]].encode('utf-8')
+			try:
+				if int(re.search('.*?itag=(\d+)', self.video_url).group(1))>100:
+					self.audio_url = audio[sorted(audio.iterkeys())[0]].encode('utf-8')
+					#print "#####################################################################################"
+					#for i in audio:
+					#	type = re.search('.*?itag=(\d+)', audio[i]).group(1)
+					#	print type + "\t" + audio[i]
+					#print "#####################################################################################"
+			except:
+				pass
 			#self.__callBack(self.video_url)
-			self.callBack(self.video_url)
+			self.callBack(self.video_url, self.audio_url)
 		except (KeyError,IndexError):
 			self.error = "[YoutubeURL] Error: no video url found"
 			self.errReturn(self.video_url)
@@ -320,8 +403,10 @@ class youtubeUrl(object):
 
 	return flashvars
 
-  def callBack(self, url):
-	if url.startswith('http') and not '.m3u8' in url:
+  def callBack(self, url, suburi=None):
+	if suburi and not '.m3u8' in url:
+		self.__callBack(url, suburi=suburi)
+	elif url.startswith('http') and not '.m3u8' in url:
 		self.error = '[YoutubeURL] Playback error:'
 		try:
 			return self.tw_agent_hlp.getRedirectedUrl(url, True).addCallback(self.getRedirect, url).addErrback(self.dataError)
@@ -334,12 +419,14 @@ class youtubeUrl(object):
 	bandwith_list = []
 	match_sec_m3u8=re.findall('BANDWIDTH=(\d+).*?\n(.*?m3u8)', data, re.S)
 	videoPrio = int(config.mediaportal.youtubeprio.value)
-	if videoPrio == 2:
+	if videoPrio >= 3:
 		bw = int(match_sec_m3u8[-1][0])
-	elif videoPrio == 1:
+	elif videoPrio == 2:
 		bw = int(match_sec_m3u8[-1][0])/2
-	else:
+	elif videoPrio == 1:
 		bw = int(match_sec_m3u8[-1][0])/3
+	else:
+		bw = int(match_sec_m3u8[-1][0])/4
 	for each in match_sec_m3u8:
 		bandwith,url = each
 		bandwith_list.append((int(bandwith),url))

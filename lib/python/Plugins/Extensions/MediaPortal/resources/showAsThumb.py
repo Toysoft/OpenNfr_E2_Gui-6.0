@@ -7,18 +7,6 @@ from thread import allocate_lock
 from debuglog import printlog as printl
 import mp_globals
 
-# teilweise von movie2k geliehen
-if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/TMDb/plugin.pyo'):
-	from Plugins.Extensions.TMDb.plugin import *
-	TMDbPresent = True
-elif fileExists('/usr/lib/enigma2/python/Plugins/Extensions/IMDb/plugin.pyo'):
-	TMDbPresent = False
-	IMDbPresent = True
-	from Plugins.Extensions.IMDb.plugin import *
-else:
-	IMDbPresent = False
-	TMDbPresent = False
-
 thumb_cookies = CookieJar()
 thumb_ck = {}
 thumb_agent = ''
@@ -224,18 +212,11 @@ class ShowThumbscreen(MPScreen):
 			skincontent += "<widget source=\"label" + str(x) + "\" render=\"Label\" position=\"" + str(absX + 2) + "," + str(absY + self.picY - 2) + "\" size=\"" + str(self.picX - 2) + "," + str(textsize * 2) + "\" font=\"" + mp_globals.font + ";" + str(fontsize) + "\" zPosition=\"3\" transparent=\"1\" valign=\"top\" halign=\"center\" foregroundColor=\"" + mp_globals.ThumbViewTextForeground + "\" />"
 			skincontent += "<widget name=\"thumb" + str(x) + "\" position=\"" + str(absX + 5) + "," + str(absY + 5) + "\" size=\"" + str(self.picX - 10) + "," + str(self.picY - 10) + "\" zPosition=\"2\" transparent=\"1\" alphatest=\"blend\" />"
 
-		# Load Bottons Skin XML
-		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/ThumbsScreen.xml" % (self.skin_path, config.mediaportal.skin.value)
-		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/ThumbsScreen.xml"
-		print path
-		with open(path, "r") as f:
-			skinmain = f.read()
-			f.close()
+		# Load Skin XML
+		MPScreen.__init__(self, session, skin='MP_Thumbs')
 
 		# Skin komlett aufbauen
-		self.skin_dump = skinmain
+		self.skin_dump = self.skin
 		self.skin_dump += "<widget name=\"frame\" position=\"" + str(absX + 5) + "," + str(absY + 5) + "\" size=\"" + str(self.picX) + "," + str(self.picY) + "\" zPosition=\"1\" transparent=\"0\" alphatest=\"blend\" />"
 		self.skin_dump += skincontent
 		self.skin_dump += "</screen>"
@@ -244,7 +225,6 @@ class ShowThumbscreen(MPScreen):
 		self["hidePig"] = Boolean()
 		self["hidePig"].setBoolean(config.mediaportal.minitv.value)
 
-		MPScreen.__init__(self, session)
 
 		self["actions"] = ActionMap(["MP_Actions"], {
 			"deleteBackward" : self.key_deleteBackward,
@@ -259,7 +239,6 @@ class ShowThumbscreen(MPScreen):
 			"down": self.key_down,
 			"green" : self.keyPageNumber,
 			"red" : self.keyCancel,
-			"info" :  self.keyTMDbInfo,
 			"nextBouquet" : self.nextPage,
 			"prevBouquet" : self.prevPage
 		}, -1)
@@ -535,14 +514,6 @@ class ShowThumbscreen(MPScreen):
 	def waitfordata(self, newfilmpage):
 		self['page'].setText(_("Please wait... new page %s is loading") % (newfilmpage+1))
 		return
-
-	def keyTMDbInfo(self):
-		if not self.keyLocked and TMDbPresent:
-			title = self.thumbfilmliste[self.section * self.thumbsC + self.index][0]
-			self.session.open(TMDbMain, title)
-		elif not self.keyLocked and IMDbPresent:
-			title = self.thumbfilmliste[self.section * self.thumbsC + self.index][0]
-			self.session.open(IMDB, title)
 
 	def paintFrame(self):
 		if self.maxentry < self.index or self.index < 0:

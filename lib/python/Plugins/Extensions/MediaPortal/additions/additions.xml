@@ -6,25 +6,28 @@
 		<plugin type="mod" modfile="sport.pokerstars" confopt="showpokerstars" default="True" confcat="sport" listcat="funsport" gz="0" name="Pokerstars.tv" icon="pokerstars" filter="Sport" screen="pokerGenreScreen" param1="" param2=""/>
 		<!--music section-->
 		<plugin type="mod" modfile="music.mtvdecharts" confopt="showMTVdeCharts" default="True" confcat="music" listcat="funsport" gz="0" name="MTV.de Charts" icon="mtvdecharts" filter="Music" screen="MTVdeChartsGenreScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="music.radio" confopt="showRadio" default="True" confcat="music" listcat="funsport" gz="0" name="Radio.de" icon="radiode" filter="Music" screen="Radiode" param1="" param2=""/>
+		<plugin type="mod" modfile="music.radio" confopt="showradio" default="True" confcat="music" listcat="funsport" gz="0" name="Radio" icon="radio" filter="Music" screen="RadioGenreScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="music.jukebox" confopt="showJBTO" default="True" confcat="music" listcat="funsport" gz="0" name="JUKEBOX" icon="jukebox" filter="Music" screen="show_JBTO_Genre" param1="" param2=""/>
+		<!--newsdoku section-->
+		<plugin type="mod" modfile="newsdoku.focus" confopt="showFocus" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="Focus" icon="focus" filter="NewsDoku" screen="focusGenre" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.autobild" confopt="showAutoBild" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="AutoBild" icon="autobild" filter="NewsDoku" screen="autoBildGenreScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.dokustream" confopt="showDokuStream" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="DokuStream" icon="dokustream" filter="NewsDoku" screen="show_DS_Genre" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.dokus4_me" confopt="showDokus4me" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="dokus4.me" icon="dokus4_me" filter="NewsDoku" screen="show_D4ME_Genre" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.wissen" confopt="showwissen" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="Wissen.de" icon="wissen" filter="NewsDoku" screen="wissenListeScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.bild" confopt="showbildde" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="Bild.de" icon="bild" filter="NewsDoku" screen="bildFirstScreen" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.doku_to" confopt="showDUTO" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="DOKU.to" icon="doku_to" filter="NewsDoku" screen="show_DUTO_Genre" param1="" param2=""/>
+		<plugin type="mod" modfile="newsdoku.urknall" confopt="showurknall" default="True" confcat="newsdoku" listcat="newsdoku" gz="0" name="Urknall, Weltall und das Leben" icon="urknall" filter="NewsDoku" screen="UrknallFilmListeScreen" param1="" param2=""/>
 		<!--fun section-->
 		<plugin type="mod" modfile="fun.heisevideo" confopt="showHeiseVideo" default="True" confcat="fun" listcat="funsport" gz="0" name="HeiseVideo" icon="heisevideo" filter="Fun" screen="HeiseTvGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.retrotv" confopt="showretrotv" default="True" confcat="fun" listcat="funsport" gz="0" name="retro-tv" icon="retrotv" filter="Fun" screen="retrotvFilmListeScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.forplayers" confopt="show4Players" default="True" confcat="fun" listcat="funsport" gz="0" name="4Players" icon="4players" filter="Fun" screen="forPlayersGenreScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.focus" confopt="showFocus" default="True" confcat="fun" listcat="funsport" gz="0" name="Focus" icon="focus" filter="Fun" screen="focusGenre" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.filmon" confopt="showFilmOn" default="True" confcat="fun" listcat="funsport" gz="0" name="FilmOn" icon="filmon" filter="Fun" screen="filmON" param1="" param2=""/>
+		<!--<plugin type="mod" modfile="fun.filmon" confopt="showFilmOn" default="True" confcat="fun" listcat="funsport" gz="0" name="FilmOn" icon="filmon" filter="Fun" screen="filmON" param1="" param2=""/>-->
 		<plugin type="mod" modfile="fun.failto" confopt="showFail" default="True" confcat="fun" listcat="funsport" gz="0" name="Fail.to" icon="fail" filter="Fun" screen="failScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.cczwei" confopt="showCC2" default="True" confcat="fun" listcat="funsport" gz="0" name="CC2.tv" icon="cczwei" filter="Fun" screen="cczwei" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.e2world" confopt="showe2world" default="True" confcat="fun" listcat="funsport" gz="0" name="E2WORLD" icon="e2world" filter="Fun" screen="e2world" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.autobild" confopt="showAutoBild" default="True" confcat="fun" listcat="funsport" gz="0" name="AutoBild" icon="autobild" filter="Fun" screen="autoBildGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.itunestrailers" confopt="showitunestrailers" default="True" confcat="fun" listcat="funsport" gz="0" name="iTunes Movie Trailers" icon="itunesmovietrailers" filter="Fun" screen="itunestrailersGenreScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.liveleak" confopt="showLiveLeak" default="False" confcat="fun" listcat="funsport" gz="0" name="LiveLeak" icon="liveleak" filter="Fun" screen="LiveLeakScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.dokustream" confopt="showDokuStream" default="True" confcat="fun" listcat="funsport" gz="0" name="DokuStream" icon="dokustream" filter="Fun" screen="show_DS_Genre" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.dokus4_me" confopt="showDokus4me" default="True" confcat="fun" listcat="funsport" gz="0" name="dokus4.me" icon="dokus4_me" filter="Fun" screen="show_D4ME_Genre" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gigatv" confopt="showGIGA" default="True" confcat="fun" listcat="funsport" gz="0" name="GIGA.de" icon="gigatv" filter="Fun" screen="gigatvGenreScreen" param1="" param2=""/>
-		<!--<plugin type="mod" modfile="fun.gronkh" confopt="showgronkh" default="True" confcat="fun" listcat="funsport" gz="0" name="gronkh.de" icon="gronkh" filter="Fun" screen="gronkhGenreScreen" param1="" param2=""/>-->
-		<plugin type="mod" modfile="fun.wissen" confopt="showwissen" default="True" confcat="fun" listcat="funsport" gz="0" name="Wissen.de" icon="wissen" filter="Fun" screen="wissenListeScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.bild" confopt="showbildde" default="True" confcat="fun" listcat="funsport" gz="0" name="Bild.de" icon="bild" filter="Fun" screen="bildFirstScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.gaskrank_tv" confopt="showGaskrank" default="False" confcat="fun" listcat="funsport" gz="0" name="GasKrank.tv" icon="gaskrank_tv" filter="Fun" screen="show_GKTV_Genre" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.funnyvideoclips_de" confopt="showFunnyVideoclips" default="True" confcat="fun" listcat="funsport" gz="0" name="FUNNY-VIDEOCLIPS.DE" icon="funnyvideoclips_de" filter="Fun" screen="show_FVCDE_Genre" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.lachmeister_de" confopt="showLachmeister" default="False" confcat="fun" listcat="funsport" gz="0" name="Lachmeister.de" icon="lachmeister_de" filter="Fun" screen="show_LMDE_Genre" param1="" param2=""/>
@@ -32,8 +35,6 @@
 		<plugin type="mod" modfile="fun.lachschon_de" confopt="showLachschon" default="True" confcat="fun" listcat="funsport" gz="0" name="LACHSCHON.DE" icon="lachschon_de" filter="Fun" screen="show_LSDE_Genre" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.twitch" confopt="showTwitch" default="True" confcat="fun" listcat="funsport" gz="0" name="Twitch" icon="twitch" filter="Fun" screen="twitchGames" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.chefkoch" confopt="showChefkoch" default="True" confcat="fun" listcat="funsport" gz="0" name="Chefkoch.de" icon="chefkoch" filter="Fun" screen="chefkochGenreScreen" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.doku_to" confopt="showDUTO" default="True" confcat="fun" listcat="funsport" gz="0" name="DOKU.to" icon="doku_to" filter="Fun" screen="show_DUTO_Genre" param1="" param2=""/>
-		<plugin type="mod" modfile="fun.urknall" confopt="showurknall" default="True" confcat="fun" listcat="funsport" gz="0" name="Urknall, Weltall und das Leben" icon="urknall" filter="Fun" screen="UrknallFilmListeScreen" param1="" param2=""/>
 		<plugin type="mod" modfile="fun.germanytv" confopt="showgermanytv" default="True" confcat="fun" listcat="funsport" gz="0" name="Germany-TV" icon="germanytv" filter="Fun" screen="germanytvChannelScreen" param1="" param2=""/>
 		<!--mediatheken section-->
 		<plugin type="mod" modfile="mediatheken.dreisat" confopt="showDreisat" default="True" confcat="mediatheken" listcat="mediatheken" gz="0" name="3sat Mediathek" icon="3sat" filter="Mediathek" screen="dreisatGenreScreen" param1="" param2=""/>

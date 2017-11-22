@@ -18,11 +18,10 @@ class MessageBoxExt(Screen):
 	IS_DIALOG = True
 
 	def __init__(self, session, text, type = TYPE_YESNO, timeout = -1, close_on_any_key = False, default = True, enable_input = True, msgBoxID = None, title = None, additionalActionMap=None):
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/MessageBox.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_MessageBox.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
-			path = self.skin_path + mp_globals.skinFallback + "/MessageBox.xml"
+			path = self.skin_path + mp_globals.skinFallback + "/MP_MessageBox.xml"
 		with open(path, "r") as f:
 			self.skin = f.read()
 			f.close()

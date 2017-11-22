@@ -94,17 +94,17 @@ class checkupdate:
 
 	def startUpdate(self,answer):
 		if answer is True:
-			self.session.open(MPUpdateScreen,self.updateurl)
+			self.session.open(MPUpdateScreen,self.updateurl,self.html)
 		else:
 			return
 
 class MPUpdateScreen(Screen):
 
-	def __init__(self, session, updateurl):
+	def __init__(self, session, updateurl, html):
 		self.session = session
 		self.updateurl = updateurl
+		self.html = html
 
-		self.plugin_path = mp_globals.pluginPath
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		path = "%s/%s/MP_Update.xml" % (self.skin_path, config.mediaportal.skin.value)
 		if not fileExists(path):
@@ -125,7 +125,10 @@ class MPUpdateScreen(Screen):
 
 	def __onLayoutFinished(self):
 		height = self['mplog'].l.getItemSize().height()
-		self.ml.l.setFont(gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
+		try:
+			self.ml.l.setFont(gFont(mp_globals.font, height - 2 * mp_globals.sizefactor))
+		except:
+			pass
 		self.list.append(_("Starting update, please wait..."))
 		self.ml.setList(self.list)
 		self.ml.moveToIndex(len(self.list)-1)
@@ -135,14 +138,26 @@ class MPUpdateScreen(Screen):
 	def startPluginUpdate(self):
 		self.container=eConsoleAppContainer()
 		if mp_globals.isDreamOS:
+
 			self.container.appClosed_conn = self.container.appClosed.connect(self.finishedPluginUpdate)
 			self.container.stdoutAvail_conn = self.container.stdoutAvail.connect(self.mplog)
-			self.container.execute("apt-get update ; wget -q -O /tmp/foobar %s ; dpkg --install /tmp/foobar ; apt-get -y -f install" % str(self.updateurl))
+
+			f = open("/etc/apt/apt.conf", "r")
+			arch = ''.join(f.readlines()).strip()
+			arch = re.findall('"(.*?)";', arch, re.S)[0]
+
+			tmp_infolines = self.html.splitlines()
+			files = ''
+			for i in range(0, len(tmp_infolines)):
+				if re.match(".*?/update/",tmp_infolines[i], re.S):
+					file = "wget -q -O /tmp/mediaportal/update/%s %s" % (tmp_infolines[i].split('/update/')[-1].replace('&&ARCH&&', arch), tmp_infolines[i].replace('&&ARCH&&', arch))
+					files = files + ' && ' + file
+			download = files.strip(' && ')
+
+			self.container.execute("mkdir -p /tmp/mediaportal/update && %s && cd /tmp/mediaportal/update/ && dpkg-scanpackages . | gzip -1c > Packages.gz && echo deb file:/tmp/mediaportal/update ./ > /etc/apt/sources.list.d/mediaportal.list && apt-get update && apt-get install -y --force-yes enigma2-plugin-extensions-mediaportal && rm -r /tmp/mediaportal/update && rm /etc/apt/sources.list.d/mediaportal.list" % download)
 		else:
 			self.container.appClosed.append(self.finishedPluginUpdate)
 			self.container.stdoutAvail.append(self.mplog)
-			#self.container.stderrAvail.append(self.mplog)
-			#self.container.dataAvail.append(self.mplog)
 			self.container.execute("opkg update ; opkg install " + str(self.updateurl))
 
 	def finishedPluginUpdate(self,retval):
@@ -152,8 +167,6 @@ class MPUpdateScreen(Screen):
 			config.mediaportal.filter.save()
 			configfile.save()
 			self.session.openWithCallback(self.restartGUI, MessageBoxExt, _("MediaPortal successfully updated!\nDo you want to restart the Enigma2 GUI now?"), MessageBoxExt.TYPE_YESNO)
-		elif retval == 2:
-			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("MediaPortal update failed! Please check free space on your root filesystem, at least 10MB are required for installation.\nCheck the update log carefully!"), MessageBoxExt.TYPE_ERROR)
 		else:
 			self.session.openWithCallback(self.returnGUI, MessageBoxExt, _("MediaPortal update failed! Check the update log carefully!"), MessageBoxExt.TYPE_ERROR)
 
