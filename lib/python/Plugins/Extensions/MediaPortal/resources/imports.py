@@ -56,7 +56,7 @@ from Tools.Directories import fileExists, resolveFilename, SCOPE_PLUGINS, SCOPE_
 from Tools.LoadPixmap import LoadPixmap
 from Tools.NumericalTextInput import NumericalTextInput
 
-import re, httplib, urllib, urllib2, os, cookielib, socket, sha, shutil, datetime, math, hashlib, random, json, md5, string, xml.etree.cElementTree, StringIO, Queue, threading, sys
+import re, urllib, urllib2, os, cookielib, socket, sha, shutil, datetime, math, hashlib, random, json, md5, string, xml.etree.cElementTree, StringIO, Queue, threading, sys
 
 from urllib2 import Request, URLError, urlopen as urlopen2
 from socket import gaierror, error
@@ -168,15 +168,12 @@ def bstkn(url):
 		return None
 
 def testWebConnection():
-	conn = httplib.HTTPConnection("www.google.de", timeout=15)
+	import requests
 	try:
-		conn.request("GET", "/")
-		data = conn.getresponse()
-		conn.close()
+		response = requests.get("http://www.google.de", timeout=5)
 		return True
-	except:
-		conn.close()
-	return False
+	except requests.ConnectionError:
+		return False
 
 def decodeHtml(text):
 	text = text.replace('\u00b2','²')

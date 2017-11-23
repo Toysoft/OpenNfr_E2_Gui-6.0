@@ -15,27 +15,34 @@
   <widget backgroundColor="#20000000" font="mediaportal;25" valign="center" halign="center" name="blue" position="1125,1030" size="365,40" transparent="1" />
   <widget backgroundColor="#20000000" font="mediaportal;50" foregroundColor="#00ffffff" halign="right" name="title" position="650,40" shadowColor="#00000000" shadowOffset="4,4" size="1200,60" transparent="1" />
 -->
-  <widget backgroundColor="#20000000" font="mediaportal;35" name="Mediatheken" position="30,205" size="460,45" transparent="1" />
-  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="mediatheken" position="30,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
-  <widget backgroundColor="#20000000" font="mediaportal;35" name="NewsDoku" position="500,205" size="460,45" transparent="1" />
-  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="newsdoku" position="500,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
-  <widget backgroundColor="#20000000" font="mediaportal;35" name="Funsport" position="970,205" size="460,45" transparent="1" />
-  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="funsport" position="970,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
-  <widget backgroundColor="#20000000" font="mediaportal;35" name="Porn" position="1440,205" size="460,45" transparent="1" />
-  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="porn" position="1440,260" scrollbarMode="showOnDemand" size="460,744" transparent="1" itemHeight="62" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="Mediatheken" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="mediatheken" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="NewsDoku" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="newsdoku" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="Fun" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="fun" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="Music" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="music" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="Sport" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="sport" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="Porn" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="porn" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  <widget backgroundColor="#20000000" font="mediaportal;45" name="Useradditions" position="30,205" size="800,55" transparent="1" />
+  <widget backgroundColor="#20000000" foregroundColorSelected="#ffffff" name="useradditions" position="30,270" scrollbarMode="showOnDemand" size="800,720" transparent="1" itemHeight="90" />
+  
   <eLabel name="bg_up" position="10,10" size="1900,90" zPosition="-1" backgroundColor="#20000000" />
   <eLabel name="bg_name" position="10,110" size="1900,80" zPosition="-1" backgroundColor="#20000000" />
-  <eLabel name="bg_list" position="10,200" size="1900,820" zPosition="-1" backgroundColor="#20000000" />
+  <eLabel name="bg_list" position="10,200" size="840,820" zPosition="-1" backgroundColor="#20000000" />
   <eLabel name="bg_down" position="10,1030" size="1900,40" zPosition="-1" backgroundColor="#20000000" />
   <eLabel name="button red" position="15,1068" size="365,2" backgroundColor="#00f23d21" zPosition="1" />
   <eLabel name="button green" position="385,1068" size="365,2" backgroundColor="#0031a500" zPosition="1" />
   <eLabel name="button yellow" position="755,1068" size="365,2" backgroundColor="#00e5b243" zPosition="1" />
   <eLabel name="button blue" position="1125,1068" size="365,2" backgroundColor="#000064c7" zPosition="1" />
-  <eLabel name="button bouquet" position="1500,1035" size="60,30" backgroundColor="#00000000" text="BOUQ" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
-  <eLabel name="button info" position="1580,1035" size="60,30" backgroundColor="#00000000" text="INFO" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
-  <eLabel name="button pvr" position="1660,1035" size="60,30" backgroundColor="#00000000" text="PVR" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
-  <eLabel name="button help" position="1740,1035" size="60,30" backgroundColor="#00000000" text="HELP" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
-  <eLabel name="button exit" position="1820,1035" size="60,30" backgroundColor="#00000000" text="EXIT" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button bouquet" position="1500,1040" size="60,30" backgroundColor="#00000000" text="BOUQ" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button info" position="1580,1040" size="60,30" backgroundColor="#00000000" text="INFO" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button pvr" position="1660,1040" size="60,30" backgroundColor="#00000000" text="PVR" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button help" position="1740,1040" size="60,30" backgroundColor="#00000000" text="HELP" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
+  <eLabel name="button exit" position="1820,1040" size="60,30" backgroundColor="#00000000" text="EXIT" font="mediaportal; 15" foregroundColor="#00ffffff" halign="center" valign="center" shadowColor="#00000000" shadowOffset="-3,-3" zPosition="1" />
   <eLabel name="button bouquet bg" position="1499,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
   <eLabel name="button info bg" position="1579,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />
   <eLabel name="button pvr bg" position="1659,1034" size="62,32" backgroundColor="#00616161" zPosition="0" />

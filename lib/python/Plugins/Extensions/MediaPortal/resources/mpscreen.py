@@ -150,7 +150,7 @@ class MPScreen(Screen, HelpableScreen):
 			if widgets:
 				self.skin = self.skin.replace('</screen>', '')
 				for wf in widgets:
-					path = "%s/%s/%s" % (self.skin_path, config.mediaportal.skin.value, wf)
+					path = "%s/%s/%s.xml" % (self.skin_path, config.mediaportal.skin.value, wf)
 					if not fileExists(path):
 						path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % wf
 					f = open(path, "r")

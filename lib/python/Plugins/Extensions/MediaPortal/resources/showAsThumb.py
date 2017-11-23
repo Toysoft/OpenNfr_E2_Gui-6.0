@@ -84,18 +84,15 @@ class ThumbsHelper:
 					except KeyError:
 						print "TH keine Filmliste gefunden"
 				try:
-					self.loadPicQueued()
+					self.showInfos()
 				except AttributeError:
 					try:
-						self.loadpage2()
+						self.loadPicQueued()
 					except AttributeError:
 						try:
 							self.loadPic()
 						except AttributeError:
-							try:
-								self.showInfos()
-							except AttributeError:
-								pass
+							pass
 				self.keyOK()
 
 			elif args[1] == -9:

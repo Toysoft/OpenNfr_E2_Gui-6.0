@@ -8,14 +8,22 @@
 		<convert type="ClockToText">Format:%A, %d.%m.%Y</convert>
 	</widget>
 	<widget name="name" position="0,580" size="1140,30" foregroundColor="#00e5b243" backgroundColor="#00101214" transparent="1" font="mediaportal;28" valign="top" halign="center" />
-	<widget name="Mediatheken" position="20,60" size="260,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
-	<widget name="mediatheken" position="20,85" size="260,484" backgroundColor="#00101214" scrollbarMode="showOnDemand" selectionPixmap="~/original/images/sel.png" foregroundColorSelected="#00e5b243" transparent="0" />
-	<widget name="NewsDoku" position="300,60" size="260,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
-	<widget name="newsdoku" position="300,85" size="260,484" backgroundColor="#00101214" scrollbarMode="showOnDemand" selectionPixmap="~/original/images/sel.png" foregroundColorSelected="#00e5b243" transparent="0" />
-	<widget name="Funsport" position="580,60" size="260,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
-	<widget name="funsport" position="580,85" size="260,484" backgroundColor="#00101214" scrollbarMode="showOnDemand" selectionPixmap="~/original/images/sel.png" foregroundColorSelected="#00e5b243" transparent="0" />
-	<widget name="Porn" position="860,60" size="260,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
-	<widget name="porn" position="860,85" size="260,484" backgroundColor="#00101214" scrollbarMode="showOnDemand" selectionPixmap="~/original/images/sel.png" foregroundColorSelected="#00e5b243" transparent="0" />
+	<widget name="Mediatheken" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="mediatheken" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+	<widget name="Fun" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="fun" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+	<widget name="Music" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="music" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+	<widget name="Sport" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="sport" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+	<widget name="NewsDoku" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="newsdoku" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+	<widget name="Porn" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="porn" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+	<widget name="Useradditions" position="20,60" size="500,25" backgroundColor="#00aaaaaa" zPosition="5" foregroundColor="#00000000" font="mediaportal;22" halign="center" />
+	<widget name="useradditions" position="20,85" size="500,496" backgroundColor="#00101214" scrollbarMode="showOnDemand" foregroundColorSelected="#00e5b243" transparent="0" itemHeight="62" />
+
+
 	<ePixmap position="580,645" size="100,2" zPosition="1" pixmap="~/original/images/buttonred.png" alphatest="blend" backgroundColor="#00101214" />
 	<widget name="red" position="580,620" size="100,25" transparent="1" font="mediaportal; 18" backgroundColor="#00101214" foregroundColor="#00ffffff" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="690,645" size="100,2" zPosition="1" pixmap="~/original/images/buttongrey.png" alphatest="blend" backgroundColor="#00101214" />

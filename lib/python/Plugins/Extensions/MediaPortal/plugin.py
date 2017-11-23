@@ -188,7 +188,7 @@ config.mediaportal.epg_deepstandby = ConfigSelection(default = "skip", choices =
 		])
 
 # Allgemein
-config.mediaportal.version = NoSave(ConfigText(default="2017112101"))
+config.mediaportal.version = NoSave(ConfigText(default="2017112201"))
 config.mediaportal.autoupdate = ConfigYesNo(default = True)
 
 config.mediaportal.retries = ConfigSubsection()
@@ -240,7 +240,6 @@ else:
 	config.mediaportal.ansicht = ConfigSelection(default = "wall", choices = [("wall", _("Wall")), ("liste", _("List"))])
 config.mediaportal.wallmode = ConfigSelection(default = "color", choices = [("color", _("Color")),("bw", _("Black&White")),("color_zoom", _("Color (Zoom)")),("bw_zoom", _("Black&White (Zoom)"))])
 config.mediaportal.wall2mode = ConfigSelection(default = "color", choices = [("color", _("Color")),("bw", _("Black&White"))])
-config.mediaportal.listmode = ConfigSelection(default = "full", choices = [("full", _("Full")),("single", _("Single"))])
 config.mediaportal.selektor = ConfigSelection(default = "white", choices = [("blue", _("Blue")),("green", _("Green")),("red", _("Red")),("turkis", _("Aqua")),("white", _("White"))])
 config.mediaportal.use_hls_proxy = ConfigYesNo(default = False)
 config.mediaportal.hls_proxy_ip = ConfigIP(default = [127,0,0,1], auto_jump = True)
@@ -596,8 +595,6 @@ class MPSetup(Screen, CheckPremiumize, ConfigListScreenExt):
 		if (config.mediaportal.ansicht.value == "wall" or config.mediaportal.ansicht.value == "wall2" or config.mediaportal.ansicht.value == "wall_vti"):
 			self.configlist.append(getConfigListEntry(_("Wall-Selector-Color:"), config.mediaportal.selektor, False))
 			self.configlist.append(getConfigListEntry(_("Page Display Style:"), config.mediaportal.pagestyle, False))
-		if config.mediaportal.ansicht.value == "liste":
-			self.configlist.append(getConfigListEntry(_("List Mode:"), config.mediaportal.listmode, True))
 		self.configlist.append(getConfigListEntry(_("Skin:"), config.mediaportal.skin, False))
 		self.configlist.append(getConfigListEntry(_("ShowAsThumb as Default:"), config.mediaportal.showAsThumb, False))
 		self.configlist.append(getConfigListEntry(_("Disable Background-TV:"), config.mediaportal.backgroundtv, True))
@@ -888,13 +885,13 @@ class MPList(Screen, HelpableScreen):
 			session.nav.stopService()
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"info" : self.showPorn
+			"up"    : self.keyUp,
+			"down"  : self.keyDown,
+			"left"  : self.keyRight,
+			"right" : self.keyRight,
+			"info"  : self.showPorn
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
-			"up"    : (self.keyUp, _("Up")),
-			"down"  : (self.keyDown, _("Down")),
-			"left"  : (self.keyLeft, _("Left")),
-			"right" : (self.keyRight, _("Right")),
 			"red"   : (self.keySimpleList, _("Open SimpleList")),
 			"ok"    : (self.keyOK, _("Open selected Plugin")),
 			"cancel": (self.keyCancel, _("Exit MediaPortal")),
@@ -917,40 +914,67 @@ class MPList(Screen, HelpableScreen):
 		self['Exit'] = Label(_("Exit"))
 
 		self.chooseMenuList1 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self.chooseMenuList1.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize))
+		self.chooseMenuList1.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
 		if mp_globals.videomode == 2:
-			self.chooseMenuList1.l.setItemHeight(60)
+			self.chooseMenuList1.l.setItemHeight(90)
 		else:
-			self.chooseMenuList1.l.setItemHeight(44)
+			self.chooseMenuList1.l.setItemHeight(62)
 		self['mediatheken'] = self.chooseMenuList1
 		self['Mediatheken'] = Label(_("Libraries"))
 
 		self.chooseMenuList2 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self.chooseMenuList2.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize))
+		self.chooseMenuList2.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
 		if mp_globals.videomode == 2:
-			self.chooseMenuList2.l.setItemHeight(60)
+			self.chooseMenuList2.l.setItemHeight(90)
 		else:
-			self.chooseMenuList2.l.setItemHeight(44)
-		self['newsdoku'] = self.chooseMenuList2
-		self['NewsDoku'] = Label(_("News&Documentary"))
+			self.chooseMenuList2.l.setItemHeight(62)
+		self['fun'] = self.chooseMenuList2
+		self['Fun'] = Label(_("Fun"))
 
 		self.chooseMenuList3 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self.chooseMenuList3.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize))
+		self.chooseMenuList3.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
 		if mp_globals.videomode == 2:
-			self.chooseMenuList3.l.setItemHeight(60)
+			self.chooseMenuList3.l.setItemHeight(90)
 		else:
-			self.chooseMenuList3.l.setItemHeight(44)
-		self['funsport'] = self.chooseMenuList3
-		self['Funsport'] = Label(_("Fun/Music/Sports"))
+			self.chooseMenuList3.l.setItemHeight(62)
+		self['music'] = self.chooseMenuList3
+		self['Music'] = Label(_("Music"))
 
 		self.chooseMenuList4 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
-		self.chooseMenuList4.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize))
+		self.chooseMenuList4.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
 		if mp_globals.videomode == 2:
-			self.chooseMenuList4.l.setItemHeight(60)
+			self.chooseMenuList4.l.setItemHeight(90)
 		else:
-			self.chooseMenuList4.l.setItemHeight(44)
-		self['porn'] = self.chooseMenuList4
-		self['Porn'] = Label("")
+			self.chooseMenuList4.l.setItemHeight(62)
+		self['sport'] = self.chooseMenuList4
+		self['Sport'] = Label(_("Sports"))
+
+		self.chooseMenuList5 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self.chooseMenuList5.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
+		if mp_globals.videomode == 2:
+			self.chooseMenuList5.l.setItemHeight(90)
+		else:
+			self.chooseMenuList5.l.setItemHeight(62)
+		self['newsdoku'] = self.chooseMenuList5
+		self['NewsDoku'] = Label(_("News&Documentary"))
+
+		self.chooseMenuList6 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self.chooseMenuList6.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
+		if mp_globals.videomode == 2:
+			self.chooseMenuList6.l.setItemHeight(90)
+		else:
+			self.chooseMenuList6.l.setItemHeight(62)
+		self['porn'] = self.chooseMenuList6
+		self['Porn'] = Label(_("Porn"))
+
+		self.chooseMenuList7 = MenuList([], enableWrapAround=True, content=eListboxPythonMultiContent)
+		self.chooseMenuList7.l.setFont(0, gFont(mp_globals.font, mp_globals.fontsize + 2 * mp_globals.sizefactor))
+		if mp_globals.videomode == 2:
+			self.chooseMenuList7.l.setItemHeight(90)
+		else:
+			self.chooseMenuList7.l.setItemHeight(62)
+		self['useradditions'] = self.chooseMenuList7
+		self['Useradditions'] = Label("User-Additions")
 
 		self.currentlist = "porn"
 		self.picload = ePicLoad()
@@ -982,10 +1006,12 @@ class MPList(Screen, HelpableScreen):
 			checkupdate(self.session).checkforupdate()
 
 		self.mediatheken = []
-		self.useradditions = []
+		self.fun = []
+		self.music = []
+		self.sport = []
 		self.newsdoku = []
-		self.funsport = []
 		self.porn = []
+		self.useradditions = []
 
 		conf = xml.etree.cElementTree.parse(CONFIG)
 		for x in conf.getroot():
@@ -1005,7 +1031,7 @@ class MPList(Screen, HelpableScreen):
 								else:
 									mod = eval("config.mediaportal." + x.get("confopt") + ".value")
 									if mod:
-										exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
+										exec("self."+x.get("confcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
 
 		xmlpath = resolveFilename(SCOPE_PLUGINS, "Extensions/MediaPortal/additions/")
 		for file in os.listdir(xmlpath):
@@ -1030,22 +1056,23 @@ class MPList(Screen, HelpableScreen):
 										else:
 											mod = eval("config.mediaportal." + x.get("confopt") + ".value")
 											if mod:
-												exec("self."+x.get("listcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
-
-		if len(self.porn) < 1:
-			self['Porn'].hide()
-		else:
-			self['Porn'].setText(_("Porn"))
+												exec("self."+x.get("confcat")+".append(self.hauptListEntry(\""+x.get("name").replace("&amp;","&")+"\", \""+x.get("icon")+"\", \""+x.get("modfile")+"\"))")
 
 		self.mediatheken.sort(key=lambda t : t[0][0].lower())
+		self.fun.sort(key=lambda t : t[0][0].lower())
+		self.music.sort(key=lambda t : t[0][0].lower())
+		self.sport.sort(key=lambda t : t[0][0].lower())
 		self.newsdoku.sort(key=lambda t : t[0][0].lower())
-		self.funsport.sort(key=lambda t : t[0][0].lower())
 		self.porn.sort(key=lambda t : t[0][0].lower())
+		self.useradditions.sort(key=lambda t : t[0][0].lower())
 
 		self.chooseMenuList1.setList(self.mediatheken)
-		self.chooseMenuList2.setList(self.newsdoku)
-		self.chooseMenuList3.setList(self.funsport)
-		self.chooseMenuList4.setList(self.porn)
+		self.chooseMenuList2.setList(self.fun)
+		self.chooseMenuList3.setList(self.music)
+		self.chooseMenuList4.setList(self.sport)
+		self.chooseMenuList5.setList(self.newsdoku)
+		self.chooseMenuList6.setList(self.porn)
+		self.chooseMenuList7.setList(self.useradditions)
 		self.keyRight()
 
 	def checkPathes(self):
@@ -1072,7 +1099,7 @@ class MPList(Screen, HelpableScreen):
 		reloadit = False
 		for defitem in mp_globals.status:
 			if int(config.mediaportal.version.value) < int(defitem[1]):
-				for confcatitem in [self.mediatheken, self.newsdoku, self.funsport, self.porn]:
+				for confcatitem in [self.mediatheken, self.fun, self.music, self.sport, self.newsdoku, self.porn, self.useradditions]:
 					lst = list(confcatitem)
 					for n,i in enumerate(lst):
 						if i[0][2] == defitem[0]:
@@ -1089,9 +1116,12 @@ class MPList(Screen, HelpableScreen):
 					confcatitem = tuple(lst)
 		if reloadit:
 			self.chooseMenuList1.setList(self.mediatheken)
-			self.chooseMenuList2.setList(self.newsdoku)
-			self.chooseMenuList3.setList(self.funsport)
-			self.chooseMenuList4.setList(self.porn)
+			self.chooseMenuList2.setList(self.fun)
+			self.chooseMenuList3.setList(self.music)
+			self.chooseMenuList4.setList(self.sport)
+			self.chooseMenuList5.setList(self.newsdoku)
+			self.chooseMenuList6.setList(self.porn)
+			self.chooseMenuList7.setList(self.useradditions)
 
 	def hauptListEntry(self, name, icon, modfile=None):
 		res = [(name, icon, modfile)]
@@ -1131,20 +1161,20 @@ class MPList(Screen, HelpableScreen):
 
 		scale = AVSwitch().getFramebufferScale()
 		if mp_globals.videomode == 2:
-			self.picload.setPara((105, 56, scale[0], scale[1], False, 1, "#FF000000"))
+			self.picload.setPara((150, 80, scale[0], scale[1], False, 1, "#FF000000"))
 		else:
-			self.picload.setPara((75, 40, scale[0], scale[1], False, 1, "#FF000000"))
+			self.picload.setPara((105, 56, scale[0], scale[1], False, 1, "#FF000000"))
 		if mp_globals.isDreamOS:
 			self.picload.startDecode(poster_path, False)
 		else:
 			self.picload.startDecode(poster_path, 0, 0, False)
 		pngthumb = self.picload.getData()
 		if mp_globals.videomode == 2:
-			res.append(MultiContentEntryPixmapAlphaBlend(pos=(0, 0), size=(105, 56), png=pngthumb))
-			res.append(MultiContentEntryText(pos=(110, 0), size=(400, 60), font=0, text=name, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+			res.append(MultiContentEntryPixmapAlphaBlend(pos=(0, 5), size=(150, 80), png=pngthumb))
+			res.append(MultiContentEntryText(pos=(165, 0), size=(800, 90), font=0, text=name, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
 		else:
-			res.append(MultiContentEntryPixmapAlphaBlend(pos=(0, 0), size=(75, 44), png=pngthumb))
-			res.append(MultiContentEntryText(pos=(80, 0), size=(300, 44), font=0, text=name, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+			res.append(MultiContentEntryPixmapAlphaBlend(pos=(0, 3), size=(105, 56), png=pngthumb))
+			res.append(MultiContentEntryText(pos=(115, 0), size=(600, 62), font=0, text=name, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
 		return res
 
 	def showPorn(self):
@@ -1204,279 +1234,272 @@ class MPList(Screen, HelpableScreen):
 
 	def keyRight(self):
 		self.cur_idx = self[self.currentlist].getSelectedIndex()
-		if config.mediaportal.listmode.value == "single":
-			self["mediatheken"].hide()
-			self["Mediatheken"].hide()
-			self["newsdoku"].hide()
-			self["NewsDoku"].hide()
-			self["funsport"].hide()
-			self["Funsport"].hide()
-			self["porn"].hide()
-			self["Porn"].hide()
-		self["mediatheken"].selectionEnabled(0)
-		self["newsdoku"].selectionEnabled(0)
-		self["funsport"].selectionEnabled(0)
-		self["porn"].selectionEnabled(0)
+		self["mediatheken"].hide()
+		self["Mediatheken"].hide()
+		self["fun"].hide()
+		self["Fun"].hide()
+		self["music"].hide()
+		self["Music"].hide()
+		self["sport"].hide()
+		self["Sport"].hide()
+		self["newsdoku"].hide()
+		self["NewsDoku"].hide()
+		self["porn"].hide()
+		self["Porn"].hide()
+		self["useradditions"].hide()
+		self["Useradditions"].hide()
 		if self.currentlist == "mediatheken":
-			if len(self.newsdoku) > 0:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
-				self.currentlist = "newsdoku"
-				cnt_tmp_ls = len(self.newsdoku)
-			elif len(self.funsport) > 0:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
-			elif len(self.porn) > 0:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-			else:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
-				self.currentlist = "mediatheken"
-				cnt_tmp_ls = len(self.mediatheken)
-		elif self.currentlist == "newsdoku":
-			if len(self.funsport) > 0:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
-			elif len(self.porn) > 0:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-			elif len(self.mediatheken) > 0:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
-				self.currentlist = "mediatheken"
-				cnt_tmp_ls = len(self.mediatheken)
-			else:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
-				self.currentlist = "newsdoku"
-				cnt_tmp_ls = len(self.newsdoku)
-		elif self.currentlist == "funsport":
-			if len(self.porn) > 0:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-			elif len(self.mediatheken) > 0:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
-				self.currentlist = "mediatheken"
-				cnt_tmp_ls = len(self.mediatheken)
+			if len(self.fun) > 0:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+			elif len(self.music) > 0:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+			elif len(self.sport) > 0:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
 			elif len(self.newsdoku) > 0:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
 				self.currentlist = "newsdoku"
 				cnt_tmp_ls = len(self.newsdoku)
+			elif len(self.porn) > 0:
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			else:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
+				self.currentlist = "mediatheken"
+				cnt_tmp_ls = len(self.mediatheken)
+		elif self.currentlist == "fun":
+			if len(self.music) > 0:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+			elif len(self.sport) > 0:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
+			elif len(self.newsdoku) > 0:
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
+				self.currentlist = "newsdoku"
+				cnt_tmp_ls = len(self.newsdoku)
+			elif len(self.porn) > 0:
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
+			elif len(self.mediatheken) > 0:
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
+				self.currentlist = "mediatheken"
+				cnt_tmp_ls = len(self.mediatheken)
+			else:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+		elif self.currentlist == "music":
+			if len(self.sport) > 0:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
+			elif len(self.newsdoku) > 0:
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
+				self.currentlist = "newsdoku"
+				cnt_tmp_ls = len(self.newsdoku)
+			elif len(self.porn) > 0:
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
+			elif len(self.mediatheken) > 0:
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
+				self.currentlist = "mediatheken"
+				cnt_tmp_ls = len(self.mediatheken)
+			elif len(self.fun) > 0:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+			else:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+		elif self.currentlist == "sport":
+			if len(self.newsdoku) > 0:
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
+				self.currentlist = "newsdoku"
+				cnt_tmp_ls = len(self.newsdoku)
+			elif len(self.porn) > 0:
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
+			elif len(self.mediatheken) > 0:
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
+				self.currentlist = "mediatheken"
+				cnt_tmp_ls = len(self.mediatheken)
+			elif len(self.fun) > 0:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+			elif len(self.music) > 0:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+			else:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
+		elif self.currentlist == "newsdoku":
+			if len(self.porn) > 0:
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+			elif len(self.useradditions) > 0:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
+			elif len(self.mediatheken) > 0:
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
+				self.currentlist = "mediatheken"
+				cnt_tmp_ls = len(self.mediatheken)
+			elif len(self.fun) > 0:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+			elif len(self.music) > 0:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+			elif len(self.sport) > 0:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
+			else:
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
+				self.currentlist = "newsdoku"
+				cnt_tmp_ls = len(self.newsdoku)
 		elif self.currentlist == "porn":
-			if len(self.mediatheken) > 0:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
-				self.currentlist = "mediatheken"
-				cnt_tmp_ls = len(self.mediatheken)
-			elif len(self.newsdoku) > 0:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
-				self.currentlist = "newsdoku"
-				cnt_tmp_ls = len(self.newsdoku)
-			elif len(self.funsport) > 0:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
-			else:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-
-		cnt_tmp_ls = int(cnt_tmp_ls)
-		if int(self.cur_idx) < int(cnt_tmp_ls):
-			self[self.currentlist].moveToIndex(int(self.cur_idx))
-		else:
-			idx = int(cnt_tmp_ls) -1
-			self[self.currentlist].moveToIndex(int(idx))
-
-		if cnt_tmp_ls > 0:
-			auswahl = self[self.currentlist].getCurrent()[0][0]
-			self.title = auswahl
-			self['name'].setText(auswahl)
-
-	def keyLeft(self):
-		self.cur_idx = self[self.currentlist].getSelectedIndex()
-		if config.mediaportal.listmode.value == "single":
-			self["mediatheken"].hide()
-			self["Mediatheken"].hide()
-			self["newsdoku"].hide()
-			self["NewsDoku"].hide()
-			self["funsport"].hide()
-			self["Funsport"].hide()
-			self["porn"].hide()
-			self["Porn"].hide()
-		self["mediatheken"].selectionEnabled(0)
-		self["newsdoku"].selectionEnabled(0)
-		self["funsport"].selectionEnabled(0)
-		self["porn"].selectionEnabled(0)
-		if self.currentlist == "porn":
-			if len(self.funsport) > 0:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
-			elif len(self.newsdoku) > 0:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
-				self.currentlist = "newsdoku"
-				cnt_tmp_ls = len(self.newsdoku)
+			if len(self.useradditions) > 0:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 			elif len(self.mediatheken) > 0:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
 				self.currentlist = "mediatheken"
 				cnt_tmp_ls = len(self.mediatheken)
-			else:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-		elif self.currentlist == "funsport":
-			if len(self.newsdoku) > 0:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
-				self.currentlist = "newsdoku"
-				cnt_tmp_ls = len(self.newsdoku)
-			elif len(self.mediatheken) > 0:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
-				self.currentlist = "mediatheken"
-				cnt_tmp_ls = len(self.mediatheken)
-			elif len(self.porn) > 0:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-			else:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
-		elif self.currentlist == "newsdoku":
-			if len(self.mediatheken) > 0:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
-				self.currentlist = "mediatheken"
-				cnt_tmp_ls = len(self.mediatheken)
-			elif len(self.porn) > 0:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-			elif len(self.funsport) > 0:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
-			else:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
-				self.currentlist = "newsdoku"
-				cnt_tmp_ls = len(self.newsdoku)
-		elif self.currentlist == "mediatheken":
-			if len(self.porn) > 0:
-				self["porn"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["porn"].show()
-					self["Porn"].show()
-				self.currentlist = "porn"
-				cnt_tmp_ls = len(self.porn)
-			elif len(self.funsport) > 0:
-				self["funsport"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["funsport"].show()
-					self["Funsport"].show()
-				self.currentlist = "funsport"
-				cnt_tmp_ls = len(self.funsport)
+			elif len(self.fun) > 0:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+			elif len(self.music) > 0:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+			elif len(self.sport) > 0:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
 			elif len(self.newsdoku) > 0:
-				self["newsdoku"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["newsdoku"].show()
-					self["NewsDoku"].show()
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
 				self.currentlist = "newsdoku"
 				cnt_tmp_ls = len(self.newsdoku)
 			else:
-				self["mediatheken"].selectionEnabled(1)
-				if config.mediaportal.listmode.value == "single":
-					self["mediatheken"].show()
-					self["Mediatheken"].show()
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+		elif self.currentlist == "useradditions":
+			if len(self.mediatheken) > 0:
+				self["mediatheken"].show()
+				self["Mediatheken"].show()
 				self.currentlist = "mediatheken"
 				cnt_tmp_ls = len(self.mediatheken)
+			elif len(self.fun) > 0:
+				self["fun"].show()
+				self["Fun"].show()
+				self.currentlist = "fun"
+				cnt_tmp_ls = len(self.fun)
+			elif len(self.music) > 0:
+				self["music"].show()
+				self["Music"].show()
+				self.currentlist = "music"
+				cnt_tmp_ls = len(self.music)
+			elif len(self.sport) > 0:
+				self["sport"].show()
+				self["Sport"].show()
+				self.currentlist = "sport"
+				cnt_tmp_ls = len(self.sport)
+			elif len(self.newsdoku) > 0:
+				self["newsdoku"].show()
+				self["NewsDoku"].show()
+				self.currentlist = "newsdoku"
+				cnt_tmp_ls = len(self.newsdoku)
+			elif len(self.porn) > 0:
+				self["porn"].show()
+				self["Porn"].show()
+				self.currentlist = "porn"
+				cnt_tmp_ls = len(self.porn)
+			else:
+				self["useradditions"].show()
+				self["Useradditions"].show()
+				self.currentlist = "useradditions"
+				cnt_tmp_ls = len(self.useradditions)
 
 		cnt_tmp_ls = int(cnt_tmp_ls)
 		if int(self.cur_idx) < int(cnt_tmp_ls):
@@ -1981,7 +2004,11 @@ class MPWall(Screen, HelpableScreen):
 			session.nav.stopService()
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"info" : self.showPorn,
+			"up"    : self.keyUp,
+			"down"  : self.keyDown,
+			"left"  : self.keyLeft,
+			"right" : self.keyRight,
+			"info"  : self.showPorn,
 			"0": boundFunction(self.gotFilter, "ALL"),
 			"1": boundFunction(self.gotFilter, "Mediathek"),
 			"2": boundFunction(self.gotFilter, "Fun"),
@@ -1992,10 +2019,6 @@ class MPWall(Screen, HelpableScreen):
 			"7": boundFunction(self.gotFilter, "User-additions")
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
-			"up"    : (self.keyUp, _("Up")),
-			"down"  : (self.keyDown, _("Down")),
-			"left"  : (self.keyLeft, _("Left")),
-			"right" : (self.keyRight, _("Right")),
 			"blue"  : (self.changeFilter, _("Change filter")),
 			"green" : (self.chSort, _("Change sort order")),
 			"yellow": (self.manuelleSortierung, _("Manual sorting")),
@@ -2985,7 +3008,11 @@ class MPWall2(Screen, HelpableScreen):
 			session.nav.stopService()
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"info" : self.showPorn,
+			"up"    : self.keyUp,
+			"down"  : self.keyDown,
+			"left"  : self.keyLeft,
+			"right" : self.keyRight,
+			"info"  : self.showPorn,
 			"0": boundFunction(self.gotFilter, "ALL"),
 			"1": boundFunction(self.gotFilter, "Mediathek"),
 			"2": boundFunction(self.gotFilter, "Fun"),
@@ -2996,10 +3023,6 @@ class MPWall2(Screen, HelpableScreen):
 			"7": boundFunction(self.gotFilter, "User-additions")
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
-			"up"    : (self.keyUp, _("Up")),
-			"down"  : (self.keyDown, _("Down")),
-			"left"  : (self.keyLeft, _("Left")),
-			"right" : (self.keyRight, _("Right")),
 			"blue"  : (self.changeFilter, _("Change filter")),
 			"green" : (self.chSort, _("Change sort order")),
 			"yellow": (self.manuelleSortierung, _("Manual sorting")),
@@ -3769,7 +3792,11 @@ class MPWallVTi(Screen, HelpableScreen):
 			session.nav.stopService()
 
 		self["actions"] = ActionMap(["MP_Actions"], {
-			"info" : self.showPorn,
+			"up"    : self.keyUp,
+			"down"  : self.keyDown,
+			"left"  : self.keyLeft,
+			"right" : self.keyRight,
+			"info"  : self.showPorn,
 			"0": boundFunction(self.gotFilter, "ALL"),
 			"1": boundFunction(self.gotFilter, "Mediathek"),
 			"2": boundFunction(self.gotFilter, "Fun"),
@@ -3780,10 +3807,6 @@ class MPWallVTi(Screen, HelpableScreen):
 			"7": boundFunction(self.gotFilter, "User-additions")
 		}, -1)
 		self["MP_Actions"] = HelpableActionMap(self, "MP_Actions", {
-			"up"    : (self.keyUp, _("Up")),
-			"down"  : (self.keyDown, _("Down")),
-			"left"  : (self.keyLeft, _("Left")),
-			"right" : (self.keyRight, _("Right")),
 			"blue"  : (self.changeFilter, _("Change filter")),
 			"green" : (self.chSort, _("Change sort order")),
 			"yellow": (self.manuelleSortierung, _("Manual sorting")),
