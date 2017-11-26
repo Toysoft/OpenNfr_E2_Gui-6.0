@@ -11,7 +11,7 @@ class VirtualKeyBoardExtInputHelpDialog(NumericalTextInputHelpDialog):
 
 	def __init__(self, session, textinput):
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/MP_InputHelpDialog.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_InputHelpDialog.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/MP_InputHelpDialog.xml"
 		with open(path, "r") as f:
@@ -25,7 +25,7 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 	def __init__(self, session, title="", text="", captcha=None, is_dialog=False, auto_text_init=False, suggest_func=None):
 		global last_text
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/MP_VirtualKeyBoard.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_VirtualKeyBoard.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/MP_VirtualKeyBoard.xml"
 		with open(path, "r") as f:
@@ -701,7 +701,7 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 
 		vkeys = ["backspace", "bg", "clr", "esc", "ok", "sel", "shift", "shift_sel", "space"]
 		for vkey in vkeys:
-			path = "%s/%s/images/vkey_%s.png" % (skin_path, config.mediaportal.skin.value, vkey)
+			path = "%s/%s/images/vkey_%s.png" % (skin_path, mp_globals.currentskin, vkey)
 			if not fileExists(path):
 				path = skin_path + mp_globals.skinFallback + "/images/vkey_%s.png" % vkey
 			if not fileExists(path):
@@ -761,7 +761,7 @@ class VirtualKeyBoardExt(Screen, NumericalTextInput, HelpableScreen):
 				x += 45
 			count += 1
 			if height is not None:
-				if (config.mediaportal.skin.value == "clean_fhd" or config.mediaportal.skin.value == "clean_fhd_dreamos"):
+				if (mp_globals.currentskin == "clean_fhd"):
 					self.ml.l.setFont(0, gFont('mediaportal_clean', height - 15))
 				else:
 					self.ml.l.setFont(0, gFont(mp_globals.font, height - 15))

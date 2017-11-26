@@ -22,7 +22,7 @@ class CoverHelper:
 	def __init__(self, cover, callback=None, nc_callback=None):
 		self._cover = cover
 		self.picload = ePicLoad()
-		self._no_picPath = "%s%s/%s%s" % (mp_globals.pluginPath, mp_globals.skinsPath, config.mediaportal.skin.value, self.NO_COVER_PIC_PATH)
+		self._no_picPath = "%s%s/%s%s" % (mp_globals.pluginPath, mp_globals.skinsPath, mp_globals.currentskin, self.NO_COVER_PIC_PATH)
 		if not fileExists(self._no_picPath):
 			self._no_picPath = "%s%s%s%s" % (mp_globals.pluginPath, mp_globals.skinsPath, mp_globals.skinFallback, self.NO_COVER_PIC_PATH)
 		self._callback = callback

@@ -818,9 +818,9 @@ class pornhubChannelScreen(MPScreen, ThumbsHelper, rnCalc):
 			self.rncalc(data, self.loadPage)
 		else:
 			self.getLastPage(data, 'class="pagination3">(.*?)</div>')
-			Cats = re.findall('class="channelsWrapper.*?ref="(.*?)".*?class="rank"><span>Rank<br/>\s{0,1}(\d+)</span>.*?img\salt="(.*?)"\ssrc="(.*?)".*?Subscribers.*?<li><span>(.*?)</span>\s{0,1}Videos</li>.*?.*?data-subscribe-url="(.*?)"\sdata-unsubscribe-url="(.*?)"\sdata-subscribed="(.*?)"', data, re.S)
+			Cats = re.findall('class="channelsWrapper.*?class="rank"><span>Rank<br/>\s{0,1}(\d+)</span>.*?href="(.*?)".*?img\salt="(.*?)"\ssrc="(.*?)".*?Videos<span>(.*?)</span>.*?data-subscribe-url="(.*?)"\sdata-unsubscribe-url="(.*?)"\sdata-subscribed="(.*?)"', data, re.S)
 			if Cats:
-				for Url, Rank, Title, Image, Videos, Reg, Unreg, Subscribed in Cats:
+				for Rank, Url, Title, Image, Videos, Reg, Unreg, Subscribed in Cats:
 					Url = base_url + Url + "/videos?o=da&page="
 					Reg = base_url + Reg.replace('&amp;','&')
 					Unreg = base_url + Unreg.replace('&amp;','&')
@@ -859,7 +859,7 @@ class pornhubChannelScreen(MPScreen, ThumbsHelper, rnCalc):
 	def keySort(self):
 		if self.keyLocked:
 			return
-		rangelist = [['Most Popular', 'rk'], ['Trending', 'tr'], ['Most Recent','mr']]
+		rangelist = [['Most Popular', 'rk'], ['Trending', 'tr'], ['Most Recent','mr'], ['A-Z','al']]
 		self.session.openWithCallback(self.keySortAction, ChoiceBoxExt, title=_('Select Action'), list = rangelist)
 
 	def keySortAction(self, result):

@@ -116,7 +116,7 @@ class MPSetupScreen(Screen):
 	def __init__(self, session, parent=None, skin=None, *ret_args):
 		if skin:
 			self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-			path = "%s/%s/%s.xml" % (self.skin_path, config.mediaportal.skin.value, skin)
+			path = "%s/%s/%s.xml" % (self.skin_path, mp_globals.currentskin, skin)
 			if not fileExists(path):
 				path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % skin
 			with open(path, "r") as f:
@@ -135,7 +135,7 @@ class MPScreen(Screen, HelpableScreen):
 	def __init__(self, session, parent=None, skin=None, widgets=None, *ret_args):
 		if skin:
 			self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-			path = "%s/%s/%s.xml" % (self.skin_path, config.mediaportal.skin.value, skin)
+			path = "%s/%s/%s.xml" % (self.skin_path, mp_globals.currentskin, skin)
 			if not fileExists(path):
 				path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % skin
 			with open(path, "r") as f:
@@ -150,7 +150,7 @@ class MPScreen(Screen, HelpableScreen):
 			if widgets:
 				self.skin = self.skin.replace('</screen>', '')
 				for wf in widgets:
-					path = "%s/%s/%s.xml" % (self.skin_path, config.mediaportal.skin.value, wf)
+					path = "%s/%s/%s.xml" % (self.skin_path, mp_globals.currentskin, wf)
 					if not fileExists(path):
 						path = self.skin_path + mp_globals.skinFallback + "/%s.xml" % wf
 					f = open(path, "r")
@@ -536,7 +536,7 @@ class MPScreen(Screen, HelpableScreen):
 
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
-		path = "%s/%s/images/watched.png" % (skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/images/watched.png" % (skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = "%s/%s/images/watched.png" % (skin_path, mp_globals.skinFallback)
 			if not fileExists(path):
@@ -552,7 +552,7 @@ class MPScreen(Screen, HelpableScreen):
 		try:
 			if entry[3]:
 				iconlng = entry[3]
-				path = "%s/%s/images/%s.png" % (skin_path, config.mediaportal.skin.value, iconlng)
+				path = "%s/%s/images/%s.png" % (skin_path, mp_globals.currentskin, iconlng)
 				if not fileExists(path):
 					path = "%s/%s/images/%s.png" % (skin_path, mp_globals.skinFallback, iconlng)
 					if not fileExists(path):
@@ -593,7 +593,7 @@ class MPScreen(Screen, HelpableScreen):
 	def getIconPath(icon_name):
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
-		path = "%s/%s/images/%s" % (skin_path, config.mediaportal.skin.value, icon_name)
+		path = "%s/%s/images/%s" % (skin_path, mp_globals.currentskin, icon_name)
 		if not fileExists(path):
 			path = "%s/%s/images/%s" % (skin_path, mp_globals.skinFallback, icon_name)
 			if not fileExists(path):
@@ -728,7 +728,7 @@ class MPScreen(Screen, HelpableScreen):
 				else:
 					iconlng = entry[3]
 
-				path = "%s/%s/images/%s.png" % (skin_path, config.mediaportal.skin.value, iconlng)
+				path = "%s/%s/images/%s.png" % (skin_path, mp_globals.currentskin, iconlng)
 				if not fileExists(path):
 					path = "%s/%s/images/%s.png" % (skin_path, mp_globals.skinFallback, iconlng)
 					if not fileExists(path):
@@ -915,7 +915,7 @@ class MPScreen(Screen, HelpableScreen):
 
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
-		path = "%s/%s/images/%s" % (skin_path, config.mediaportal.skin.value, icon_name)
+		path = "%s/%s/images/%s" % (skin_path, mp_globals.currentskin, icon_name)
 		if not fileExists(path):
 			path = "%s/%s/images/%s" % (skin_path, mp_globals.skinFallback, icon_name)
 			if not fileExists(path):

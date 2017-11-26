@@ -131,7 +131,7 @@ class ShowThumbscreen(MPScreen):
 		self.pageregex = pageregex
 		self.filmpage = filmpage
 		self.filmpages = filmpages
-		self._no_picPath = "%s/skins/%s%s" % (mp_globals.pluginPath, config.mediaportal.skin.value, self.NO_COVER_PIC_PATH)
+		self._no_picPath = "%s/skins/%s%s" % (mp_globals.pluginPath, mp_globals.currentskin, self.NO_COVER_PIC_PATH)
 
 		mode = kwargs.get('mode', 0)
 		self.method = kwargs.get('method', None)

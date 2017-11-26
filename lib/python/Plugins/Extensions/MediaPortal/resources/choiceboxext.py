@@ -13,7 +13,7 @@ from enigma import RT_HALIGN_LEFT, RT_VALIGN_CENTER, eListboxPythonMultiContent,
 pwidth = 0
 
 class ChoiceListExt(MenuList):
-	def __init__(self, list, selection = 0, enableWrapAround=False):
+	def __init__(self, list, selection = 0, enableWrapAround=True):
 		MenuList.__init__(self, list, enableWrapAround, eListboxPythonMultiContent)
 		self.selection = selection
 
@@ -34,7 +34,7 @@ class ChoiceBoxExt(Screen):
 		skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 
 		key = "key_" + data[0] + ".png"
-		path = "%s/%s/images/%s" % (skin_path, config.mediaportal.skin.value, key)
+		path = "%s/%s/images/%s" % (skin_path, mp_globals.currentskin, key)
 		if not fileExists(path):
 			path = "%s/%s/images/%s" % (skin_path, mp_globals.skinFallback, key)
 			if not fileExists(path):
@@ -55,7 +55,7 @@ class ChoiceBoxExt(Screen):
 
 	def __init__(self, session, title = "", list = [], keys = None, selection = 0, titlebartext = None, allow_cancel = True):
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/MP_ChoiceBox.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_ChoiceBox.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/MP_ChoiceBox.xml"
 		with open(path, "r") as f:

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MediaPortal\n"
-"POT-Creation-Date: 2017-11-22 19:12+0100\n"
-"PO-Revision-Date: 2017-11-22 19:12+0100\n"
+"POT-Creation-Date: 2017-11-25 17:34+0100\n"
+"PO-Revision-Date: 2017-11-25 17:41+0100\n"
 "Last-Translator: dhwz <dhwz@gmx.net>\n"
 "Language-Team: MediaPortal Team\n"
 "Language: de_DE\n"
@@ -84,8 +84,8 @@ msgstr "Auswahl:"
 #: src/additions/fun/germanytv.py:58 src/additions/fun/germanytv.py:101
 #: src/additions/fun/germanytv.py:161 src/additions/fun/heisevideo.py:26
 #: src/additions/mediatheken/youtube.py:818
-#: src/additions/mediatheken/youtube_user.py:24 src/plugin.py:914
-#: src/plugin.py:1988 src/plugin.py:2992 src/plugin.py:3776
+#: src/additions/mediatheken/youtube_user.py:24 src/plugin.py:918
+#: src/plugin.py:1834 src/plugin.py:2831 src/plugin.py:3608
 #: src/resources/showAsThumb.py:244 src/resources/simplelist.py:214
 #: src/resources/simplelist.py:754 src/resources/simpleplayer.py:626
 msgid "Exit"
@@ -131,7 +131,7 @@ msgstr "Beenden"
 #: mpgz/src/additions/useradditions/movie4k.py:577
 #: mpgz/src/additions/useradditions/movie4k.py:648
 #: mpgz/src/additions/useradditions/movie4k.py:890
-#: mpgz/src/additions/useradditions/onlinefilme.py:195
+#: mpgz/src/additions/useradditions/onlinefilme.py:196
 #: mpgz/src/additions/useradditions/onlinefilme.py:450
 #: mpgz/src/additions/useradditions/serienstream.py:132
 #: mpgz/src/additions/useradditions/serienstream.py:382
@@ -139,9 +139,9 @@ msgstr "Beenden"
 #: mpgz/src/additions/useradditions/seriesever.py:303
 #: mpgz/src/additions/useradditions/seriesever.py:373
 #: mpgz/src/additions/useradditions/sharedir.py:424
-#: mpgz/src/additions/useradditions/streamit.py:88
-#: mpgz/src/additions/useradditions/streamit.py:232
-#: mpgz/src/additions/useradditions/streamit.py:237
+#: mpgz/src/additions/useradditions/streamit.py:89
+#: mpgz/src/additions/useradditions/streamit.py:233
+#: mpgz/src/additions/useradditions/streamit.py:238
 #: mpgz/src/additions/useradditions/streamit.py:506
 #: mpgz/src/additions/useradditions/watchseries.py:275
 #: src/additions/fun/chefkoch.py:60 src/additions/fun/chefkoch.py:113
@@ -234,7 +234,7 @@ msgstr "GENRES"
 #: mpgz/src/additions/useradditions/kinoxto.py:117
 #: mpgz/src/additions/useradditions/movie4k.py:150
 #: mpgz/src/additions/useradditions/serienstream.py:158
-#: mpgz/src/additions/useradditions/streamit.py:111
+#: mpgz/src/additions/useradditions/streamit.py:112
 msgid ""
 "Mandatory depends python-requests and/or python-pyexecjs and nodejs are "
 "missing!"
@@ -433,11 +433,11 @@ msgstr "Nein"
 #: mpgz/src/additions/useradditions/movie4k.py:421
 #: mpgz/src/additions/useradditions/movie4k.py:875
 #: mpgz/src/additions/useradditions/nwanime.py:213
-#: mpgz/src/additions/useradditions/onlinefilme.py:150
+#: mpgz/src/additions/useradditions/onlinefilme.py:151
 #: mpgz/src/additions/useradditions/primewire.py:147
 #: mpgz/src/additions/useradditions/sharedir.py:392
 #: mpgz/src/additions/useradditions/solarmovie.py:131
-#: mpgz/src/additions/useradditions/streamit.py:172
+#: mpgz/src/additions/useradditions/streamit.py:173
 #: mpgz/src/additions/useradditions/topimdb.py:33
 #: mpgz/src/additions/useradditions/video4k.py:187
 #: mpgz/src/additions/useradditions/vkstreamingfilm.py:143
@@ -500,7 +500,7 @@ msgstr "Seite:"
 #: mpgz/src/additions/useradditions/ddl_me.py:118
 #: mpgz/src/additions/useradditions/kinoxto.py:161
 #: mpgz/src/additions/useradditions/movie4k.py:210
-#: mpgz/src/additions/useradditions/onlinefilme.py:67
+#: mpgz/src/additions/useradditions/onlinefilme.py:68
 #: mpgz/src/additions/useradditions/topimdb.py:77
 #: mpgz/src/additions/useradditions/topimdb.py:86
 #: src/additions/fun/forplayers.py:81 src/additions/fun/lachschon_de.py:91
@@ -622,8 +622,8 @@ msgstr ""
 #: src/additions/porn/x4tube.py:200 src/additions/porn/x4tube.py:289
 #: src/additions/porn/xhamster.py:469 src/additions/porn/xhamster.py:601
 #: src/additions/porn/youporn.py:321 src/additions/porn/youporn.py:388
-#: src/plugin.py:2345 src/plugin.py:2581 src/plugin.py:2598 src/plugin.py:3357
-#: src/plugin.py:4140 src/resources/showAsThumb.py:245
+#: src/plugin.py:2191 src/plugin.py:2427 src/plugin.py:2444 src/plugin.py:3196
+#: src/plugin.py:3971 src/resources/showAsThumb.py:245
 msgid "Page"
 msgstr "Seite"
 
@@ -655,7 +655,7 @@ msgstr "Seite"
 #: mpgz/src/additions/useradditions/movie4k.py:590
 #: mpgz/src/additions/useradditions/movie4k.py:790
 #: mpgz/src/additions/useradditions/movie4k.py:925
-#: mpgz/src/additions/useradditions/streamit.py:248
+#: mpgz/src/additions/useradditions/streamit.py:249
 #: mpgz/src/additions/useradditions/video4k.py:243
 #: mpgz/src/additions/useradditions/video4k.py:268
 #: mpgz/src/additions/useradditions/vkstreamingfilm.py:183
@@ -742,7 +742,7 @@ msgid "This plugin requires packages python-pyexecjs and nodejs."
 msgstr "Dieses Plugin benötigt die Pakete python-pyexecjs und nodejs."
 
 #: mpgz/src/additions/porn/mydirtyhobby.py:196
-#: mpgz/src/additions/porn/yourpornsexy.py:315
+#: mpgz/src/additions/porn/yourpornsexy.py:314
 #: mpgz/src/additions/useradditions/primewire.py:188
 #: src/additions/fun/funnyvideoclips_de.py:130
 #: src/additions/fun/funnyvideoclips_de.py:186
@@ -931,10 +931,10 @@ msgid "Parts Selection"
 msgstr "Part Auswahl"
 
 #: mpgz/src/additions/useradditions/movie4k.py:220
-#: mpgz/src/additions/useradditions/sharedir.py:235 src/plugin.py:1187
-#: src/plugin.py:1199 src/plugin.py:1555 src/plugin.py:2459 src/plugin.py:2623
-#: src/plugin.py:2703 src/plugin.py:3317 src/plugin.py:3407 src/plugin.py:3487
-#: src/plugin.py:4104 src/plugin.py:4191 src/plugin.py:4271
+#: mpgz/src/additions/useradditions/sharedir.py:235 src/plugin.py:1218
+#: src/plugin.py:1230 src/plugin.py:1362 src/plugin.py:2305 src/plugin.py:2469
+#: src/plugin.py:2544 src/plugin.py:3156 src/plugin.py:3246 src/plugin.py:3321
+#: src/plugin.py:3935 src/plugin.py:4022 src/plugin.py:4097
 msgid "Please enter the correct PIN"
 msgstr "Bitte die korrekte PIN eingeben"
 
@@ -954,13 +954,13 @@ msgstr "PIN eingeben"
 msgid "Stream not found, try another Stream Hoster."
 msgstr "Stream nicht gefunden, versuche einen anderen Stream Hoster."
 
-#: mpgz/src/additions/useradditions/onlinefilme.py:149
-#: mpgz/src/additions/useradditions/streamit.py:173
+#: mpgz/src/additions/useradditions/onlinefilme.py:150
+#: mpgz/src/additions/useradditions/streamit.py:174
 msgid "Sort by..."
 msgstr "Sortieren nach..."
 
-#: mpgz/src/additions/useradditions/onlinefilme.py:206
-#: mpgz/src/additions/useradditions/onlinefilme.py:251
+#: mpgz/src/additions/useradditions/onlinefilme.py:207
+#: mpgz/src/additions/useradditions/onlinefilme.py:252
 msgid "No movies / series found!"
 msgstr "Keine Filme / Serien gefunden!"
 
@@ -982,7 +982,7 @@ msgstr "Filter"
 #: src/additions/porn/pornhub.py:794 src/additions/porn/redtube.py:189
 #: src/additions/porn/tube8.py:176 src/additions/porn/vporn.py:267
 #: src/additions/porn/x4tube.py:201 src/additions/porn/x4tube.py:290
-#: src/plugin.py:1983 src/plugin.py:2987 src/plugin.py:3771
+#: src/plugin.py:1830 src/plugin.py:2827 src/plugin.py:3604
 msgid "Sort"
 msgstr "Sortieren"
 
@@ -1082,7 +1082,7 @@ msgstr "Keine Dateien gefunden!"
 msgid "No link found."
 msgstr "Kein Link gefunden."
 
-#: mpgz/src/additions/useradditions/streamit.py:296
+#: mpgz/src/additions/useradditions/streamit.py:297
 #: src/additions/music/radio.py:404 src/resources/simplelist.py:282
 #: src/resources/simplelist.py:437 src/resources/simplelist.py:726
 msgid "No entries found!"
@@ -1120,7 +1120,7 @@ msgid "%s update failed! Check the update log carefully!"
 msgstr "%s Update fehlgeschlagen! Überprüfe das Updatelog sorgfältig!"
 
 #: src/additions/fun/germanytv.py:56 src/additions/fun/germanytv.py:99
-#: src/plugin.py:912 src/plugin.py:1990 src/plugin.py:2994 src/plugin.py:3778
+#: src/plugin.py:920 src/plugin.py:1836 src/plugin.py:2833 src/plugin.py:3610
 msgid "Menu"
 msgstr "Menü"
 
@@ -1290,11 +1290,11 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
-#: src/additions/mediatheken/youtube.py:89 src/plugin.py:255
+#: src/additions/mediatheken/youtube.py:89 src/plugin.py:256
 msgid "High"
 msgstr "Hoch"
 
-#: src/additions/mediatheken/youtube.py:90 src/plugin.py:255
+#: src/additions/mediatheken/youtube.py:90 src/plugin.py:256
 msgid "Low"
 msgstr "Niedrig"
 
@@ -1480,9 +1480,10 @@ msgstr "USA"
 msgid "News"
 msgstr "Nachrichten"
 
-#: src/additions/mediatheken/youtube.py:170 src/plugin.py:941
-#: src/plugin.py:2082 src/plugin.py:2113 src/plugin.py:3074 src/plugin.py:3105
-#: src/plugin.py:3860 src/plugin.py:3891 src/plugin.py:4401
+#: src/additions/mediatheken/youtube.py:170 src/plugin.py:895 src/plugin.py:968
+#: src/plugin.py:1081 src/plugin.py:1405 src/plugin.py:1928 src/plugin.py:1959
+#: src/plugin.py:2913 src/plugin.py:2944 src/plugin.py:3691 src/plugin.py:3722
+#: src/plugin.py:4227
 msgid "Music"
 msgstr "Musik"
 
@@ -1490,9 +1491,10 @@ msgstr "Musik"
 msgid "Gaming"
 msgstr "Gaming"
 
-#: src/additions/mediatheken/youtube.py:172 src/plugin.py:950
-#: src/plugin.py:2084 src/plugin.py:2115 src/plugin.py:3076 src/plugin.py:3107
-#: src/plugin.py:3862 src/plugin.py:3893 src/plugin.py:4403
+#: src/additions/mediatheken/youtube.py:172 src/plugin.py:896 src/plugin.py:968
+#: src/plugin.py:1083 src/plugin.py:1405 src/plugin.py:1930 src/plugin.py:1961
+#: src/plugin.py:2915 src/plugin.py:2946 src/plugin.py:3693 src/plugin.py:3724
+#: src/plugin.py:4229
 msgid "Sports"
 msgstr "Sport"
 
@@ -1852,122 +1854,114 @@ msgstr "Kein Link gefunden!"
 msgid "Currently no streams available"
 msgstr "Momentan sind keine Streams verfügbar"
 
-#: src/plugin.py:186
+#: src/plugin.py:187
 msgid "Wake up and import"
 msgstr "Aufwecken und Importieren"
 
-#: src/plugin.py:187
+#: src/plugin.py:188
 msgid "Skip the import"
 msgstr "Import überspringen"
 
-#: src/plugin.py:211 src/plugin.py:212
+#: src/plugin.py:212 src/plugin.py:213
 msgid "Crossfade (fast)"
 msgstr "Überblenden (schnell)"
 
-#: src/plugin.py:211 src/plugin.py:212
+#: src/plugin.py:212 src/plugin.py:213
 msgid "Crossfade (slow)"
 msgstr "Überblenden (langsam)"
 
-#: src/plugin.py:213
+#: src/plugin.py:214
 msgid "Slide from bottom"
 msgstr "Von unten hereingleiten"
 
-#: src/plugin.py:213
+#: src/plugin.py:214
 msgid "Crossfade"
 msgstr "Überblenden"
 
-#: src/plugin.py:232
+#: src/plugin.py:233
 msgid "Wall 2.0"
 msgstr "Wall 2.0"
 
-#: src/plugin.py:232 src/plugin.py:234 src/plugin.py:236 src/plugin.py:240
+#: src/plugin.py:233 src/plugin.py:235 src/plugin.py:237 src/plugin.py:241
 msgid "Wall"
 msgstr "Wall"
 
-#: src/plugin.py:232 src/plugin.py:234 src/plugin.py:236 src/plugin.py:238
-#: src/plugin.py:240
+#: src/plugin.py:233 src/plugin.py:235 src/plugin.py:237 src/plugin.py:239
+#: src/plugin.py:241
 msgid "List"
 msgstr "Liste"
 
-#: src/plugin.py:234
+#: src/plugin.py:235
 msgid "Wall VTi"
 msgstr "Wall VTi"
 
-#: src/plugin.py:241 src/plugin.py:242
+#: src/plugin.py:242 src/plugin.py:243
 msgid "Color"
 msgstr "Farbe"
 
-#: src/plugin.py:241 src/plugin.py:242
+#: src/plugin.py:242 src/plugin.py:243
 msgid "Black&White"
 msgstr "Schwarz/Weiß"
 
-#: src/plugin.py:241
+#: src/plugin.py:242
 msgid "Color (Zoom)"
 msgstr "Farbe (gezoomt)"
 
-#: src/plugin.py:241
+#: src/plugin.py:242
 msgid "Black&White (Zoom)"
 msgstr "Schwarz/Weiß (gezoomt)"
 
-#: src/plugin.py:243
+#: src/plugin.py:244
 msgid "Blue"
 msgstr "Blau"
 
-#: src/plugin.py:243 src/plugin.py:312
+#: src/plugin.py:244 src/plugin.py:312
 msgid "Green"
 msgstr "Grün"
 
-#: src/plugin.py:243 src/plugin.py:312
+#: src/plugin.py:244 src/plugin.py:312
 msgid "Red"
 msgstr "Rot"
 
-#: src/plugin.py:243
+#: src/plugin.py:244
 msgid "Aqua"
 msgstr "Türkis"
 
-#: src/plugin.py:243 src/plugin.py:312
+#: src/plugin.py:244 src/plugin.py:312
 msgid "White"
 msgstr "Weiß"
 
-#: src/plugin.py:255
+#: src/plugin.py:256
 msgid "Medium"
 msgstr "Mittel"
 
-#: src/plugin.py:258
+#: src/plugin.py:259
 msgid "never"
 msgstr "niemals"
 
-#: src/plugin.py:258
+#: src/plugin.py:259
 msgid "5 minutes"
 msgstr "5 Minuten"
 
-#: src/plugin.py:258
+#: src/plugin.py:259
 msgid "15 minutes"
 msgstr "15 Minuten"
 
-#: src/plugin.py:258
+#: src/plugin.py:259
 msgid "30 minutes"
 msgstr "30 Minuten"
 
-#: src/plugin.py:258
+#: src/plugin.py:259
 msgid "60 minutes"
 msgstr "60 Minuten"
 
-#: src/plugin.py:267
+#: src/plugin.py:268
 msgid "after SimplePlayer quits"
 msgstr "nachdem der SimplePlayer beendet wird"
 
-#: src/plugin.py:267
+#: src/plugin.py:268
 msgid "after MediaPortal quits"
 msgstr "nachdem das MediaPortal beendet wird"
-
-#: src/plugin.py:270 src/plugin.py:281 src/plugin.py:287
-msgid "PVR/VIDEO"
-msgstr "PVR/VIDEO"
-
-#: src/plugin.py:270 src/plugin.py:281
-msgid "RECORD"
-msgstr "AUFNAHME"
 
 #: src/plugin.py:273
 msgid "Forward"
@@ -2012,6 +2006,14 @@ msgstr "Film am Ende pausieren"
 #: src/plugin.py:281 src/plugin.py:287
 msgid "HELP"
 msgstr "HILFE"
+
+#: src/plugin.py:281 src/plugin.py:287
+msgid "PVR/VIDEO"
+msgstr "PVR/VIDEO"
+
+#: src/plugin.py:281
+msgid "RECORD"
+msgstr "AUFNAHME"
 
 #: src/plugin.py:283
 msgid "Start from the beginning"
@@ -2213,112 +2215,108 @@ msgstr "Watchlist/Playlist/Userchan Verzeichnis:"
 msgid "Show USER-Channels Help:"
 msgstr "Zeige Hilfe für Benutzer-Kanäle:"
 
-#: src/plugin.py:636
-msgid "SimpleList on key:"
-msgstr "SimpleList mit Taste:"
-
-#: src/plugin.py:638 src/resources/simpleplayer.py:1765
+#: src/plugin.py:637 src/resources/simpleplayer.py:1765
 msgid "MediaInfo on key:"
 msgstr "MediaInfo mit Taste:"
 
-#: src/plugin.py:640
+#: src/plugin.py:639
 msgid "YOUTUBE"
 msgstr "YOUTUBE"
 
-#: src/plugin.py:642
+#: src/plugin.py:641
 msgid "Highest resolution for playback:"
 msgstr "Höchste Auflösung für die Wiedergabe:"
 
-#: src/plugin.py:643
+#: src/plugin.py:642
 msgid "Enable DASH format:"
 msgstr "DASH Format aktivieren:"
 
-#: src/plugin.py:645
+#: src/plugin.py:644
 msgid "Enable VP9 codec:"
 msgstr "VP9 Codec aktivieren:"
 
-#: src/plugin.py:646
+#: src/plugin.py:645
 msgid "Max. count results/page:"
 msgstr "Max. Anzahl Ergebnisse/Seite:"
 
-#: src/plugin.py:647
+#: src/plugin.py:646
 msgid "Use Proxy:"
 msgstr "Verwende Proxy:"
 
-#: src/plugin.py:649
+#: src/plugin.py:648
 msgid "HTTP-Proxy Host or IP:"
 msgstr "HTTP-Proxy Host oder IP:"
 
-#: src/plugin.py:650
+#: src/plugin.py:649
 msgid "HTTP-Proxy Port:"
 msgstr "HTTP-Proxy Port:"
 
-#: src/plugin.py:651
+#: src/plugin.py:650
 msgid "HTTP-Proxy username:"
 msgstr "HTTP-Proxy Username:"
 
-#: src/plugin.py:652
+#: src/plugin.py:651
 msgid "HTTP-Proxy password:"
 msgstr "HTTP-Proxy Passwort:"
 
-#: src/plugin.py:665
+#: src/plugin.py:664
 msgid "Activate premiumize.me:"
 msgstr "premiumize.me aktivieren:"
 
-#: src/plugin.py:667
+#: src/plugin.py:666
 msgid "Customer ID:"
 msgstr "Kundennummer:"
 
-#: src/plugin.py:668
+#: src/plugin.py:667
 msgid "PIN:"
 msgstr "PIN:"
 
-#: src/plugin.py:673
+#: src/plugin.py:672
 msgid "Activate Real-Debrid.com:"
 msgstr "Real-Debrid.com aktivieren:"
 
-#: src/plugin.py:678
+#: src/plugin.py:677
 msgid "Streammarkercolor:"
 msgstr "Streammarkerfarbe:"
 
-#: src/plugin.py:714
+#: src/plugin.py:713
 msgid "LIBRARIES"
 msgstr "MEDIATHEKEN"
 
-#: src/plugin.py:718 src/plugin.py:725 src/plugin.py:732 src/plugin.py:739
-#: src/plugin.py:746 src/plugin.py:754 src/plugin.py:765
+#: src/plugin.py:717 src/plugin.py:724 src/plugin.py:731 src/plugin.py:738
+#: src/plugin.py:745 src/plugin.py:753 src/plugin.py:764
 msgid "Show "
 msgstr "Zeige "
 
-#: src/plugin.py:721
+#: src/plugin.py:720
 msgid "NEWS&DOCUMENTARY"
 msgstr "NACHRICHTEN&DOKUS"
 
-#: src/plugin.py:728
+#: src/plugin.py:727
 msgid "FUN"
 msgstr "FUN"
 
-#: src/plugin.py:735
+#: src/plugin.py:734
 msgid "SPORTS"
 msgstr "SPORT"
 
-#: src/plugin.py:742
+#: src/plugin.py:741
 msgid "MUSIC"
 msgstr "MUSIK"
 
-#: src/plugin.py:750
+#: src/plugin.py:749
 msgid "PORN"
 msgstr "PORNO"
 
-#: src/plugin.py:761
+#: src/plugin.py:760
 msgid "USER-ADDITIONS"
 msgstr "USER-ERWEITERUNGEN"
 
-#: src/plugin.py:772
+#: src/plugin.py:771
 msgid "Activate User-additions:"
 msgstr "User-Erweiterungen aktivieren:"
 
-#: src/plugin.py:815
+#: src/plugin.py:814
 #, python-format
 msgid ""
 "Some of the plugins may not be legally used in your country!\n"
@@ -2334,86 +2332,93 @@ msgstr ""
 "\n"
 "%s"
 
-#: src/plugin.py:830
+#: src/plugin.py:829
 msgid "Real-Debrid.com is not activated."
 msgstr "Real-Debrid.com is not activated."
 
-#: src/plugin.py:838
+#: src/plugin.py:837
 msgid "Please enter the correct code"
 msgstr "Bitte den korrekten Code eingeben"
 
-#: src/plugin.py:838
+#: src/plugin.py:837
 msgid "Enter code"
 msgstr "Code eingeben"
 
-#: src/plugin.py:895 src/plugin.py:901 src/plugin.py:1970 src/plugin.py:1976
-#: src/plugin.py:2974 src/plugin.py:2980 src/plugin.py:3758 src/plugin.py:3764
-msgid "Open SimpleList"
-msgstr "SimpleList öffnen"
+#: src/plugin.py:892 src/plugin.py:1071 src/plugin.py:1405 src/plugin.py:1918
+#: src/plugin.py:1949 src/plugin.py:2903 src/plugin.py:2934 src/plugin.py:3681
+#: src/plugin.py:3712 src/plugin.py:4217
+msgid "ALL"
+msgstr "ALLE"
 
-#: src/plugin.py:896 src/plugin.py:1971 src/plugin.py:2975 src/plugin.py:3759
-msgid "Open selected Plugin"
-msgstr "Ausgewähltes Plugin öffnen"
-
-#: src/plugin.py:897 src/plugin.py:1972 src/plugin.py:2976 src/plugin.py:3760
-msgid "Exit MediaPortal"
-msgstr "MediaPortal beenden"
-
-#: src/plugin.py:898 src/plugin.py:1973 src/plugin.py:2977 src/plugin.py:3761
-msgid "Next page"
-msgstr "Nächste Seite"
-
-#: src/plugin.py:899 src/plugin.py:1974 src/plugin.py:2978 src/plugin.py:3762
-msgid "Previous page"
-msgstr "Vorherige Seite"
-
-#: src/plugin.py:900 src/plugin.py:1975 src/plugin.py:2979 src/plugin.py:3763
-msgid "MediaPortal Setup"
-msgstr "MediaPortal Setup"
-
-#: src/plugin.py:911 src/plugin.py:1987 src/plugin.py:2991 src/plugin.py:3775
-msgid "PVR"
-msgstr "PVR"
-
-#: src/plugin.py:913 src/plugin.py:1989 src/plugin.py:2993 src/plugin.py:3777
-msgid "Help"
-msgstr "Hilfe"
-
-#: src/plugin.py:923 src/plugin.py:2074 src/plugin.py:2105 src/plugin.py:3066
-#: src/plugin.py:3097 src/plugin.py:3852 src/plugin.py:3883 src/plugin.py:4393
+#: src/plugin.py:893 src/plugin.py:968 src/plugin.py:1073 src/plugin.py:1405
+#: src/plugin.py:1920 src/plugin.py:1951 src/plugin.py:2905 src/plugin.py:2936
+#: src/plugin.py:3683 src/plugin.py:3714 src/plugin.py:4219
 msgid "Libraries"
 msgstr "Mediatheken"
 
-#: src/plugin.py:932 src/plugin.py:2078 src/plugin.py:2109 src/plugin.py:3070
-#: src/plugin.py:3101 src/plugin.py:3856 src/plugin.py:3887 src/plugin.py:4397
+#: src/plugin.py:894 src/plugin.py:968 src/plugin.py:1077 src/plugin.py:1405
+#: src/plugin.py:1924 src/plugin.py:1955 src/plugin.py:2909 src/plugin.py:2940
+#: src/plugin.py:3687 src/plugin.py:3718 src/plugin.py:4223
 msgid "Fun"
 msgstr "Fun"
 
-#: src/plugin.py:959 src/plugin.py:2080 src/plugin.py:2111 src/plugin.py:3072
-#: src/plugin.py:3103 src/plugin.py:3858 src/plugin.py:3889 src/plugin.py:4399
+#: src/plugin.py:897 src/plugin.py:968 src/plugin.py:1079 src/plugin.py:1405
+#: src/plugin.py:1926 src/plugin.py:1957 src/plugin.py:2911 src/plugin.py:2942
+#: src/plugin.py:3689 src/plugin.py:3720 src/plugin.py:4225
 msgid "News&Documentary"
 msgstr "Nachrichten&Dokus"
 
-#: src/plugin.py:968 src/plugin.py:2086 src/plugin.py:2117 src/plugin.py:3078
-#: src/plugin.py:3109 src/plugin.py:3864 src/plugin.py:3895 src/plugin.py:4405
+#: src/plugin.py:898 src/plugin.py:968 src/plugin.py:1085 src/plugin.py:1400
+#: src/plugin.py:1932 src/plugin.py:1963 src/plugin.py:2917 src/plugin.py:2948
+#: src/plugin.py:3695 src/plugin.py:3726 src/plugin.py:4231
 msgid "Porn"
 msgstr "Porno"
 
-#: src/plugin.py:1187 src/plugin.py:1555 src/plugin.py:2459 src/plugin.py:2703
-#: src/plugin.py:3317 src/plugin.py:3487 src/plugin.py:4104 src/plugin.py:4271
+#: src/plugin.py:899 src/plugin.py:968 src/plugin.py:1075 src/plugin.py:1404
+#: src/plugin.py:1922 src/plugin.py:1953 src/plugin.py:2907 src/plugin.py:2938
+#: src/plugin.py:3685 src/plugin.py:3716 src/plugin.py:4221
+msgid "User-additions"
+msgstr "User-Erweiterungen"
+
+#: src/plugin.py:902 src/plugin.py:1815 src/plugin.py:2812 src/plugin.py:3589
+msgid "Change filter"
+msgstr "Filter wechseln"
+
+#: src/plugin.py:903 src/plugin.py:1818 src/plugin.py:2815 src/plugin.py:3592
+msgid "Open SimpleList"
+msgstr "SimpleList öffnen"
+
+#: src/plugin.py:904 src/plugin.py:1819 src/plugin.py:2816 src/plugin.py:3593
+msgid "Open selected Plugin"
+msgstr "Ausgewähltes Plugin öffnen"
+
+#: src/plugin.py:905 src/plugin.py:1820 src/plugin.py:2817 src/plugin.py:3594
+msgid "Exit MediaPortal"
+msgstr "MediaPortal beenden"
+
+#: src/plugin.py:906 src/plugin.py:1823 src/plugin.py:2820 src/plugin.py:3597
+msgid "MediaPortal Setup"
+msgstr "MediaPortal Setup"
+
+#: src/plugin.py:919 src/plugin.py:1835 src/plugin.py:2832 src/plugin.py:3609
+msgid "Help"
+msgstr "Hilfe"
+
+#: src/plugin.py:1218 src/plugin.py:1362 src/plugin.py:2305 src/plugin.py:2544
+#: src/plugin.py:3156 src/plugin.py:3321 src/plugin.py:3935 src/plugin.py:4097
 msgid "Enter adult PIN"
 msgstr "Erwachsenen-PIN eingeben"
 
-#: src/plugin.py:1199 src/plugin.py:2623 src/plugin.py:3407 src/plugin.py:4191
+#: src/plugin.py:1230 src/plugin.py:2469 src/plugin.py:3246 src/plugin.py:4022
 msgid "Enter setup PIN"
 msgstr "Setup-PIN eingeben"
 
-#: src/plugin.py:1463 src/plugin.py:2364 src/plugin.py:3224 src/plugin.py:4011
+#: src/plugin.py:1270 src/plugin.py:2210 src/plugin.py:3063 src/plugin.py:3842
 msgid "No connection to the Internet available."
 msgstr "Keine Verbindung zum Internet vorhanden."
 
-#: src/plugin.py:1490 src/plugin.py:1530 src/plugin.py:2394 src/plugin.py:2434
-#: src/plugin.py:3252 src/plugin.py:3292 src/plugin.py:4039 src/plugin.py:4079
+#: src/plugin.py:1297 src/plugin.py:1337 src/plugin.py:2240 src/plugin.py:2280
+#: src/plugin.py:3091 src/plugin.py:3131 src/plugin.py:3870 src/plugin.py:3910
 #, python-format
 msgid ""
 "This Plugin has been marked as \"not working\" by the developers.\n"
@@ -2432,8 +2437,8 @@ msgstr ""
 "Falls jemand anderes bereit ist einen Fix für dieses Plugin zur Verfügung zu "
 "stellen dann nehmt bitte Kontakt mit uns auf."
 
-#: src/plugin.py:1492 src/plugin.py:1532 src/plugin.py:2396 src/plugin.py:2436
-#: src/plugin.py:3254 src/plugin.py:3294 src/plugin.py:4041 src/plugin.py:4081
+#: src/plugin.py:1299 src/plugin.py:1339 src/plugin.py:2242 src/plugin.py:2282
+#: src/plugin.py:3093 src/plugin.py:3133 src/plugin.py:3872 src/plugin.py:3912
 #, python-format
 msgid ""
 "This Plugin has been marked as \"not working\" by the developers.\n"
@@ -2446,39 +2451,37 @@ msgstr ""
 "Aktueller Entwickler-Status dieses Plugins ist:\n"
 "\"%s\""
 
-#: src/plugin.py:1967 src/plugin.py:2971 src/plugin.py:3755
-msgid "Change filter"
-msgstr "Filter wechseln"
+#: src/plugin.py:1406
+msgid "Select Filter"
+msgstr "Wähle Filter"
 
-#: src/plugin.py:1968 src/plugin.py:2972 src/plugin.py:3756
+#: src/plugin.py:1816 src/plugin.py:2813 src/plugin.py:3590
 msgid "Change sort order"
 msgstr "Sortierreihenfolge ändern"
 
-#: src/plugin.py:1969 src/plugin.py:2973 src/plugin.py:3757
+#: src/plugin.py:1817 src/plugin.py:2814 src/plugin.py:3591
 msgid "Manual sorting"
 msgstr "Manuelle Sortierung"
 
-#: src/plugin.py:1985 src/plugin.py:2989 src/plugin.py:3773
+#: src/plugin.py:1821 src/plugin.py:2818 src/plugin.py:3595
+msgid "Next page"
+msgstr "Nächste Seite"
+
+#: src/plugin.py:1822 src/plugin.py:2819 src/plugin.py:3596
+msgid "Previous page"
+msgstr "Vorherige Seite"
+
+#: src/plugin.py:1832 src/plugin.py:2829 src/plugin.py:3606
 msgid "CH+"
 msgstr "CH+"
 
-#: src/plugin.py:1986 src/plugin.py:2990 src/plugin.py:3774
+#: src/plugin.py:1833 src/plugin.py:2830 src/plugin.py:3607
 msgid "CH-"
 msgstr "CH-"
 
-#: src/plugin.py:2045 src/plugin.py:3035 src/plugin.py:3821
+#: src/plugin.py:1891 src/plugin.py:2874 src/plugin.py:3652
 msgid "Ordering is only possible with filter \"ALL\"."
 msgstr "Sortieren ist nur mit dem Filter \"ALLE\" möglich."
-
-#: src/plugin.py:2072 src/plugin.py:2103 src/plugin.py:3064 src/plugin.py:3095
-#: src/plugin.py:3850 src/plugin.py:3881 src/plugin.py:4391
-msgid "ALL"
-msgstr "ALLE"
-
-#: src/plugin.py:2076 src/plugin.py:2107 src/plugin.py:3068 src/plugin.py:3099
-#: src/plugin.py:3854 src/plugin.py:3885 src/plugin.py:4395
-msgid "User-additions"
-msgstr "User-Erweiterungen"
 
 #: src/resources/cannalink.py:49 src/resources/cannalink.py:54
 #, python-format
@@ -3197,15 +3200,3 @@ msgstr ""
 #: src/resources/update.py:171
 msgid "MediaPortal update failed! Check the update log carefully!"
 msgstr "MediaPortal Update fehlgeschlagen! Überprüfe das Updatelog sorgfältig!"
-
-#~ msgid "Full"
-#~ msgstr "Voll"
-
-#~ msgid "Single"
-#~ msgstr "Einzeln"
-
-#~ msgid "List Mode:"
-#~ msgstr "Listen Modus:"
-
-#~ msgid "Fun/Music/Sports"
-#~ msgstr "Fun/Musik/Sport"

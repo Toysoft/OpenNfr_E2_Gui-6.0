@@ -728,7 +728,7 @@ class SimplePlayerPVRState(Screen):
 	def __init__(self, session):
 		Screen.__init__(self, session)
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/simpleplayer/SimplePlayerPVRState.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/simpleplayer/SimplePlayerPVRState.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayerPVRState.xml"
 		with open(path, "r") as f:
@@ -744,7 +744,7 @@ class SimplePlayerInfoBarStateInfo(Screen):
 	def __init__(self, session):
 		Screen.__init__(self, session)
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/simpleplayer/SimplePlayerInfoBarStateInfo.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/simpleplayer/SimplePlayerInfoBarStateInfo.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayerInfoBarStateInfo.xml"
 		with open(path, "r") as f:
@@ -804,7 +804,7 @@ class SimplePlayer(Screen, M3U8Player, CoverSearchHelper, SimpleSeekHelper, Simp
 		Screen.__init__(self, session)
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
 		self.wallicon_path = config.mediaportal.iconcachepath.value + "icons/"
-		path = "%s/%s/simpleplayer/SimplePlayer.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/simpleplayer/SimplePlayer.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayer.xml"
 		with open(path, "r") as f:
@@ -1738,7 +1738,7 @@ class SimpleConfig(Screen, ConfigListScreenExt):
 	def __init__(self, session):
 
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/simpleplayer/SimplePlayerConfig.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/simpleplayer/SimplePlayerConfig.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayerConfig.xml"
 		with open(path, "r") as f:
@@ -1776,7 +1776,7 @@ class SimplePlayerMenu(Screen):
 	def __init__(self, session, pltype, showPlaylist=True):
 
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/simpleplayer/SimplePlayerMenu.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/simpleplayer/SimplePlayerMenu.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/simpleplayer/SimplePlayerMenu.xml"
 		with open(path, "r") as f:

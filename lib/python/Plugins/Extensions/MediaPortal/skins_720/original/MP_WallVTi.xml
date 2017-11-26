@@ -5,17 +5,15 @@
 	<widget name="CH+" position="750,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="860,670" size="100,2" zPosition="1" pixmap="~/original/images/buttongrey.png" alphatest="blend" backgroundColor="#00101214" />
 	<widget name="CH-" position="860,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
-	<ePixmap position="970,670" size="100,2" zPosition="1" pixmap="~/original/images/buttongrey.png" alphatest="blend" backgroundColor="#00101214" />
-	<widget name="PVR" position="970,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="1080,670" size="100,2" zPosition="1" pixmap="~/original/images/buttongrey.png" alphatest="blend" backgroundColor="#00101214" />
 	<widget name="Menu" position="1080,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="100,670" size="100,2" zPosition="1" pixmap="~/original/images/buttonred.png" alphatest="blend" backgroundColor="#00101214" />
-	<widget name="red" position="100,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
+	<widget name="F1" position="100,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="320,670" size="100,2" zPosition="1" pixmap="~/original/images/buttongreen.png" alphatest="blend" backgroundColor="#00101214" />
-	<widget name="green" position="320,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
+	<widget name="F2" position="320,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="210,670" size="100,2" zPosition="1" pixmap="~/original/images/buttonyellow.png" alphatest="blend" backgroundColor="#00101214" />
-	<widget name="yellow" position="210,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
+	<widget name="F3" position="210,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<ePixmap position="430,670" size="100,2" zPosition="1" pixmap="~/original/images/buttonblue.png" alphatest="blend" backgroundColor="#00101214" />
-	<widget name="blue" position="430,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
+	<widget name="F4" position="430,645" size="100,25" transparent="1" font="mediaportal; 16" backgroundColor="#00101214" foregroundColor="#00aaaaaa" valign="center" halign="center" zPosition="1" />
 	<widget name="list" position="10,200" size="1260,445" transparent="0" backgroundColor="#ff000000" itemSize="150,80" itemScale="130,130" itemSpace="20" useOverlay="1" backgroundColorGlobal="#20000000" />
 </screen>

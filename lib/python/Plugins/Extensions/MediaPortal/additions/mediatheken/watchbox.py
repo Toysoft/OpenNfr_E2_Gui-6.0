@@ -144,7 +144,7 @@ class watchboxFolgenListeScreen(MPScreen, ThumbsHelper):
 
 	def loadPageData(self, data):
 		self['page'].setText(str(self.page+1))
-		folgen = re.findall('class="grid__item">.*?a\shref="(.*?)".*?format-type="(.*?)".*?img\s+src="(.*?)".*?alt="(.*?)"', data, re.S)
+		folgen = re.findall('class="grid__item">.*?href="(.*?)".*?format-type="(.*?)".*?img\s+src="(.*?)".*?alt="(.*?)"', data, re.S)
 		if folgen:
 			for (url, type, image, title) in folgen:
 				if image.startswith('//'):

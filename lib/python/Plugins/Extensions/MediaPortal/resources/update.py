@@ -106,7 +106,7 @@ class MPUpdateScreen(Screen):
 		self.html = html
 
 		self.skin_path = mp_globals.pluginPath + mp_globals.skinsPath
-		path = "%s/%s/MP_Update.xml" % (self.skin_path, config.mediaportal.skin.value)
+		path = "%s/%s/MP_Update.xml" % (self.skin_path, mp_globals.currentskin)
 		if not fileExists(path):
 			path = self.skin_path + mp_globals.skinFallback + "/MP_Update.xml"
 		with open(path, "r") as f:
