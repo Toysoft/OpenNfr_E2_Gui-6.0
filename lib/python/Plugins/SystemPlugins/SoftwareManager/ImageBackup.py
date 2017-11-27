@@ -4,29 +4,78 @@
 #					MAKES A FULLBACK-UP READY FOR FLASHING.						#
 #																				#
 #################################################################################
-from enigma import getEnigmaVersionString
+from enigma import getEnigmaVersionString, eTimer
 from Screens.Screen import Screen
+from Screens.Setup import Setup
+from Components.Console import Console
+from Screens.Console import Console as ScreenConsole
 from Components.Button import Button
 from Components.Sources.StaticText import StaticText
 from Components.SystemInfo import SystemInfo
 from Components.Label import Label
+from Components.MenuList import MenuList
 from Components.ActionMap import ActionMap
 from Components.About import about
 from Components import Harddisk
-from Screens.Console import Console
 from Screens.MessageBox import MessageBox
-from time import time, strftime, localtime
-from os import path, system, makedirs, listdir, walk, statvfs, remove
+from os import path, system, mkdir, makedirs, listdir, remove, rename, statvfs, chmod, walk, symlink, unlink
+from shutil import rmtree, move, copy
+from time import localtime, time, strftime, mktime
 import os
 import commands
 import datetime
 import zipfile
-from boxbranding import getBoxType, getMachineBrand, getMachineName, getDriverDate, getImageVersion, getImageBuild, getBrandOEM, getMachineBuild, getImageFolder, getMachineMtdRoot, getMachineUBINIZE, getMachineMKUBIFS, getMachineMtdKernel, getMachineKernelFile, getMachineRootFile, getImageFileSystem
+from boxbranding import getBoxType, getImageType, getImageDistro, getDriverDate, getImageVersion, getImageBuild, getImageDevBuild, getImageFolder, getImageFileSystem, getBrandOEM, getMachineBrand, getMachineName, getMachineBuild, getMachineMake, getMachineMtdRoot, getMachineRootFile, getMachineMtdKernel, getMachineKernelFile, getMachineMKUBIFS, getMachineUBINIZE
+import Components.Task
+from Screens.TaskView import JobView
+from Screens.Standby import TryQuitMainloop
+from Tools.Notifications import AddPopupWithCallback
+from Components.config import config, ConfigSubsection, ConfigYesNo, ConfigSelection, ConfigText, ConfigNumber, NoSave, ConfigClock
+from Components.Harddisk import harddiskmanager, getProcMounts
 
-VERSION = "Version 6.0 openNFR"
+import urllib
 
+VERSION = "Version %s openNFR" % getImageVersion()
+RAMCHEKFAILEDID = 'RamCheckFailedNotification'
+
+hddchoises = []
+for p in harddiskmanager.getMountedPartitions():
+	if path.exists(p.mountpoint):
+		d = path.normpath(p.mountpoint)
+		if p.mountpoint != '/':
+			hddchoises.append((p.mountpoint, d))
+config.imagemanager = ConfigSubsection()
+defaultprefix = getImageDistro() + '-' + getBoxType()
+config.imagemanager.folderprefix = ConfigText(default=defaultprefix, fixed_size=False)
+config.imagemanager.backuplocation = ConfigSelection(choices=hddchoises)
+config.imagemanager.schedule = ConfigYesNo(default=False)
+config.imagemanager.scheduletime = ConfigClock(default=0)  # 1:00
+config.imagemanager.nextbackuptime = ConfigClock(default=0)  # 1:00
+config.imagemanager.repeattype = ConfigSelection(default="daily", choices=[("daily-", _("Daily-")),("daily", _("Daily")), ("weekly", _("Weekly")), ("monthly", _("30 Days"))])
+config.imagemanager.backupretry = ConfigNumber(default=30)
+config.imagemanager.backupretrycount = NoSave(ConfigNumber(default=0))
+config.imagemanager.nextscheduletime = NoSave(ConfigNumber(default=0))
+config.imagemanager.restoreimage = NoSave(ConfigText(default=getBoxType(), fixed_size=False))
+config.imagemanager.autosettingsbackup = ConfigYesNo(default = True)
+
+#GML - querying is enabled by default - that is what used to happen always
+#
+config.imagemanager.query = ConfigYesNo(default=True)
+
+#GML -  If we do not yet have a record of an image backup, assume it has
+#       never happened.
+#
+now = int(time())
+config.imagemanager.lastbackup = ConfigNumber(default=0)
+
+#GML - max no. of images to keep.  0 == keep them all
+#
+config.imagemanager.number_to_keep = ConfigNumber(default=0)
+
+autoImageManagerTimer = None
 HaveGZkernel = True
-if getMachineBuild() in ("vuuno4k", "vuultimo4k", "vusolo4k", "spark", "spark7162", "hd51", "hd52", 'sf4008'):
+
+if getMachineBuild() in ('sf5008','et13000','et1x000',"vuuno4k", "vuultimo4k", "vusolo4k", "spark", "spark7162", "hd51", "hd52", "sf4008", "dags7252", "gb7252", "vs1500","h7",'xc7439','8100s'):
 	HaveGZkernel = False
 
 def Freespace(dev):
@@ -34,6 +83,410 @@ def Freespace(dev):
 	space = (statdev.f_bavail * statdev.f_frsize) / 1024
 	print "[FULL BACKUP] Free space on %s = %i kilobytes" %(dev, space)
 	return space
+	
+def ImageManagerautostart(reason, session=None, **kwargs):
+	"""called with reason=1 to during /sbin/shutdown.sysvinit, with reason=0 at startup?"""
+	global autoImageManagerTimer
+	global _session
+	now = int(time())
+	if reason == 0:
+		print "[ImageManager] AutoStart Enabled"
+		if session is not None:
+			_session = session
+			if autoImageManagerTimer is None:
+				autoImageManagerTimer = AutoImageManagerTimer(session)
+	else:
+		if autoImageManagerTimer is not None:
+			print "[ImageManager] Stop"
+			autoImageManagerTimer.stop()	
+	
+class TimerImageManager(Screen):
+	def __init__(self, session):
+		Screen.__init__(self, session)
+		Screen.setTitle(self, _("Image Manager"))
+		global autoImageManagerTimer
+		global _session
+		now = int(time())
+		print "[ImageManager] AutoStart Enabled"
+		if session is not None:
+			_session = session
+			if autoImageManagerTimer is None:
+				autoImageManagerTimer = AutoImageManagerTimer(session)
+	
+
+		self['lab1'] = Label()
+		self["backupstatus"] = Label()
+		self["key_green"] = Button(_("Standart Backup"))
+		self["key_yellow"] = Button(_("Timer backup"))
+
+		self.BackupRunning = False
+		self.onChangedEntry = []
+		self.oldlist = None
+		self.emlist = []
+		self['list'] = MenuList(self.emlist)
+		self.populate_List()
+		self.activityTimer = eTimer()
+		self.activityTimer.timeout.get().append(self.backupRunning)
+		self.activityTimer.start(10)
+
+		self.Console = Console()
+
+		if BackupTime > 0:
+		        now = int(time())
+			t = localtime(BackupTime)
+			backuptext = _("Next Backup: ") + strftime(_("%a %e %b  %-H:%M"), t)
+		else:
+			backuptext = _("Next Backup: ")
+		self["backupstatus"].setText(str(backuptext))
+		if not self.selectionChanged in self["list"].onSelectionChanged:
+			self["list"].onSelectionChanged.append(self.selectionChanged)
+			
+	def getJobName(self, job):
+		return "%s: %s (%d%%)" % (job.getStatustext(), job.name, int(100 * job.progress / float(job.end)))
+
+	def showJobView(self, job):
+		Components.Task.job_manager.in_background = False
+		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=False, afterEventChangeable=False, afterEvent="close")
+
+	def JobViewCB(self, in_background):
+		Components.Task.job_manager.in_background = in_background			
+
+	def createSummary(self):
+		from Screens.PluginBrowser import PluginBrowserSummary
+
+		return PluginBrowserSummary
+
+	def selectionChanged(self):
+		item = self["list"].getCurrent()
+		desc = self["backupstatus"].text
+		if item:
+			name = item
+		else:
+			name = ""
+		for cb in self.onChangedEntry:
+			cb(name, desc)
+
+	def backupRunning(self):
+		self.populate_List()
+		self.BackupRunning = False
+		for job in Components.Task.job_manager.getPendingJobs():
+			if job.name.startswith(_("Image Manager")):
+				self.BackupRunning = True
+		if self.BackupRunning:
+			self["key_green"].setText(_("View Progress"))
+		else:
+			self["key_green"].setText(_("Standart Backup"))
+		self.activityTimer.startLongTimer(5)
+
+	def refreshUp(self):
+		self.refreshList()
+		if self['list'].getCurrent():
+			self["list"].instance.moveSelection(self["list"].instance.moveUp)
+
+	def refreshDown(self):
+		self.refreshList()
+		if self['list'].getCurrent():
+			self["list"].instance.moveSelection(self["list"].instance.moveDown)
+
+	def refreshList(self):
+		images = listdir(self.BackupDirectory)
+		self.oldlist = images
+		del self.emlist[:]
+		for fil in images:
+			if fil.endswith('.zip') or path.isdir(path.join(self.BackupDirectory, fil)):
+				self.emlist.append(fil)
+		self.emlist.sort()
+		self.emlist.reverse()
+		self["list"].setList(self.emlist)
+		self["list"].show()
+
+	def getJobName(self, job):
+		return "%s: %s (%d%%)" % (job.getStatustext(), job.name, int(100 * job.progress / float(job.end)))
+
+	def showJobView(self, job):
+		Components.Task.job_manager.in_background = False
+		self.session.openWithCallback(self.JobViewCB, JobView, job, cancelable=False, backgroundable=True, afterEventChangeable=False, afterEvent="close")
+
+	def JobViewCB(self, in_background):
+		Components.Task.job_manager.in_background = in_background
+
+	def populate_List(self):
+		imparts = []
+		for p in harddiskmanager.getMountedPartitions():
+			if path.exists(p.mountpoint):
+				d = path.normpath(p.mountpoint)
+				if p.mountpoint != '/':
+					imparts.append((p.mountpoint, d))
+		config.imagemanager.backuplocation.setChoices(imparts)
+
+		if config.imagemanager.backuplocation.value.endswith('/'):
+			mount = config.imagemanager.backuplocation.value, config.imagemanager.backuplocation.value[:-1]
+		else:
+			mount = config.imagemanager.backuplocation.value + '/', config.imagemanager.backuplocation.value
+		hdd = '/media/hdd/', '/media/hdd'
+		if mount not in config.imagemanager.backuplocation.choices.choices:
+			if hdd in config.imagemanager.backuplocation.choices.choices:
+				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
+											  {
+											  "ok": self.GreenPressed,
+											  'cancel': self.close,
+											  'green': self.GreenPressed,
+											  'yellow': self.createSetup,
+											  "up": self.refreshUp,
+											  "down": self.refreshDown,
+											  }, -1)
+
+				self.BackupDirectory = '/media/hdd/imagebackups/'
+				config.imagemanager.backuplocation.value = '/media/hdd/'
+				config.imagemanager.backuplocation.save()
+				self['lab1'].setText(_("The chosen location is /media/hdd"))
+			else:
+				self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions"],
+											  {
+											  'cancel': self.close,
+											  'yellow': self.createSetup,
+											  }, -1)
+
+				self['lab1'].setText(_("Device: None available"))
+		else:
+			self['myactions'] = ActionMap(['ColorActions', 'OkCancelActions', 'DirectionActions', "MenuActions", "HelpActions"],
+										  {
+										  'cancel': self.close,
+										  'green': self.GreenPressed,
+										  'yellow': self.createSetup,
+										  "up": self.refreshUp,
+										  "down": self.refreshDown,
+										  "ok": self.GreenPressed,
+										  }, -1)
+
+			self.BackupDirectory = config.imagemanager.backuplocation.value + 'imagebackups/'
+			s = statvfs(config.imagemanager.backuplocation.value)
+			free = (s.f_bsize * s.f_bavail) / (1024 * 1024)
+			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + ' ' + _('Free space:') + ' ' + str(free) + _('MB'))
+
+		try:
+			if not path.exists(self.BackupDirectory):
+				mkdir(self.BackupDirectory, 0755)
+			if path.exists(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup'):
+				system('swapoff ' + self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
+				remove(self.BackupDirectory + config.imagemanager.folderprefix.value + '-' + getImageType() + '-swapfile_backup')
+			self.refreshList()
+		except:
+			self['lab1'].setText(_("Device: ") + config.imagemanager.backuplocation.value + "\n" + _("there is a problem with this device, please reformat and try again."))
+
+	def createSetup(self):
+		self.session.openWithCallback(self.setupDone, Setup, 'timerimagemanager', 'Extensions/Infopanel')
+
+	def setupDone(self, test=None):
+		if config.imagemanager.folderprefix.value == '':
+			config.imagemanager.folderprefix.value = defaultprefix
+			config.imagemanager.folderprefix.save()
+		self.populate_List()
+		self.doneConfiguring()
+
+	def doneConfiguring(self):
+		now = int(time())
+		if config.imagemanager.schedule.value:
+			if autoImageManagerTimer is not None:
+				print "[ImageManager] Backup Schedule Enabled at", strftime("%c", localtime(now))
+				autoImageManagerTimer.backupupdate()
+		else:
+			if autoImageManagerTimer is not None:
+				global BackupTime
+				BackupTime = 0
+				print "[ImageManager] Backup Schedule Disabled at", strftime("%c", localtime(now))
+				autoImageManagerTimer.backupstop()
+		if BackupTime > 0:
+			t = localtime(BackupTime)
+			backuptext = _("Next Backup: ") + strftime(_("%a %e %b  %-H:%M"), t)
+		else:
+			backuptext = _("Next Backup: ")
+		self["backupstatus"].setText(str(backuptext))
+
+
+	def GreenPressed(self):
+		self.session.open(ImageBackup)
+                #backup = None
+		#self.BackupRunning = False
+		#for job in Components.Task.job_manager.getPendingJobs():
+	#		if job.name.startswith(_("Image Manager")):
+	#			backup = job
+	#			self.BackupRunning = True
+	#	if self.BackupRunning and backup:
+	#		self.showJobView(backup)
+	#	else:
+	#		self.keyBackup()
+
+	def keyBackup(self):
+		message = _("Are you ready to create a backup image ?")
+		ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO)
+		ybox.setTitle(_("Backup Confirmation"))
+
+	def doBackup(self, answer):
+	        print "1"
+		if answer is True:
+			self.ImageBackup = ImageBackup(self.session)
+			print "2"
+			Components.Task.job_manager.AddJob(self.ImageBackup.createBackupJob())
+			self.BackupRunning = True
+			self["key_green"].setText(_("View Progress"))
+			self["key_green"].show()
+			for job in Components.Task.job_manager.getPendingJobs():
+				if job.name.startswith(_("Image Manager")):
+					break
+			self.showJobView(job)
+
+
+class AutoImageManagerTimer:
+	def __init__(self, session):
+		self.session = session
+		self.backuptimer = eTimer()
+		self.backuptimer.callback.append(self.BackuponTimer)
+		self.backupactivityTimer = eTimer()
+		self.backupactivityTimer.timeout.get().append(self.backupupdatedelay)
+		now = int(time())
+		global BackupTime
+		if config.imagemanager.schedule.value:
+			print "[ImageManager] Backup Schedule Enabled at ", strftime("%c", localtime(now))
+			if now > 1262304000:
+				self.backupupdate()
+			else:
+				print "[ImageManager] Backup Time not yet set."
+				BackupTime = 0
+				self.backupactivityTimer.start(36000)
+		else:
+                        BackupTime = 0
+			print "[ImageManager] Backup Schedule Disabled at", strftime("(now=%c)", localtime(now))
+			self.backupactivityTimer.stop()
+
+	def backupupdatedelay(self):
+		self.backupactivityTimer.stop()
+		self.backupupdate()
+
+	def getBackupTime(self):
+		backupclock = config.imagemanager.scheduletime.value
+#		nowt = time()
+#		now = localtime(nowt)
+#		return int(mktime((now.tm_year, now.tm_mon, now.tm_mday, backupclock[0], backupclock[1], 0, now.tm_wday, now.tm_yday, now.tm_isdst)))
+#GML
+# Work out the time of the *NEXT* backup - which is the configured clock
+# time on the nth relevant day after the last recorded backup day.
+# The last backup time will have been set as 12:00 on the day it
+# happened. All we use is the actual day from that value.
+		if not config.imagemanager.lastbackup.value:
+	                now = int(time())
+	                config.imagemanager.lastbackup.value = now
+	                config.imagemanager.lastbackup.save()
+                lastbkup_t = int(config.imagemanager.lastbackup.value)
+	        print "lastbkup_t:", lastbkup_t
+		if config.imagemanager.repeattype.value == "daily":
+			nextbkup_t = lastbkup_t + 24*3600
+		elif config.imagemanager.repeattype.value == "weekly":
+			nextbkup_t = lastbkup_t + 7*24*3600
+		elif config.imagemanager.repeattype.value == "monthly":
+			nextbkup_t = lastbkup_t + 30*24*3600
+		elif config.imagemanager.repeattype.value == "daily-":
+			nextbkup_t = lastbkup_t + 600                        		
+		nextbkup = localtime(nextbkup_t)
+		print "nextbackup:", int(mktime((nextbkup.tm_year, nextbkup.tm_mon, nextbkup.tm_mday, backupclock[0], backupclock[1], 0, nextbkup.tm_wday, nextbkup.tm_yday, nextbkup.tm_isdst)))
+		return int(mktime((nextbkup.tm_year, nextbkup.tm_mon, nextbkup.tm_mday, backupclock[0], backupclock[1], 0, nextbkup.tm_wday, nextbkup.tm_yday, nextbkup.tm_isdst)))
+
+	def backupupdate(self, atLeast=0):
+		self.backuptimer.stop()
+		global BackupTime
+		BackupTime = self.getBackupTime()
+		now = int(time())
+		if BackupTime > 0:
+			if BackupTime < now + atLeast:
+#				if config.imagemanager.repeattype.value == "daily":
+#					BackupTime += 24 * 3600
+#					while (int(BackupTime) - 30) < now:
+#						BackupTime += 24 * 3600
+#				elif config.imagemanager.repeattype.value == "weekly":
+#					BackupTime += 7 * 24 * 3600
+#					while (int(BackupTime) - 30) < now:
+#						BackupTime += 7 * 24 * 3600
+#				elif config.imagemanager.repeattype.value == "monthly":
+#					BackupTime += 30 * 24 * 3600
+#					while (int(BackupTime) - 30) < now:
+#						BackupTime += 30 * 24 * 3600
+#			next = BackupTime - now
+#			self.backuptimer.startLongTimer(next)
+# Backup missed - run it 60s from now
+				self.backuptimer.startLongTimer(60)
+				print "[ImageManager] Backup Time overdue - running in 60s"
+			else:
+# Backup in future - set the timer...
+				delay = BackupTime - now
+				self.backuptimer.startLongTimer(delay)
+		else:
+			BackupTime = -1
+
+		print "[ImageManager] Backup Time set to", strftime("%c", localtime(BackupTime)), strftime("(now=%c)", localtime(now))
+		return BackupTime
+
+	def backupstop(self):
+		self.backuptimer.stop()
+
+	def BackuponTimer(self):
+		self.backuptimer.stop()
+		now = int(time())
+		wake = self.getBackupTime()
+		# If we're close enough, we're okay...
+		atLeast = 0
+		if wake - now < 60:
+			print "[ImageManager] Backup onTimer occured at", strftime("%c", localtime(now))
+			from Screens.Standby import inStandby
+
+#GML			if not inStandby:
+#    - add check for querying
+			if not inStandby and config.imagemanager.query.value:
+				message = _("Your %s %s is about to run a full image backup, this can take about 6 minutes to complete,\ndo you want to allow this?") % (getMachineBrand(), getMachineName())
+				ybox = self.session.openWithCallback(self.doBackup, MessageBox, message, MessageBox.TYPE_YESNO, timeout=30)
+				ybox.setTitle('Scheduled Backup.')
+			else:
+#GML				print "[ImageManager] in Standby, so just running backup", strftime("%c", localtime(now))
+				print "[ImageManager] in Standby or no querying, so just running backup", strftime("%c", localtime(now))
+				self.doBackup(True)
+		else:
+			print '[ImageManager] Where are not close enough', strftime("%c", localtime(now))
+			self.backupupdate(60)
+
+	def doBackup(self, answer):
+		now = int(time())
+		if answer is False:
+			if config.imagemanager.backupretrycount.value < 2:
+				print '[ImageManager] Number of retries', config.imagemanager.backupretrycount.value
+				print "[ImageManager] Backup delayed."
+				repeat = config.imagemanager.backupretrycount.value
+				repeat += 1
+				config.imagemanager.backupretrycount.setValue(repeat)
+				BackupTime = now + (int(config.imagemanager.backupretry.value) * 60)
+				print "[ImageManager] Backup Time now set to", strftime("%c", localtime(BackupTime)), strftime("(now=%c)", localtime(now))
+				self.backuptimer.startLongTimer(int(config.imagemanager.backupretry.value) * 60)
+			else:
+				atLeast = 60
+				print "[ImageManager] Enough Retries, delaying till next schedule.", strftime("%c", localtime(now))
+				self.session.open(MessageBox, _("Enough Retries, delaying till next schedule."), MessageBox.TYPE_INFO, timeout=10)
+				config.imagemanager.backupretrycount.setValue(0)
+				self.backupupdate(atLeast)
+		else:
+			print "[ImageManager] Running Backup", strftime("%c", localtime(now))
+			self.ImageBackup = ImageBackup(self.session)
+			print "3"
+			Components.Task.job_manager.AddJob(self.ImageBackup.createBackupJob())
+			
+#GML - Note that fact that the job has been *scheduled*.
+#      We do *not* just note successful completion, as that would
+#      result in a loop on issues such as disk-full.
+#      Also all that we actually want to know is the day, not the time, so
+#      we actually remember midday, which avoids problems around DLST changes
+#      for backups scheduled within an hour of midnight.
+#
+			sched = localtime(time())
+			sched_t = int(mktime((sched.tm_year, sched.tm_mon, sched.tm_mday, 12, 0, 0, sched.tm_wday, sched.tm_yday, sched.tm_isdst)))
+			config.imagemanager.lastbackup.value = sched_t
+			config.imagemanager.lastbackup.save()
 
 class ImageBackup(Screen):
 	skin = """
@@ -52,10 +505,11 @@ class ImageBackup(Screen):
 		
 	def __init__(self, session, args = 0):
 		Screen.__init__(self, session)
-		self.session = session
+		global closed
+                closed = False
+                self.session = session
 		self.selection = 0
-		self.list = self.list_files("/boot")
-                self.MODEL = getBoxType()
+		self.MODEL = getBoxType()
 		self.OEM = getBrandOEM()
 		self.MACHINEBUILD = getMachineBuild()
 		self.MACHINENAME = getMachineName()
@@ -68,6 +522,16 @@ class ImageBackup(Screen):
                 self.ROOTFSBIN = getMachineRootFile()
 		self.KERNELBIN = getMachineKernelFile()
 		self.ROOTFSTYPE = getImageFileSystem()
+		if self.MACHINEBUILD in ("hd51","vs1500","h7","ceryon7252"):
+			self.MTDBOOT = "mmcblk0p1"
+			self.EMMCIMG = "disk.img"
+		elif self.MACHINEBUILD in ("xc7439"):
+			self.MTDBOOT = "mmcblk1p1"
+			self.EMMCIMG = "emmc.img"
+		else:
+			self.MTDBOOT = "none"
+                        self.EMMCIMG = "none"
+		self.list = self.list_files("/boot")
 		print "[FULL BACKUP] BOX MACHINEBUILD = >%s<" %self.MACHINEBUILD
 		print "[FULL BACKUP] BOX MACHINENAME = >%s<" %self.MACHINENAME
 		print "[FULL BACKUP] BOX MACHINEBRAND = >%s<" %self.MACHINEBRAND
@@ -99,7 +563,31 @@ class ImageBackup(Screen):
 			"red": self.red,
 			"cancel": self.quit,
 		}, -2)
+		
+	def createBackupJob(self):
+		if SystemInfo["HaveMultiBoot"]:
+			with open("/boot/STARTUP", 'r') as myfile:
+				data=myfile.read().replace('\n', '')
+			myfile.close()
+			cmdline = data.split("=",3)[3].split(" ",1)[0]
+			cmdline = cmdline.lstrip("/dev/")
+			self.MTDROOTFS = cmdline
+			self.MTDKERNEL = cmdline[:-1] + str(int(cmdline[-1:]) -1)
+		print "BackupTime:", BackupTime
+		job = Components.Task.Job(_("Image Manager"))
 
+		task = Components.Task.PythonTask(job, _("Backing Up..."))
+		task.work = self.doFullBackup1
+		task.weighting = 5
+
+		return job
+		
+	def doFullBackup1(self):
+	        closed = True
+	        global closed
+        	self.doFullBackup("/hdd")
+		
+                
 	def check_hdd(self):
 		if not path.exists("/media/hdd"):
 			self.session.open(MessageBox, _("No /hdd found !!\nPlease make sure you have a HDD mounted.\n"), type = MessageBox.TYPE_ERROR)
@@ -108,6 +596,7 @@ class ImageBackup(Screen):
 			self.session.open(MessageBox, _("Not enough free space on /hdd !!\nYou need at least 300Mb free space.\n"), type = MessageBox.TYPE_ERROR)
 			return False
 		return True
+		
 
 	def check_usb(self, dev):
 		if Freespace(dev) < 300000:
@@ -140,13 +629,19 @@ class ImageBackup(Screen):
 			if self.selection == len(self.list):
 				self.selection = 0
 			self["key_yellow"].setText(_(self.list[self.selection]))
-			if self.list[self.selection] == "Recovery":
-				cmdline = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
-                   	else:
-				cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
+			if self.MACHINEBUILD in ("hd51","vs1500","h7","ceryon7252"):
+				if self.list[self.selection] == "Recovery":
+					cmdline = self.read_startup("/boot/STARTUP").split("=",3)[3].split(" ",1)[0]
+				else:
+					cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",3)[3].split(" ",1)[0]
+			else:
+				if self.list[self.selection] == "Recovery":
+					cmdline = self.read_startup("/boot/cmdline.txt").split("=",1)[1].split(" ",1)[0]
+				else:
+					cmdline = self.read_startup("/boot/" + self.list[self.selection]).split("=",1)[1].split(" ",1)[0]
 			cmdline = cmdline.lstrip("/dev/")
 			self.MTDROOTFS = cmdline
-			self.MTDKERNEL = cmdline[:-1] + str(int(cmdline[-1:]) -1)	
+			self.MTDKERNEL = cmdline[:-1] + str(int(cmdline[-1:]) -1)
 			print "[FULL BACKUP] Multiboot rootfs ", self.MTDROOTFS
 			print "[FULL BACKUP] Multiboot kernel ", self.MTDKERNEL
 
@@ -161,13 +656,17 @@ class ImageBackup(Screen):
 		files = []
 		if SystemInfo["HaveMultiBoot"]:
 		        self.path = PATH
- 			for name in listdir(self.path):
- 				if path.isfile(path.join(self.path, name)):
- 					cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]		
+			for name in listdir(self.path):
+				if path.isfile(path.join(self.path, name)):
+					if self.MACHINEBUILD in ("hd51","vs1500","h7","ceryon7252"):
+						cmdline = self.read_startup("/boot/" + name).split("=",3)[3].split(" ",1)[0]
+					else:
+						cmdline = self.read_startup("/boot/" + name).split("=",1)[1].split(" ",1)[0]		
 					if cmdline in Harddisk.getextdevices("ext4"):
  						files.append(name)
- 			files.append("Recovery")
- 		return files	
+			if getMachineBuild() not in ("gb7252"):
+				files.append("Recovery")
+		return files	
 
 	def SearchUSBcanidate(self):
 		for paths, subdirs, files in walk("/media"):
@@ -282,6 +781,17 @@ class ImageBackup(Screen):
 		if cmd3:
 			cmdlist.append(cmd3)
 		cmdlist.append("chmod 644 %s/%s" %(self.WORKDIR, self.ROOTFSBIN))
+		
+		if self.MODEL in ("gbquad4k","gbue4k"):
+			cmdlist.append('echo " "')
+			cmdlist.append('echo "Create: boot dump"')
+			cmdlist.append('echo " "')
+			cmdlist.append("dd if=/dev/mmcblk0p1 of=%s/boot.bin" % self.WORKDIR)
+			cmdlist.append('echo " "')
+			cmdlist.append('echo "Create: rescue dump"')
+			cmdlist.append('echo " "')
+			cmdlist.append("dd if=/dev/mmcblk0p3 of=%s/rescue.bin" % self.WORKDIR)
+
 		cmdlist.append('echo " "')
 		cmdlist.append('echo "Create: kerneldump"')
 		cmdlist.append('echo " "')
@@ -290,14 +800,14 @@ class ImageBackup(Screen):
 		elif self.MTDKERNEL == "mmcblk0p1" or self.MTDKERNEL == "mmcblk0p3":
 			cmdlist.append("dd if=/dev/%s of=%s/%s" % (self.MTDKERNEL ,self.WORKDIR, self.KERNELBIN))
 		else:
-				cmdlist.append("nanddump -a -f %s/vmlinux.gz /dev/%s" % (self.WORKDIR, self.MTDKERNEL))
+			cmdlist.append("nanddump -a -f %s/vmlinux.gz /dev/%s" % (self.WORKDIR, self.MTDKERNEL))
 		cmdlist.append('echo " "')
 		
 		if HaveGZkernel:
 			cmdlist.append('echo "Check: kerneldump"')
 		cmdlist.append("sync")
 
-                if SystemInfo["HaveMultiBoot"] and self.list[self.selection] == "Recovery":
+                if SystemInfo["HaveMultiBootHD"] and self.list[self.selection] == "Recovery":
 			GPT_OFFSET=0
 			GPT_SIZE=1024
 			BOOT_PARTITION_OFFSET = int(GPT_OFFSET) + int(GPT_SIZE)
@@ -353,9 +863,9 @@ class ImageBackup(Screen):
 			cmdlist.append('dd conv=notrunc if=%s/boot.img of=%s bs=1024 seek=%s' % (self.WORKDIR, EMMC_IMAGE, BOOT_PARTITION_OFFSET ))
 			cmdlist.append('dd conv=notrunc if=/dev/%s of=%s bs=1024 seek=%s' % (self.MTDKERNEL, EMMC_IMAGE, KERNEL_PARTITION_OFFSET ))
 			cmdlist.append('dd if=/dev/%s of=%s bs=1024 seek=%s' % (self.MTDROOTFS, EMMC_IMAGE, ROOTFS_PARTITION_OFFSET ))
-
-		self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, finishedCallback = self.doFullBackupCB, closeOnSuccess = True)
-
+		self.session.open(ScreenConsole, title = self.TITLE, cmdlist = cmdlist, finishedCallback = self.doFullBackupCB, closeOnSuccess = True)
+                if closed:
+                	self.close()
 	def doFullBackupCB(self):
 		if HaveGZkernel:
 			ret = commands.getoutput(' gzip -d %s/vmlinux.gz -c > /tmp/vmlinux.bin' % self.WORKDIR)
@@ -406,7 +916,12 @@ class ImageBackup(Screen):
 		else:
 				cmdlist.append('echo "rename this file to "force" to force an update without confirmation" > %s/noforce' %self.MAINDEST)
  
-		if self.MODEL in ("gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "twinboxlcd", "twinboxlcdci", "singleboxlcd", "sf208", "sf228"):
+		if self.MODEL in ("gbquad4k","gbue4k"):
+			system('mv %s/boot.bin %s/boot.bin' %(self.WORKDIR, self.MAINDEST))
+			system('mv %s/rescue.bin %s/rescue.bin' %(self.WORKDIR, self.MAINDEST))
+			system('cp -f /usr/share/gpt.bin %s/gpt.bin' %(self.MAINDEST))
+
+		if self.MODEL in ("gbquad", "gbquadplus", "gb800ue", "gb800ueplus", "gbultraue", "gbultraueh", "twinboxlcd", "twinboxlcdci", "singleboxlcd", "sf208", "sf228"):
 			lcdwaitkey = '/usr/share/lcdwaitkey.bin'
 			lcdwarning = '/usr/share/lcdwarning.bin'
 			if path.exists(lcdwaitkey):
@@ -503,16 +1018,24 @@ class ImageBackup(Screen):
 		TIMELAP = str(datetime.timedelta(seconds=DIFF))
 		cmdlist.append('echo " Time required for this process: %s"' %TIMELAP)
 		cmdlist.append('echo "Start Zip Files from Backup please wait 1-4min!"')
-		self.session.open(Console, title = self.TITLE, cmdlist = cmdlist,finishedCallback = self.doFullZip, closeOnSuccess = True)
+		self.session.open(ScreenConsole, title = self.TITLE, cmdlist = cmdlist,finishedCallback = self.doFullZip, closeOnSuccess = True)
+		if closed:
+                        self.close()
 		
 	def doFullZip(self):
 	        cmdlist = []
 	        cmdlist.append(self.message)
 		self.make_zipfile("opennfr-%s-%s-%s_usb.zip" % (getImageVersion(), self.MODEL, strftime("%Y-%m-%d", localtime(self.START))), self.MAINDEST1)
 		cmdlist.append('echo "Build Zip Files is ready!"')
-		self.session.open(Console, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = False)
-
-
+		if closed:
+		        now = int(time())
+	                config.imagemanager.lastbackup.value = now
+	                config.imagemanager.lastbackup.save()		
+		        self.session.open(ScreenConsole, title = self.TITLE, cmdlist = cmdlist, finishedCallback = self.close, closeOnSuccess = True)
+		else:
+		        self.session.open(ScreenConsole, title = self.TITLE, cmdlist = cmdlist, closeOnSuccess = True)
+                if closed:
+                        self.close()
 	def make_zipfile(self, output_filename, source_dir):
 		if getBrandOEM() in ("fulan"):
 			output_zip = self.EXTRA1 + "/" + output_filename
@@ -527,7 +1050,9 @@ class ImageBackup(Screen):
 					filename = os.path.join(root, file)
 					if os.path.isfile(filename): # regular files only
 						arcname = os.path.join(os.path.relpath(root, relroot), file)
-						zip.write(filename, arcname)		
+						zip.write(filename, arcname)
+                if closed:
+                	self.close()
 
 	def imageInfo(self):
 		AboutText = _("Full Image Backup ")
@@ -595,4 +1120,4 @@ class ImageBackup(Screen):
 		AboutText += _("\n[Installed Plugins]\n")
 		AboutText += commands.getoutput("opkg list_installed | grep enigma2-plugin-")
 
-		return AboutText
+		return AboutText 
