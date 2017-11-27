@@ -272,6 +272,7 @@
 	<map context="InfobarPiPActions">
 		<key id="KEY_SCREEN" mapto="activatePiP" flags="m" />
 		<key id="KEY_SCREEN" mapto="activateHDMIPiP" flags="l" />
+		<key id="KEY_F6" mapto="activatePiP" flags="b" />
 	</map>
 	
 	<map context="InfobarHDMIActions">
